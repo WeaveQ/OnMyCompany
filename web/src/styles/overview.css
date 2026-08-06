@@ -68,9 +68,9 @@
 }
 
 .overview-hero-chip.warn {
-  border-color: color-mix(in oklab, #f59e0b 40%, var(--border));
-  background: #fffbeb;
-  color: #b45309;
+  border-color: color-mix(in oklab, var(--warning) 40%, var(--border));
+  background: color-mix(in oklab, var(--warning) 12%, var(--card));
+  color: color-mix(in oklab, var(--warning) 72%, var(--foreground));
 }
 
 /* ── Stat strip: ONE outer border; cells share hairlines ─────────────── */
@@ -106,7 +106,7 @@
 }
 
 .overview-stat-cell:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--ring, #3b82f6) 55%, transparent);
+  outline: 2px solid color-mix(in oklab, var(--ring) 55%, transparent);
   outline-offset: -2px;
   z-index: 1;
 }
@@ -135,11 +135,11 @@
 }
 
 .overview-stat-cell.is-ok .overview-stat-value {
-  color: var(--success, #047857);
+  color: var(--success);
 }
 
 .overview-stat-cell.is-warn .overview-stat-value {
-  color: #b45309;
+  color: color-mix(in oklab, var(--warning) 72%, var(--foreground));
 }
 
 .overview-stat-cell.is-action {
@@ -180,15 +180,15 @@
 }
 
 .overview-ledger.is-model {
-  background: linear-gradient(145deg, color-mix(in oklab, #3b82f6 7%, var(--card)), var(--card) 55%);
+  background: color-mix(in oklab, var(--info) 6%, var(--card));
 }
 
 .overview-ledger.is-tools {
-  background: linear-gradient(145deg, color-mix(in oklab, #f59e0b 6%, var(--card)), var(--card) 55%);
+  background: color-mix(in oklab, var(--warning) 6%, var(--card));
 }
 
 .overview-ledger.is-live {
-  border-color: color-mix(in oklab, #3b82f6 28%, var(--border));
+  border-color: color-mix(in oklab, var(--info) 28%, var(--border));
 }
 
 .overview-ledger-head {
@@ -217,15 +217,15 @@
 }
 
 .overview-ledger-icon.is-model {
-  color: #2563eb;
-  background: color-mix(in oklab, #3b82f6 12%, var(--background));
-  border-color: color-mix(in oklab, #3b82f6 25%, var(--border));
+  color: var(--info);
+  background: color-mix(in oklab, var(--info) 12%, var(--background));
+  border-color: color-mix(in oklab, var(--info) 25%, var(--border));
 }
 
 .overview-ledger-icon.is-tools {
-  color: #c2410c;
-  background: color-mix(in oklab, #f59e0b 12%, var(--background));
-  border-color: color-mix(in oklab, #f59e0b 25%, var(--border));
+  color: color-mix(in oklab, var(--warning) 80%, var(--foreground));
+  background: color-mix(in oklab, var(--warning) 12%, var(--background));
+  border-color: color-mix(in oklab, var(--warning) 25%, var(--border));
 }
 
 .overview-ledger-kicker {
@@ -314,8 +314,8 @@
 }
 
 .overview-cap-badge.is-warn {
-  color: #b45309;
-  background: #fef3c7;
+  color: color-mix(in oklab, var(--warning) 72%, var(--foreground));
+  background: color-mix(in oklab, var(--warning) 14%, transparent);
 }
 
 /* ── Activity: outer card border only; empty fill inside ─────────────── */

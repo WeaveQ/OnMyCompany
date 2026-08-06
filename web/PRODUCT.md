@@ -41,6 +41,7 @@ Target WCAG AA contrast. Keyboard focus, readable fonts, reduced-motion, usable 
 - **Backend tokens:** `data/org/default/config/design/tokens.json`.
 - **Implementation:** `web/src/styles/theme.css`.
 - **Index:** `docs/design/README.md`.
+- **Language:** English source in TSX; zh-CN / zh-TW only in `web/src/locales/*`. Gates: `npm run check:design`, `check:i18n:cjk`, `check:pr-english` (OMA-style).
 
 ## Related
 

@@ -51,9 +51,9 @@ describe("W6 /api/org/members", () => {
     };
     expect(added.member.email).toBe("dev@acme.test");
     expect(added.member.roles).toContain("member");
-    // Invited accounts start pending (未激活) until first login.
+    // Invited accounts start pending until first login.
     expect(added.member.status).toBe("pending");
-    expect(added.member.statusLabel).toBe("未激活");
+    expect(added.member.statusLabel).toBe("Pending");
 
     const list2 = await app.request("/api/org/members", { headers: auth });
     const body2 = (await list2.json()) as {

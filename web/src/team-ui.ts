@@ -1,6 +1,6 @@
 /**
  * Pure helpers for team console UI (testable without React).
- * Matches create-team modal rules from product reference screenshots.
+ * Source-of-truth labels are English (OMA-style). zh/zh-TW live in locale files.
  */
 
 /** Shared team row used by shell switcher + manage page + create modal. */
@@ -28,76 +28,99 @@ export type TeamTableColumnId = "user" | "role" | "status" | "actions";
 
 export interface TeamTableColumn {
   id: TeamTableColumnId;
-  labelZh: string;
+  label: string;
+  /** @deprecated use label */
   labelEn: string;
+  /** @deprecated zh lives in locales */
+  labelZh: string;
 }
 
 /** Team membership table columns (no connection ACL — enterprise-shared until Phase 3). */
 export const TEAM_TABLE_COLUMNS: readonly TeamTableColumn[] = [
-  { id: "user", labelZh: "用户", labelEn: "User" },
-  { id: "role", labelZh: "团队角色", labelEn: "Team role" },
-  { id: "status", labelZh: "账号状态", labelEn: "Account status" },
-  { id: "actions", labelZh: "操作", labelEn: "Actions" },
+  { id: "user", label: "User", labelEn: "User", labelZh: "用户" },
+  { id: "role", label: "Team role", labelEn: "Team role", labelZh: "团队角色" },
+  { id: "status", label: "Account status", labelEn: "Account status", labelZh: "账号状态" },
+  { id: "actions", label: "Actions", labelEn: "Actions", labelZh: "操作" },
 ] as const;
 
 /** Assignable roles in the member role menu (creator is locked). */
 export const TEAM_ASSIGNABLE_ROLES = [
-  { id: "member", labelZh: "团队成员", labelEn: "Member" },
-  { id: "admin", labelZh: "团队管理员", labelEn: "Team admin" },
+  { id: "member", label: "Member", labelEn: "Member", labelZh: "团队成员" },
+  { id: "admin", label: "Team admin", labelEn: "Team admin", labelZh: "团队管理员" },
 ] as const;
 
-export function teamTableColumnLabels(lang: "zh" | "en" = "zh"): string[] {
-  return TEAM_TABLE_COLUMNS.map((c) => (lang === "en" ? c.labelEn : c.labelZh));
+export function teamTableColumnLabels(lang: "zh" | "en" = "en"): string[] {
+  return TEAM_TABLE_COLUMNS.map((c) => (lang === "zh" ? c.labelZh : c.label));
 }
 
-/** Team-scoped role badge (creator / team admin / member). */
-export function roleLabelZh(role: string): string {
-  if (role === "creator") return "团队所有者";
-  if (role === "admin") return "团队管理员";
-  if (role === "auditor") return "团队观察者";
-  return "团队成员";
+/** Team-scoped role badge (creator / team admin / member). English source. */
+export function roleLabel(role: string): string {
+  if (role === "creator") return "Owner";
+  if (role === "admin") return "Team admin";
+  if (role === "auditor") return "Team auditor";
+  return "Member";
 }
+
+/** @deprecated use roleLabel */
+export const roleLabelZh = roleLabel;
 
 /** Enterprise account role badge (org layer). */
-export function orgRoleLabelZh(role: string): string {
-  if (role === "admin" || role === "owner") return "企业管理员";
-  if (role === "auditor") return "企业审计";
-  return "员工";
+export function orgRoleLabel(role: string): string {
+  if (role === "admin" || role === "owner") return "Org admin";
+  if (role === "auditor") return "Auditor";
+  return "Member";
 }
+
+/** @deprecated use orgRoleLabel */
+export const orgRoleLabelZh = orgRoleLabel;
 
 /** One-line help under role select (product copy). */
-export function orgRoleHelpZh(role: string): string {
+export function orgRoleHelp(role: string): string {
   if (role === "admin" || role === "owner") {
-    return "公司管家人：可管账号、建队、改企业设置。";
+    return "Company admin: manage accounts, create teams, change enterprise settings.";
   }
   if (role === "auditor") {
-    return "只看不改：可查全公司审计/用量，不能改账号或配置。";
+    return "Read-only: can view company-wide audit and usage; cannot change accounts or config.";
   }
-  return "普通同事：先入企业账号，再在「团队」里入队。";
+  return "Colleague: has an org account; join a team from Team.";
 }
 
-export function orgRolesLabelZh(roles: readonly string[] | undefined): string {
-  if (!roles?.length) return "员工";
-  return roles.map(orgRoleLabelZh).join(" · ");
+/** @deprecated use orgRoleHelp */
+export const orgRoleHelpZh = orgRoleHelp;
+
+export function orgRolesLabel(roles: readonly string[] | undefined): string {
+  if (!roles?.length) return "Member";
+  return roles.map(orgRoleLabel).join(" · ");
 }
 
-/** Account lifecycle shown on people list (replaces 本团队/组织全员 dual mental model). */
+/** @deprecated use orgRolesLabel */
+export const orgRolesLabelZh = orgRolesLabel;
+
+/** Account lifecycle shown on people list. */
 export type AccountLifecycle = "pending" | "active" | "deactivated";
 
-export function accountStatusLabelZh(status: string | undefined): string {
-  if (status === "pending") return "未激活";
-  if (status === "deactivated") return "已停用";
-  if (status === "已禁用") return "已禁用";
-  return "已启用";
+export function accountStatusLabel(status: string | undefined): string {
+  if (status === "pending" || status === "未激活") return "Pending";
+  if (status === "deactivated" || status === "已停用") return "Deactivated";
+  if (status === "已禁用" || status === "Disabled") return "Disabled";
+  if (status === "Active" || status === "已启用" || status === "正常") return "Active";
+  if (status === "Pending" || status === "Deactivated") return status;
+  return "Active";
 }
 
+/** @deprecated use accountStatusLabel */
+export const accountStatusLabelZh = accountStatusLabel;
+
 export function accountStatusTone(status: string | undefined): "ok" | "warn" | "muted" {
+  const label = accountStatusLabel(status);
+  if (label === "Pending") return "warn";
+  if (label === "Deactivated" || label === "Disabled") return "muted";
   if (status === "pending") return "warn";
   if (status === "deactivated" || status === "已禁用") return "muted";
   return "ok";
 }
 
-/** Sentinel for org-admin / auditor「全公司」view (not a real team id). */
+/** Sentinel for org-admin / auditor company-wide view (not a real team id). */
 export const ALL_TEAMS_ID = "__all__";
 
 export function isAllTeamsView(teamId?: string | null): boolean {
@@ -107,7 +130,7 @@ export function isAllTeamsView(teamId?: string | null): boolean {
 /**
  * Pick active team id: prefer stored/url if still in list, else first team.
  * Product rule: after ensureDefaultTeam, list is never empty for an authed member.
- * `preferredId === ALL_TEAMS_ID` is preserved for elevated「全公司」view.
+ * `preferredId === ALL_TEAMS_ID` is preserved for elevated company-wide view.
  */
 export function resolveActiveTeamId(
   teams: ReadonlyArray<{ id: string }>,
@@ -123,8 +146,7 @@ export function resolveActiveTeamId(
 
 /**
  * Resolve a **real** team id for current-team membership UI (`/team`).
- * Never returns `ALL_TEAMS_ID` — that sentinel is not a team resource and
- * `GET /api/teams/__all__/members` is invalid (403).
+ * Never returns `ALL_TEAMS_ID`.
  */
 export function resolveMembershipTeamId(
   teams: ReadonlyArray<{ id: string }>,
@@ -138,10 +160,9 @@ export function resolveMembershipTeamId(
 }
 
 /**
- * Single primary「团队」nav target:
- * - 全公司 → 团队列表（建队 / 点进各队）
- * - 具体队 → 本队成员
- * Directory stays at `/org/teams` but is not a separate sidebar item.
+ * Single primary Team nav target:
+ * - Company-wide → team directory
+ * - Concrete team → membership page
  */
 export function teamNavTarget(activeTeamId: string | undefined | null, teams: ReadonlyArray<{ id: string }>): string {
   if (isAllTeamsView(activeTeamId)) {
@@ -153,7 +174,7 @@ export function teamNavTarget(activeTeamId: string | undefined | null, teams: Re
   return "/team";
 }
 
-/** Short id snippet for switcher / manage header (OOMOL-style). */
+/** Short id snippet for switcher / manage header. */
 export function formatTeamIdSnippet(id: string): string {
   if (id.length <= 16) return id;
   return `${id.slice(0, 8)}…${id.slice(-6)}`;

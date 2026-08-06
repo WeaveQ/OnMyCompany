@@ -364,11 +364,15 @@ export function memberCanLogin(member: Pick<MemberRecord, "status"> | { status?:
   return s === "active" || s === "pending";
 }
 
-export function accountStatusLabelZh(status: MemberStatus): string {
-  if (status === "pending") return "未激活";
-  if (status === "deactivated") return "已停用";
-  return "已启用";
+/** English display label for account lifecycle (API `statusLabel`). Locales map separately in the web app. */
+export function accountStatusLabel(status: MemberStatus): string {
+  if (status === "pending") return "Pending";
+  if (status === "deactivated") return "Deactivated";
+  return "Active";
 }
+
+/** @deprecated use accountStatusLabel */
+export const accountStatusLabelZh: (status: MemberStatus) => string = accountStatusLabel;
 
 function normalizeMemberRecord(
   raw: MemberRecord | (Omit<MemberRecord, "status"> & { status?: MemberStatus }),

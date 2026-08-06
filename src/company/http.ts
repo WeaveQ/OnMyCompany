@@ -5,7 +5,7 @@ import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import {
   CompanyAuthError,
   CompanyAuthStore,
-  accountStatusLabelZh,
+  accountStatusLabel,
   memberIsOrgAdmin,
   memberStatus,
 } from "./auth/store.ts";
@@ -102,7 +102,7 @@ export function publicMember(member: MemberRecord): PublicMemberView {
     displayName: member.displayName,
     roles: [...member.roles],
     status,
-    statusLabel: accountStatusLabelZh(status),
+    statusLabel: accountStatusLabel(status),
   };
   if (member.activatedAt) view.activatedAt = member.activatedAt;
   if (member.deactivatedAt) view.deactivatedAt = member.deactivatedAt;

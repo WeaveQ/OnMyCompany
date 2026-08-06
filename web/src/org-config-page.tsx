@@ -523,7 +523,7 @@ export function OrgConfigPage(): ReactNode {
               </div>
             </div>
             <p className="console-row-meta" style={{ marginTop: 12 }}>
-              人员与权限：<Link to="/team">团队 · 成员状态（未激活 / 已启用 / 已停用）</Link>
+              People & access: <Link to="/team">Team · account status (Pending / Active / Deactivated)</Link>
               {" · "}
               外部账号：<Link to="/connections">应用连接</Link>
             </p>

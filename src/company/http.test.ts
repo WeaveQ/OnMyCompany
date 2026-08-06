@@ -21,7 +21,7 @@ describe("company http helpers", () => {
       displayName: "A",
       roles: ["admin"],
       status: "active",
-      statusLabel: "已启用",
+      statusLabel: "Active",
     });
   });
 

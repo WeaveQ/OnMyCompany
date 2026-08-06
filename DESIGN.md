@@ -2,7 +2,7 @@
 spec: stitch-design-md/v-alpha
 product: OnMyCompany
 platform: web-console
-authority: draft-for-review
+authority: active
 maintenance: manual
 last-reviewed: 2026-08-06
 # Preview (OMA-style, does NOT change product CSS):
@@ -69,6 +69,12 @@ colors:
   dark-on-primary: "#111111"
   dark-brand: "#7c9dff"
   dark-sidebar: "#1b1b1b"
+  dark-success: "#068850"
+  dark-warning: "#da9f00"
+  dark-destructive: "#df3422"
+  dark-info: "#4069fd"
+  info: "#3b63fb"
+  reward: "#fc7d00"
 
 typography:
   font-sans: "SF Pro Text, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, Helvetica, Arial, sans-serif"
@@ -204,7 +210,7 @@ components:
 # OnMyCompany Console — DESIGN.md
 
 > Visual contract for AI agents and humans on the **OnMyCompany 管理台** (enterprise control plane).  
-> Status: **draft for review** — open the OMA-style preview first; **do not treat this as a mandate to restyle the app yet**.
+> Status: **active** — product CSS should follow these tokens; preview remains the visual catalog.
 >
 > | What                   | Where                                                            |
 > | ---------------------- | ---------------------------------------------------------------- |
@@ -249,8 +255,8 @@ Scanned [VoltAgent/awesome-design-md](https://github.com/VoltAgent/awesome-desig
 | Border        | `--border` / `--input`       | `#e9e9e9`     | Hairlines, inputs                                    |
 | Brand         | `--brand` / `--ring`         | **`#7c9dff`** | Focus ring, charts, brand mark — **not** default CTA |
 | Sidebar       | `--sidebar`                  | `#f8f8f8`     | Left rail                                            |
-| Success       | `--success`                  | `#05834e`     | 已启用, healthy                                      |
-| Warning       | `--warning`                  | `#fc7d00`     | 未激活, caution                                      |
+| Success       | `--success`                  | `#05834e`     | Active / healthy                                     |
+| Warning       | `--warning` / `--reward`     | `#fc7d00`     | Pending / caution                                    |
 | Destructive   | `--destructive`              | `#d73220`     | Delete, errors                                       |
 | Info          | `--info`                     | `#3b63fb`     | Informational                                        |
 
@@ -264,6 +270,10 @@ Scanned [VoltAgent/awesome-design-md](https://github.com/VoltAgent/awesome-desig
 | Ink / primary   | `--foreground` / `--primary` | `#ebebeb`             |
 | Border / accent | `--border` / `--accent`      | `#393939`             |
 | Brand           | `--brand`                    | `#7c9dff` (unchanged) |
+| Success         | `--success`                  | `#068850`             |
+| Warning         | `--warning`                  | `#da9f00`             |
+| Destructive     | `--destructive`              | `#df3422`             |
+| Info            | `--info`                     | `#4069fd`             |
 
 ### Accent scarcity (Linear rule, adapted)
 
