@@ -19,8 +19,9 @@
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--card);
-  color: var(--foreground);
+  color: var(--muted-foreground);
   font-size: 13px;
+  font-weight: 520;
   line-height: 1;
   cursor: pointer;
   transition:
@@ -39,12 +40,14 @@
   cursor: not-allowed;
 }
 
+/* Active filter chip: monochrome ink (Cal/Vercel CTA language), not brand blue */
 .console-chip[data-state="on"],
 .console-chip.is-active {
   border-color: var(--primary);
   background: var(--primary);
   color: var(--primary-foreground);
   box-shadow: none;
+  font-weight: 600;
 }
 
 .console-chip-count {
@@ -424,10 +427,11 @@ button.connections-chip.console-chip,
 /* ── Surface cards ──────────────────────────────────────────────────── */
 .console-card {
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-xl, 12px);
   background: var(--card);
   color: var(--card-foreground);
   overflow: hidden;
+  box-shadow: var(--console-shadow-sm);
 }
 
 .console-card-header {
@@ -1276,21 +1280,27 @@ button.connections-chip.console-chip,
 }
 
 .team-status-pill.is-warn {
-  color: color-mix(in oklab, #b45309 88%, var(--foreground));
-  background: color-mix(in oklab, #f59e0b 16%, transparent);
+  color: color-mix(in oklab, var(--warning) 72%, var(--foreground));
+  background: color-mix(in oklab, var(--warning) 16%, transparent);
 }
 
 .team-status-pill.is-ok {
-  background: color-mix(in oklab, var(--success, #10b981) 14%, var(--muted));
-  color: var(--success, #047857);
+  background: color-mix(in oklab, var(--success) 14%, var(--muted));
+  color: var(--success);
 }
 
 .team-status-pill.is-muted {
   color: var(--muted-foreground);
+  background: var(--muted);
+}
+
+.team-status-pill.is-danger {
+  color: var(--destructive);
+  background: color-mix(in oklab, var(--destructive) 12%, transparent);
 }
 
 .team-status-ok {
-  color: var(--success, #047857);
+  color: var(--success);
 }
 
 .team-role-menu {
@@ -1628,7 +1638,7 @@ button.connections-chip.console-chip,
 }
 
 .metering-kpi.is-ok .metering-kpi-value {
-  color: var(--success, #047857);
+  color: var(--success);
 }
 
 .metering-kpi.is-bad .metering-kpi-value {
@@ -1867,8 +1877,8 @@ button.connections-chip.console-chip,
 }
 
 .metering-status.is-ok {
-  background: color-mix(in oklab, var(--success, #10b981) 14%, var(--muted));
-  color: var(--success, #047857);
+  background: color-mix(in oklab, var(--success) 14%, var(--muted));
+  color: var(--success);
 }
 
 .metering-status.is-bad {
@@ -1978,8 +1988,8 @@ button.connections-chip.console-chip,
 }
 
 .overview-cap-badge.is-ok {
-  background: color-mix(in oklab, var(--success, #10b981) 16%, transparent);
-  color: var(--success, #047857);
+  background: color-mix(in oklab, var(--success) 16%, transparent);
+  color: var(--success);
 }
 
 .overview-cap-label {
@@ -2056,9 +2066,10 @@ button.connections-chip.console-chip,
   gap: 2px;
   margin: 0;
   padding: 3px;
-  border-radius: 10px;
+  border-radius: calc(var(--radius) * 1.25);
   background: color-mix(in oklab, var(--muted) 80%, transparent);
   width: fit-content;
+  border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
 }
 
 .team-people-tab {
@@ -2112,7 +2123,7 @@ button.connections-chip.console-chip,
   margin: 8px 0 0;
   font-size: 14px;
   line-height: 1.55;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   max-width: 60ch; /* readability only; page still full width */
 }
 .org-config-card {
@@ -2129,7 +2140,7 @@ button.connections-chip.console-chip,
   margin: 6px 0 0;
   font-size: 13px;
   line-height: 1.5;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   max-width: 72ch;
 }
 .org-config-card-head {
@@ -2186,7 +2197,7 @@ button.connections-chip.console-chip,
 }
 .org-config-stat-label {
   font-size: 12px;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
 }
 .org-config-stat-value {
   font-size: 22px;
@@ -2213,8 +2224,8 @@ button.connections-chip.console-chip,
   width: 100%;
   height: 36px;
   border-radius: 8px;
-  border: 1px solid var(--border, #e5e7eb);
-  background: var(--background, #fff);
+  border: 1px solid var(--border);
+  background: var(--background);
   padding: 0 10px;
   font-size: 14px;
   box-sizing: border-box;
@@ -2230,7 +2241,7 @@ button.connections-chip.console-chip,
   margin-top: 12px;
   border: 0;
   background: transparent;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   font-size: 12px;
   text-decoration: underline;
   cursor: pointer;
@@ -2248,13 +2259,13 @@ button.connections-chip.console-chip,
   line-height: 1.45;
   padding: 12px;
   border-radius: 8px;
-  border: 1px solid var(--border, #e5e7eb);
-  background: var(--muted, #f9fafb);
+  border: 1px solid var(--border);
+  background: var(--muted);
   resize: vertical;
 }
 .org-config-empty {
   font-size: 13px;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
   padding: 10px 0;
   line-height: 1.5;
 }
@@ -2272,7 +2283,7 @@ button.connections-chip.console-chip,
   font-size: 12px;
   font-weight: 600;
   margin-bottom: 8px;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
 }
 .org-config-chip-list {
   list-style: none;
@@ -2291,7 +2302,7 @@ button.connections-chip.console-chip,
 .org-config-toast {
   margin: 0;
   font-size: 13px;
-  color: var(--foreground, #111);
+  color: var(--foreground);
 }
 .org-config-page .mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -2315,16 +2326,18 @@ button.connections-chip.console-chip,
 }
 .page-hero-title {
   margin: 0;
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 650;
   letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--foreground);
 }
 .page-hero-lead {
   margin: 0;
   max-width: 60ch;
   font-size: 14px;
-  line-height: 1.55;
-  color: var(--muted-foreground, #6b7280);
+  line-height: 1.5;
+  color: var(--muted-foreground);
 }
 
 /* Shared list footer: count + load more (runs / audit) */
@@ -2359,15 +2372,17 @@ button.connections-chip.console-chip,
 }
 .console-page-header h1 {
   margin: 0;
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 650;
   letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--foreground);
 }
 .console-page-desc {
   margin: 6px 0 0;
   font-size: 14px;
-  line-height: 1.55;
-  color: var(--muted-foreground, #6b7280);
+  line-height: 1.5;
+  color: var(--muted-foreground);
   max-width: 60ch;
 }
 .console-page-actions {
@@ -2385,7 +2400,7 @@ button.connections-chip.console-chip,
 .page-toast {
   margin: 0;
   font-size: 13px;
-  color: var(--foreground, #111);
+  color: var(--foreground);
 }
 
 /* Shared member login */
@@ -2404,7 +2419,7 @@ button.connections-chip.console-chip,
   margin: 0;
   font-size: 13px;
   line-height: 1.5;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
 }
 .member-login-fields {
   display: grid;
@@ -2417,9 +2432,9 @@ button.connections-chip.console-chip,
   overflow: hidden;
 }
 .skills-list-card {
-  border: 1px solid var(--border, #e5e7eb);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: var(--card, #fff);
+  background: var(--card);
 }
 .skills-row {
   display: flex;
@@ -2462,8 +2477,8 @@ button.connections-chip.console-chip,
   font-size: 11px;
   padding: 1px 8px;
   border-radius: 999px;
-  background: #ecfdf5;
-  color: #047857;
+  background: color-mix(in oklab, var(--success) 14%, var(--muted));
+  color: var(--success);
 }
 .skills-row-actions {
   display: flex;
@@ -2494,10 +2509,10 @@ button.connections-chip.console-chip,
   gap: 12px;
   flex-wrap: wrap;
   font-size: 13px;
-  color: var(--muted-foreground, #6b7280);
+  color: var(--muted-foreground);
 }
 .overview-org-deny {
-  color: var(--destructive, #b91c1c);
+  color: var(--destructive);
 }
 .overview-org-actions {
   display: flex;

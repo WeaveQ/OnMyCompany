@@ -1,37 +1,56 @@
 # Design system — OnMyCompany
 
-OMA 同款体例：`DESIGN.md`（契约）+ `preview.html`（可视目录）。**预览 CSS 独立**，不改 `web/src/styles/*` 产品样式。
+OMA-style layout: `DESIGN.md` (contract) + `preview.html` (visual catalog).
+**Preview CSS is isolated** and does not change `web/src/styles/*`.
 
-## 打开预览
+Source language for product UI is **English**; Chinese lives only in `web/src/locales/zh-*.json`.
+
+## Open previews
 
 ```bash
 open docs/design/preview.html
-# 或
 open docs/design/preview-dark.html
 ```
 
-浏览器直接打开即可（本地 `file://`）。
+## Files
 
-## 文件
+| File                                                               | Role                          |
+| ------------------------------------------------------------------ | ----------------------------- |
+| [`../../DESIGN.md`](../../DESIGN.md)                               | Authoritative visual contract |
+| [`preview.html`](./preview.html)                                   | Light catalog                 |
+| [`preview-dark.html`](./preview-dark.html)                         | Dark catalog (same sections)  |
+| [`preview.css`](./preview.css)                                     | Preview-only styles           |
+| [`tokens-snapshot.json`](./tokens-snapshot.json)                   | Token snapshot                |
+| [`../../web/src/styles/theme.css`](../../web/src/styles/theme.css) | Implementation SoT            |
 
-| 文件                                                                                                   | 作用                                              |
-| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
-| [`../../DESIGN.md`](../../DESIGN.md)                                                                   | 权威视觉契约（Agent + 人）                        |
-| [`preview.html`](./preview.html)                                                                       | Light 预览（对齐 OMA `docs/design/preview.html`） |
-| [`preview-dark.html`](./preview-dark.html)                                                             | Dark 预览                                         |
-| [`preview.css`](./preview.css)                                                                         | **仅预览**用样式，不进应用包                      |
-| [`tokens-snapshot.json`](./tokens-snapshot.json)                                                       | token 快照（与 org config 同源）                  |
-| [`../../data/org/default/config/design/tokens.json`](../../data/org/default/config/design/tokens.json) | 后台 org config 副本                              |
-| [`../../web/src/styles/theme.css`](../../web/src/styles/theme.css)                                     | 产品实现 SoT                                      |
+## Checks (OMA-inspired)
 
-## 选型（awesome-design-md）
+```bash
+npm run design:sync       # theme.css → tokens.json + tokens.generated.css
+npm run check:design      # full gate (theme SoT, tokens, preview, no product hex)
+npm run check:i18n:cjk    # no new hard-coded CJK in web/src
+npm run check:pr-english  # PR title/body/commits English (self-test in npm run check)
+npm run check             # typecheck + tests + design + cjk
+```
 
-1. **Cal.com** — 白底 + 近黑 CTA + 8px 控件
-2. **Vercel** — 灰阶 / 轻 elevation（不要营销 pill / mesh）
-3. **Linear** — 暗色表面阶梯 + 强调色克制；brand `#7c9dff` 只做 ring
+After editing `web/src/styles/theme.css`:
 
-对照桌面端：OnMyAgent 的 `onmyagent/docs/design/preview.html` 与根目录 `onmyagent/DESIGN.md`。
+```bash
+npm run design:sync && npm run check:design
+```
 
-## 约束
+Regenerate CJK baseline after intentional reductions:
 
-见 [`web/PRODUCT.md`](../../web/PRODUCT.md)：企业管控台，不是聊天工作台 / 营销站。改视觉先改 `DESIGN.md` + 预览，再动产品 CSS。
+```bash
+node scripts/checks/check-i18n-cjk.mjs --write
+```
+
+## Reference ranking
+
+1. **Cal.com** — light SaaS + black CTA + 8px controls
+2. **Vercel** — monochrome ladder + soft elevation
+3. **Linear** — dark surfaces + scarce accent (`#7c9dff` ring)
+
+## Product constraints
+
+See [`web/PRODUCT.md`](../../web/PRODUCT.md): enterprise control plane, not chat workbench / marketing site.

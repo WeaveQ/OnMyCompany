@@ -8,7 +8,7 @@ import { runsToCsv, runsToJsonl, summarizeUsage } from "./audit/export.ts";
 import { sendOtpEmail } from "./auth/mail.ts";
 import {
   CompanyAuthStore,
-  accountStatusLabelZh,
+  accountStatusLabel,
   memberCanLogin,
   memberIsOrgAdmin,
   memberStatus,
@@ -963,8 +963,8 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         const m = await authStore.findMemberById(row.memberId);
         if (!m) continue;
         const account = memberStatus(m);
-        // Prefer account lifecycle for UI (未激活/已启用/已停用); membership disabled is rare.
-        const statusLabel = row.status !== "active" ? "已禁用" : accountStatusLabelZh(account);
+        // Prefer account lifecycle for UI (Pending/Active/Deactivated); membership disabled is rare.
+        const statusLabel = row.status !== "active" ? "Disabled" : accountStatusLabel(account);
         items.push({
           ...publicMember(m),
           teamRole: row.role,

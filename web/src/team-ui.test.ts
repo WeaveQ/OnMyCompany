@@ -3,17 +3,17 @@ import { CONNECTION_STATUS_LABELS } from "./connections-page";
 import { OVERVIEW_SECTION_IDS } from "./overview-page";
 import {
   ALL_TEAMS_ID,
-  accountStatusLabelZh,
+  accountStatusLabel,
   accountStatusTone,
   canSubmitCreateTeam,
   formatTeamIdSnippet,
   isAllTeamsView,
   isValidTeamName,
-  orgRoleHelpZh,
-  orgRoleLabelZh,
+  orgRoleHelp,
+  orgRoleLabel,
   resolveActiveTeamId,
   resolveMembershipTeamId,
-  roleLabelZh,
+  roleLabel,
   TEAM_TABLE_COLUMNS,
   teamNavTarget,
   teamTableColumnLabels,
@@ -37,34 +37,34 @@ describe("team name validation (create modal)", () => {
 });
 
 describe("team manage table columns", () => {
-  it("exposes membership columns without connection ACL", () => {
-    expect(teamTableColumnLabels("zh")).toEqual(["用户", "团队角色", "账号状态", "操作"]);
+  it("exposes membership columns without connection ACL (English source)", () => {
+    expect(teamTableColumnLabels("en")).toEqual(["User", "Team role", "Account status", "Actions"]);
     expect(TEAM_TABLE_COLUMNS.map((c) => c.id)).toEqual(["user", "role", "status", "actions"]);
   });
 });
 
-describe("role badges (zh)", () => {
+describe("role badges (English)", () => {
   it("labels enterprise and team roles", () => {
-    expect(orgRoleLabelZh("admin")).toBe("企业管理员");
-    expect(orgRoleLabelZh("auditor")).toBe("企业审计");
-    expect(orgRoleLabelZh("member")).toBe("员工");
-    expect(roleLabelZh("creator")).toBe("团队所有者");
-    expect(roleLabelZh("admin")).toBe("团队管理员");
-    expect(roleLabelZh("member")).toBe("团队成员");
+    expect(orgRoleLabel("admin")).toBe("Org admin");
+    expect(orgRoleLabel("auditor")).toBe("Auditor");
+    expect(orgRoleLabel("member")).toBe("Member");
+    expect(roleLabel("creator")).toBe("Owner");
+    expect(roleLabel("admin")).toBe("Team admin");
+    expect(roleLabel("member")).toBe("Member");
   });
 
   it("explains enterprise roles in plain language", () => {
-    expect(orgRoleHelpZh("auditor")).toMatch(/只看不改|审计/);
-    expect(orgRoleHelpZh("admin")).toMatch(/管账号|企业设置/);
-    expect(orgRoleHelpZh("member")).toMatch(/普通|入队/);
+    expect(orgRoleHelp("auditor")).toMatch(/Read-only|audit/i);
+    expect(orgRoleHelp("admin")).toMatch(/admin|accounts|settings/i);
+    expect(orgRoleHelp("member")).toMatch(/Colleague|team/i);
   });
 });
 
 describe("account lifecycle labels", () => {
-  it("maps pending/active/deactivated to zh labels", () => {
-    expect(accountStatusLabelZh("pending")).toBe("未激活");
-    expect(accountStatusLabelZh("active")).toBe("已启用");
-    expect(accountStatusLabelZh("deactivated")).toBe("已停用");
+  it("maps pending/active/deactivated to English labels", () => {
+    expect(accountStatusLabel("pending")).toBe("Pending");
+    expect(accountStatusLabel("active")).toBe("Active");
+    expect(accountStatusLabel("deactivated")).toBe("Deactivated");
     expect(accountStatusTone("pending")).toBe("warn");
     expect(accountStatusTone("active")).toBe("ok");
     expect(accountStatusTone("deactivated")).toBe("muted");
@@ -97,7 +97,7 @@ describe("console IA paths", () => {
     expect(getPrimaryNavPaths()).not.toContain("/org/teams");
   });
 
-  it("secondary sidebar includes tools without standalone 操作 nav", () => {
+  it("secondary sidebar includes tools without standalone actions nav", () => {
     const more = getMoreNavPaths();
     expect(more).toContain("/skills");
     expect(more).not.toContain("/actions");
@@ -119,7 +119,7 @@ describe("console IA paths", () => {
     expect(resolveMembershipTeamId([], ALL_TEAMS_ID)).toBeUndefined();
   });
 
-  it("teamNavTarget: 全公司 → directory; concrete team → membership", () => {
+  it("teamNavTarget: company-wide → directory; concrete team → membership", () => {
     expect(teamNavTarget(ALL_TEAMS_ID, [{ id: "sales" }])).toBe("/org/teams");
     expect(teamNavTarget(ALL_TEAMS_ID, [])).toBe("/org/teams");
     expect(teamNavTarget("sales", [{ id: "sales" }])).toBe("/team?team=sales");
@@ -132,7 +132,7 @@ describe("overview + connections structural markers", () => {
     expect([...OVERVIEW_SECTION_IDS]).toEqual(["observability", "capability", "team-usage", "personal-usage"]);
   });
 
-  it("connections status chips match product labels", () => {
-    expect([...CONNECTION_STATUS_LABELS]).toEqual(["全部", "已配置", "需要处理", "可直接使用"]);
+  it("connections status chips match product labels (English source)", () => {
+    expect([...CONNECTION_STATUS_LABELS]).toEqual(["All", "Configured", "Needs attention", "Ready to use"]);
   });
 });

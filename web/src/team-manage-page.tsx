@@ -1,7 +1,7 @@
 import type { AccountLifecycle, TeamRecord } from "./team-ui";
 import type { ReactNode } from "react";
 
-import { Check, ChevronsUpDown, Copy, Pencil, Plus, Trash2, Users } from "lucide-react";
+import { Check, ChevronDown, ChevronsUpDown, Copy, Pencil, Plus, Trash2, Users } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { ApiError, apiDelete, apiGet, apiPost, apiPut } from "./api";
@@ -18,14 +18,14 @@ import {
 import { ConsoleModal, InlineError } from "./shared-ui";
 import {
   ALL_TEAMS_ID,
-  accountStatusLabelZh,
+  accountStatusLabel,
   accountStatusTone,
   canSubmitCreateTeam,
   formatTeamIdSnippet,
   isAllTeamsView,
   isValidTeamName,
   resolveMembershipTeamId,
-  roleLabelZh,
+  roleLabel,
   TEAM_ASSIGNABLE_ROLES,
 } from "./team-ui";
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,7 @@ interface OrgMemberRow {
   statusLabel?: string;
 }
 
-/** Team membership row (current team only — org lifecycle lives on 企业账号). */
+/** Team membership row (current team only — org lifecycle lives on Accounts). */
 interface PeopleRow {
   id: string;
   email: string;
@@ -70,10 +70,10 @@ interface PeopleRow {
 type PeopleFilter = "all" | "pending" | "active" | "deactivated";
 
 function normalizeAccountStatus(raw?: string): AccountLifecycle | string {
-  if (raw === "pending" || raw === "未激活") return "pending";
-  if (raw === "deactivated" || raw === "已停用") return "deactivated";
-  if (raw === "active" || raw === "已启用" || raw === "正常") return "active";
-  if (raw === "已禁用") return "deactivated";
+  if (raw === "pending" || raw === "Pending" || raw === "未激活") return "pending";
+  if (raw === "deactivated" || raw === "Deactivated") return "deactivated";
+  if (raw === "active" || raw === "Active" || raw === "Active") return "active";
+  if (raw === "Disabled") return "deactivated";
   return "active";
 }
 
@@ -192,7 +192,7 @@ export function TeamManagePage(): ReactNode {
                   email: me.email || "",
                   displayName: me.displayName || me.email || "",
                   teamRole: "creator",
-                  status: "已启用",
+                  status: "Active",
                   isCreator: true,
                 },
               ]
@@ -201,7 +201,7 @@ export function TeamManagePage(): ReactNode {
         return;
       }
 
-      // Keep 全公司 in the switcher if selected; only rewrite a non-sentinel active id.
+      // Keep Company-wide in the switcher if selected; only rewrite a non-sentinel active id.
       if (!isAllTeamsView(getActiveTeamId()) && getActiveTeamId() !== activeId) {
         persistActiveTeamId(activeId);
       }
@@ -225,7 +225,7 @@ export function TeamManagePage(): ReactNode {
             email: me.email || "",
             displayName: me.displayName || me.email || "",
             teamRole: "creator",
-            status: "已启用",
+            status: "Active",
             isCreator: true,
           },
         ]);
@@ -289,10 +289,10 @@ export function TeamManagePage(): ReactNode {
       setEmail("");
       setAddDisplayName("");
       setAddOpen(false);
-      setMessage("已加入本队。企业账号启停请到「企业账号」。");
+      setMessage("Added to this team. Enable/disable org accounts under Accounts.");
       await refresh();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "加入本队失败");
+      setError(err instanceof ApiError ? err.message : "Could not add to this team");
     }
   }
 
@@ -305,11 +305,11 @@ export function TeamManagePage(): ReactNode {
         displayName: row.displayName,
         accountStatus,
         statusLabel:
-          row.status === "已禁用"
-            ? "已禁用"
-            : row.status === "未激活" || row.status === "已启用" || row.status === "已停用"
+          row.status === "Disabled"
+            ? "Disabled"
+            : row.status === "Pending" || row.status === "Active" || row.status === "Deactivated"
               ? row.status
-              : accountStatusLabelZh(accountStatus),
+              : accountStatusLabel(accountStatus),
         teamRole: row.teamRole,
         inTeam: true,
         isCreator: row.isCreator || row.teamRole === "creator",
@@ -389,12 +389,14 @@ export function TeamManagePage(): ReactNode {
     return (
       <div className="page-stack team-manage-page">
         <header className="page-hero">
-          <h1 className="page-hero-title">团队</h1>
-          <p className="page-hero-lead">管理当前小团队的成员与队内角色。企业账号启停请到企业账号页。</p>
+          <h1 className="page-hero-title">Team</h1>
+          <p className="page-hero-lead">
+            Manage members and roles on this team. Enable/disable accounts under Accounts.
+          </p>
         </header>
         <MemberLoginCard
-          title="登录后管理团队"
-          description="登录企业成员后可管理本队成员。"
+          title="Sign in to manage team"
+          description="Sign in as an enterprise member to manage this team."
           email={loginEmail}
           code={code}
           error={error}
@@ -437,33 +439,33 @@ export function TeamManagePage(): ReactNode {
                   type="button"
                   className="team-id-chip"
                   onClick={() => void copyTeamId()}
-                  title="点击复制完整 ID"
+                  title="Click to copy full ID"
                 >
                   {formatTeamIdSnippet(team.id)}
                 </button>
                 {idTipOpen || copied ? (
                   <span className="team-id-tooltip" role="tooltip">
                     <Copy size={12} />
-                    {copied ? "已复制" : team.id}
+                    {copied ? "Copied" : team.id}
                   </span>
                 ) : null}
               </span>
             ) : null}
-            {team && team.id !== "personal" ? <span className="team-pill">创建者</span> : null}
+            {team && team.id !== "personal" ? <span className="team-pill">Owner</span> : null}
           </div>
 
           <div className="team-manage-actions">
             <Button variant="ghost" size="sm" type="button" className="team-manage-secondary-link" asChild>
               <Link to="/org/teams" data-testid="team-open-directory">
-                全部团队
+                All teams
               </Link>
             </Button>
             <Button variant="ghost" size="sm" type="button" className="team-manage-secondary-link" asChild>
-              <Link to="/connections">应用连接</Link>
+              <Link to="/connections">App connections</Link>
             </Button>
             <Button variant="outline" size="sm" onClick={() => setEditOpen(true)} disabled={locked}>
               <Pencil size={14} />
-              编辑团队
+              Edit team
             </Button>
             <Button
               size="sm"
@@ -472,13 +474,13 @@ export function TeamManagePage(): ReactNode {
               data-testid="team-add-member"
             >
               <Plus size={14} />
-              添加成员
+              Add member
             </Button>
           </div>
         </div>
 
         <div className="team-people-bar">
-          <div className="team-people-tabs" role="tablist" aria-label="人员筛选" data-testid="people-filters">
+          <div className="team-people-tabs" role="tablist" aria-label="People filters" data-testid="people-filters">
             <button
               type="button"
               role="tab"
@@ -487,7 +489,7 @@ export function TeamManagePage(): ReactNode {
               data-testid="filter-all"
               onClick={() => switchFilter("all")}
             >
-              全部
+              All
             </button>
             <button
               type="button"
@@ -497,7 +499,7 @@ export function TeamManagePage(): ReactNode {
               data-testid="filter-pending"
               onClick={() => switchFilter("pending")}
             >
-              {pendingCount ? `未激活 ${pendingCount}` : "未激活"}
+              {pendingCount ? `Pending ${pendingCount}` : "Pending"}
             </button>
             <button
               type="button"
@@ -507,7 +509,7 @@ export function TeamManagePage(): ReactNode {
               data-testid="filter-active"
               onClick={() => switchFilter("active")}
             >
-              已启用
+              Active
             </button>
             <button
               type="button"
@@ -517,20 +519,20 @@ export function TeamManagePage(): ReactNode {
               data-testid="filter-deactivated"
               onClick={() => switchFilter("deactivated")}
             >
-              已停用
+              Deactivated
             </button>
           </div>
           <p className="team-people-hint">
-            本队成员与队内角色。开账号请到 <Link to="/members">企业账号</Link>
-            {" · 建队 / 换队见 "}
-            <Link to="/org/teams">全部团队</Link>
+            Team members and team roles. Create accounts under <Link to="/members">Accounts</Link>
+            {" · create / switch teams in "}
+            <Link to="/org/teams">All teams</Link>
           </p>
         </div>
 
         <div className="team-manage-selection">
           <span>
-            {peopleRows.length ? `${peopleRows.length} 人` : "暂无成员"}
-            {selected.size > 0 ? <span className="team-manage-selection-meta"> · 已选 {selected.size}</span> : null}
+            {peopleRows.length ? `${peopleRows.length} people` : "No members"}
+            {selected.size > 0 ? <span className="team-manage-selection-meta"> · selected {selected.size}</span> : null}
           </span>
         </div>
 
@@ -546,14 +548,14 @@ export function TeamManagePage(): ReactNode {
                       if (selected.size === peopleRows.length) setSelected(new Set());
                       else setSelected(new Set(peopleRows.map((r) => r.id)));
                     }}
-                    aria-label="全选"
+                    aria-label="Select all"
                     disabled={peopleRows.length === 0}
                   />
                 </th>
-                <th>用户</th>
-                <th>团队角色</th>
-                <th>账号状态</th>
-                <th className="team-col-actions">操作</th>
+                <th>User</th>
+                <th>Team role</th>
+                <th>Account status</th>
+                <th className="team-col-actions">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -572,7 +574,7 @@ export function TeamManagePage(): ReactNode {
                         type="checkbox"
                         checked={selected.has(row.id)}
                         onChange={() => toggleSelect(row.id)}
-                        aria-label={`选择 ${row.email}`}
+                        aria-label={`Select ${row.email}`}
                       />
                     </td>
                     <td>
@@ -590,7 +592,7 @@ export function TeamManagePage(): ReactNode {
                     </td>
                     <td>
                       {isCreator ? (
-                        <span className="team-pill">{roleLabelZh(row.teamRole || "creator")}</span>
+                        <span className="team-pill">{roleLabel(row.teamRole || "creator")}</span>
                       ) : (
                         <RoleMenu
                           role={row.teamRole || "member"}
@@ -608,17 +610,17 @@ export function TeamManagePage(): ReactNode {
                           <button
                             type="button"
                             className="team-icon-btn is-danger"
-                            title="移出本队"
-                            aria-label="移出本队"
+                            title="Remove from team"
+                            aria-label="Remove from team"
                             disabled={locked}
                             data-testid={`team-remove-${row.id}`}
                             onClick={() => void removeMember(row.id)}
                           >
                             <Trash2 size={15} />
-                            移出
+                            Remove
                           </button>
                         ) : (
-                          <span className="team-action-locked">团队所有者</span>
+                          <span className="team-action-locked">Owner</span>
                         )}
                       </div>
                     </td>
@@ -630,12 +632,12 @@ export function TeamManagePage(): ReactNode {
           {peopleRows.length === 0 ? (
             <div className="console-empty">
               {loading
-                ? "加载中…"
+                ? "Loading…"
                 : filter === "pending"
-                  ? "本队没有未激活成员"
+                  ? "No pending members on this team"
                   : filter === "deactivated"
-                    ? "本队没有已停用账号"
-                    : "本队暂无成员，从企业账号池添加"}
+                    ? "No deactivated members on this team"
+                    : "No members yet — add from the org account pool"}
             </div>
           ) : null}
         </div>
@@ -643,30 +645,31 @@ export function TeamManagePage(): ReactNode {
 
       {addOpen ? (
         <ConsoleModal
-          title="加入本队"
-          description="优先从企业账号池选择。若邮箱尚无账号，会创建为未激活企业账号并入队。"
+          title="Add to team"
+          description="Prefer the org account pool. If the email has no account, a Pending org account is created and joined."
           onClose={() => setAddOpen(false)}
           footer={
             <>
               <Button variant="outline" onClick={() => setAddOpen(false)}>
-                取消
+                Cancel
               </Button>
               <Button
                 onClick={() => void addTeamMember()}
                 disabled={!email.includes("@") || locked}
                 data-testid="team-add-submit"
               >
-                加入本队
+                Add to team
               </Button>
             </>
           }
         >
           <p className="console-modal-note" data-testid="team-add-hint">
-            <strong>推荐：</strong>在「企业账号」先开账号，再回这里选邮箱入队。企业角色/启停不在本页。
+            <strong>Recommended:</strong> create accounts under Accounts first, then pick an email here to join. Org
+            roles and enable/disable live on Accounts.
           </p>
           {poolCandidates.length > 0 ? (
             <Label className="field">
-              <span>从企业账号池选择</span>
+              <span>Pick from Accounts pool</span>
               <select
                 className="console-modal-select"
                 value=""
@@ -680,7 +683,7 @@ export function TeamManagePage(): ReactNode {
                   }
                 }}
               >
-                <option value="">选择未入本队的账号…</option>
+                <option value="">Select an account not yet on this team…</option>
                 {poolCandidates.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.email}
@@ -691,11 +694,12 @@ export function TeamManagePage(): ReactNode {
             </Label>
           ) : (
             <p className="console-row-meta">
-              池中暂无未入队账号。可去 <Link to="/members">企业账号</Link> 添加，或下方直接填邮箱。
+              No unassigned accounts in the pool. Go to <Link to="/members">Accounts</Link> to add, or enter an email
+              below.
             </p>
           )}
           <Label className="field">
-            <span>邮箱</span>
+            <span>Email</span>
             <Input
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -705,7 +709,7 @@ export function TeamManagePage(): ReactNode {
             />
           </Label>
           <Label className="field">
-            <span>显示名（新账号时可选）</span>
+            <span>Display name (optional for new accounts)</span>
             <Input value={addDisplayName} onChange={(e) => setAddDisplayName(e.target.value)} />
           </Label>
         </ConsoleModal>
@@ -713,29 +717,29 @@ export function TeamManagePage(): ReactNode {
 
       {editOpen ? (
         <ConsoleModal
-          title="编辑团队"
+          title="Edit team"
           onClose={() => setEditOpen(false)}
           footer={
             <>
               <Button variant="outline" onClick={() => setEditOpen(false)}>
-                取消
+                Cancel
               </Button>
               <Button onClick={() => void saveTeam()} disabled={!canSubmitCreateTeam(editName)}>
-                保存
+                Save
               </Button>
             </>
           }
         >
           <Label className="field">
-            <span>团队名称</span>
+            <span>Team name</span>
             <Input value={editName} onChange={(e) => setEditName(e.target.value)} autoFocus />
           </Label>
           {!isValidTeamName(editName) && editName.trim() ? (
-            <p className="console-modal-hint">仅支持英文、数字、点、下划线和中划线（2–64）。</p>
+            <p className="console-modal-hint">English letters, digits, dot, underscore, hyphen only (2–64).</p>
           ) : null}
           <Label className="field">
-            <span>头像 URL</span>
-            <Input value={editAvatar} onChange={(e) => setEditAvatar(e.target.value)} placeholder="可选" />
+            <span>Avatar URL</span>
+            <Input value={editAvatar} onChange={(e) => setEditAvatar(e.target.value)} placeholder="Optional" />
           </Label>
         </ConsoleModal>
       ) : null}
@@ -788,15 +792,15 @@ function PageTeamSwitcher(props: {
         aria-haspopup="menu"
         onClick={() => setOpen((v) => !v)}
       >
-        <TeamAvatar name={active?.name || "团队"} url={active?.avatarUrl} size={36} />
-        <span className="page-team-switcher-name">{active?.name || "选择团队"}</span>
+        <TeamAvatar name={active?.name || "Team"} url={active?.avatarUrl} size={36} />
+        <span className="page-team-switcher-name">{active?.name || "Select team"}</span>
         <ChevronDown size={14} className={open ? "page-team-chevron open" : "page-team-chevron"} />
       </button>
       {open ? (
         <div className="page-team-switcher-popover" role="menu">
-          <div className="team-switcher-label">团队</div>
+          <div className="team-switcher-label">Team</div>
           {props.teams.length === 0 ? (
-            <div className="team-switcher-empty">暂无团队</div>
+            <div className="team-switcher-empty">No teams</div>
           ) : (
             props.teams.map((t) => {
               const isActive = t.id === active?.id;
@@ -815,7 +819,7 @@ function PageTeamSwitcher(props: {
                   <div className="team-switcher-item-text">
                     <div className="page-team-item-title">
                       <span className="team-switcher-name">{t.name}</span>
-                      {isActive ? <span className="team-pill">{roleLabelZh("creator")}</span> : null}
+                      {isActive ? <span className="team-pill">{roleLabel("creator")}</span> : null}
                     </div>
                     <div className="console-row-meta team-switcher-id">{formatTeamIdSnippet(t.id)}</div>
                   </div>
@@ -832,7 +836,7 @@ function PageTeamSwitcher(props: {
               props.onCreate();
             }}
           >
-            <Plus size={14} /> 创建团队
+            <Plus size={14} /> Create team
           </button>
         </div>
       ) : null}
@@ -869,7 +873,7 @@ function RoleMenu(props: { role: string; disabled?: boolean; onChange(role: stri
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        {roleLabelZh(props.role)}
+        {roleLabel(props.role)}
         <ChevronDown size={12} />
       </button>
       {open ? (
@@ -887,7 +891,7 @@ function RoleMenu(props: { role: string; disabled?: boolean; onChange(role: stri
                   if (!active) props.onChange(opt.id);
                 }}
               >
-                <span>{opt.labelZh}</span>
+                <span>{opt.label}</span>
                 {active ? <Check size={14} /> : null}
               </button>
             );
@@ -935,22 +939,22 @@ export function CreateTeamModal(props: {
 
   return (
     <ConsoleModal
-      title="创建团队"
-      description="创建后可邀请成员，并让成员使用团队中已授权的应用连接。"
+      title="Create team"
+      description="After creating, invite members and let them use team-authorized app connections."
       onClose={props.onClose}
       footer={
         <>
           <Button variant="outline" onClick={props.onClose}>
-            取消
+            Cancel
           </Button>
           <Button disabled={loading || !canSubmit} onClick={() => void create()}>
-            创建
+            Create
           </Button>
         </>
       }
     >
       <Label className="field">
-        <span>团队名称</span>
+        <span>Team name</span>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -959,10 +963,10 @@ export function CreateTeamModal(props: {
           aria-invalid={name.trim().length > 0 && !isValidTeamName(name)}
         />
       </Label>
-      <p className="console-modal-hint">仅支持英文、数字、点、下划线和中划线。</p>
+      <p className="console-modal-hint">English letters, digits, dot, underscore, hyphen only.</p>
       <Label className="field">
-        <span>头像 URL</span>
-        <Input value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} placeholder="可选" />
+        <span>Avatar URL</span>
+        <Input value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} placeholder="Optional" />
       </Label>
       {error ? <InlineError message={error} /> : null}
     </ConsoleModal>
@@ -976,7 +980,7 @@ export function CreateTeamModal(props: {
 export function TeamSwitcher(props: {
   teams: TeamRecord[];
   activeTeamId?: string;
-  /** Show「全公司」for org-admin / auditor. */
+  /** Show「Company-wide」for org-admin / auditor. */
   showAllTeams?: boolean;
   onSelect(teamId: string): void;
   onCreate(): void;
@@ -986,7 +990,7 @@ export function TeamSwitcher(props: {
   const rootRef = useRef<HTMLDivElement>(null);
   const isAll = props.activeTeamId === ALL_TEAMS_ID;
   const active = isAll ? undefined : props.teams.find((t) => t.id === props.activeTeamId) || props.teams[0];
-  const triggerName = isAll ? "全公司" : active?.name || "选择团队";
+  const triggerName = isAll ? "Company-wide" : active?.name || "Select team";
 
   useEffect(() => {
     if (!open) return;
@@ -1022,7 +1026,7 @@ export function TeamSwitcher(props: {
 
       {open ? (
         <div className="team-switcher-popover" role="menu">
-          <div className="team-switcher-label">团队</div>
+          <div className="team-switcher-label">Team</div>
           {props.showAllTeams ? (
             <button
               type="button"
@@ -1034,18 +1038,18 @@ export function TeamSwitcher(props: {
                 setOpen(false);
               }}
             >
-              <TeamAvatar name="全公司" size={32} />
+              <TeamAvatar name="Company-wide" size={32} />
               <div className="team-switcher-item-text">
                 <div className="page-team-item-title">
-                  <div className="team-switcher-name">全公司</div>
-                  {isAll ? <span className="team-pill">全部</span> : null}
+                  <div className="team-switcher-name">Company-wide</div>
+                  {isAll ? <span className="team-pill">All</span> : null}
                 </div>
-                <div className="console-row-meta">企业管理员 / 审计视角</div>
+                <div className="console-row-meta">Org admin / auditor view</div>
               </div>
             </button>
           ) : null}
           {props.teams.length === 0 ? (
-            <div className="team-switcher-empty">暂无团队，点下方创建</div>
+            <div className="team-switcher-empty">No teams yet — create one below</div>
           ) : (
             props.teams.map((t) => {
               const isActive = !isAll && t.id === active?.id;
@@ -1064,7 +1068,7 @@ export function TeamSwitcher(props: {
                   <div className="team-switcher-item-text">
                     <div className="page-team-item-title">
                       <div className="team-switcher-name">{t.name}</div>
-                      {isActive ? <span className="team-pill">{roleLabelZh("creator")}</span> : null}
+                      {isActive ? <span className="team-pill">{roleLabel("creator")}</span> : null}
                     </div>
                     <div className="console-row-meta team-switcher-id">{formatTeamIdSnippet(t.id)}</div>
                   </div>
@@ -1082,7 +1086,7 @@ export function TeamSwitcher(props: {
                 props.onCreate();
               }}
             >
-              <Plus size={14} /> 创建团队
+              <Plus size={14} /> Create team
             </button>
             <button
               type="button"
@@ -1092,7 +1096,7 @@ export function TeamSwitcher(props: {
                 props.onManage();
               }}
             >
-              <Users size={14} /> 管理团队
+              <Users size={14} /> Manage team
             </button>
           </div>
         </div>

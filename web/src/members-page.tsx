@@ -17,7 +17,7 @@ import {
 import { ConsoleModal, InlineError } from "./shared-ui";
 import { TeamAvatar } from "./team-manage-page";
 import {
-  accountStatusLabelZh,
+  accountStatusLabel,
   accountStatusTone,
   formatTeamIdSnippet,
   orgRoleHelpZh,
@@ -40,8 +40,8 @@ interface OrgMemberRow {
 const ORG_ROLE_OPTIONS = ["member", "admin", "auditor"] as const;
 
 function normalizeAccountStatus(raw?: string): AccountLifecycle | string {
-  if (raw === "pending" || raw === "未激活") return "pending";
-  if (raw === "deactivated" || raw === "已停用" || raw === "已禁用") return "deactivated";
+  if (raw === "pending" || raw === "Pending") return "pending";
+  if (raw === "deactivated" || raw === "Deactivated" || raw === "已禁用") return "deactivated";
   return "active";
 }
 
@@ -165,7 +165,7 @@ export function MembersPage(): ReactNode {
       setEmail("");
       setDisplayName("");
       setOrgRole("member");
-      setMessage("已添加成员（未激活，对方首次登录后启用）");
+      setMessage("Member added (Pending until first login)");
       await refresh();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "添加失败");
@@ -212,7 +212,7 @@ export function MembersPage(): ReactNode {
     setError(null);
     try {
       await apiPut(`/api/org/members/${id}`, { status: "deactivated" }, memberAuthHeaders());
-      setMessage("已停用");
+      setMessage("Deactivated");
       await refresh();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "停用失败");
@@ -223,7 +223,7 @@ export function MembersPage(): ReactNode {
     setError(null);
     try {
       await apiPut(`/api/org/members/${id}`, { status: "active" }, memberAuthHeaders());
-      setMessage("已启用");
+      setMessage("Active");
       await refresh();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "启用失败");
@@ -292,9 +292,9 @@ export function MembersPage(): ReactNode {
         {(
           [
             ["all", "全部"],
-            ["pending", "未激活"],
-            ["active", "已启用"],
-            ["deactivated", "已停用"],
+            ["pending", "Pending"],
+            ["active", "Active"],
+            ["deactivated", "Deactivated"],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -346,7 +346,7 @@ export function MembersPage(): ReactNode {
                     <span
                       className={`team-status-pill is-${tone === "ok" ? "ok" : tone === "warn" ? "warn" : "muted"}`}
                     >
-                      {row.statusLabel || accountStatusLabelZh(String(st))}
+                      {row.statusLabel || accountStatusLabel(String(st))}
                     </span>
                   </td>
                   <td className="team-col-actions">
@@ -409,7 +409,7 @@ export function MembersPage(): ReactNode {
       {addOpen ? (
         <ConsoleModal
           title="添加企业账号"
-          description="创建企业账号（默认未激活）。入队请到「团队」从账号池选择。"
+          description="创建企业账号（默认Pending）。入队请到「团队」从账号池选择。"
           onClose={() => setAddOpen(false)}
           footer={
             <>
@@ -500,8 +500,8 @@ export function MembersPage(): ReactNode {
               onChange={(e) => setEditStatus(e.target.value)}
               disabled={normalizeAccountStatus(editTarget.status) === "pending"}
             >
-              <option value="active">已启用</option>
-              <option value="deactivated">已停用</option>
+              <option value="active">Active</option>
+              <option value="deactivated">Deactivated</option>
             </select>
           </Label>
         </ConsoleModal>

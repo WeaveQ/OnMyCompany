@@ -16,11 +16,11 @@ interface ConnectionsPageProps {
   onRefresh(): void;
 }
 
-/** Status chips aligned with product reference: 全部 / 已配置 / 需要处理 / 可直接使用 */
+/** Status chips: All / Configured / Needs attention / Ready to use */
 type StatusFilter = "all" | "configured" | "needs_attention" | "ready";
 
 /**
- * Primary + overflow category chips (reference: AI / 效率 / 文档 / 开发者 / 更多).
+ * Primary + overflow category chips (AI / Productivity / Documents / Developer / More).
  * Values match catalog `provider.categories` English tags.
  */
 type CategoryFilter =
@@ -37,29 +37,29 @@ type CategoryFilter =
 const pageSize = 48;
 
 /** Exported for structural tests (status chip labels). */
-export const CONNECTION_STATUS_LABELS = ["全部", "已配置", "需要处理", "可直接使用"] as const;
+export const CONNECTION_STATUS_LABELS = ["All", "Configured", "Needs attention", "Ready to use"] as const;
 
 const statusOptions: Array<{ id: StatusFilter; label: string }> = [
-  { id: "all", label: "全部" },
-  { id: "configured", label: "已配置" },
-  { id: "needs_attention", label: "需要处理" },
-  { id: "ready", label: "可直接使用" },
+  { id: "all", label: "All" },
+  { id: "configured", label: "Configured" },
+  { id: "needs_attention", label: "Needs attention" },
+  { id: "ready", label: "Ready to use" },
 ];
 
 /** Visible primary chips (office-focused order). */
 const primaryCategoryOptions: Array<{ id: CategoryFilter; label: string }> = [
   { id: "AI", label: "AI" },
-  { id: "Productivity", label: "效率" },
-  { id: "Communication", label: "沟通" },
-  { id: "Documents", label: "文档" },
-  { id: "Developer Tools", label: "开发者" },
+  { id: "Productivity", label: "Productivity" },
+  { id: "Communication", label: "Communication" },
+  { id: "Documents", label: "Documents" },
+  { id: "Developer Tools", label: "Developer tools" },
 ];
 
-/** Under「更多」dropdown. */
+/** Under the More dropdown. */
 const moreCategoryOptions: Array<{ id: CategoryFilter; label: string }> = [
-  { id: "Marketing", label: "营销" },
-  { id: "DataStorage", label: "数据与存储" },
-  { id: "Other", label: "其他" },
+  { id: "Marketing", label: "Marketing" },
+  { id: "DataStorage", label: "Data & storage" },
+  { id: "Other", label: "Other" },
 ];
 
 const allCategoryOptions = [...primaryCategoryOptions, ...moreCategoryOptions];
@@ -75,8 +75,8 @@ const rowStyle = {
 } satisfies CSSProperties;
 
 /**
- * 团队的应用连接 — catalog of gateway apps with status + category distinction
- * (product reference: 全部/已配置/需要处理/可直接使用 + AI/效率/…).
+ * Team app connections — catalog of gateway apps with status + category distinction
+ * (status chips + category filters).
  */
 type SortMode = "recommended" | "name";
 
@@ -192,21 +192,21 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
   }
 
   const moreSelected = moreCategoryOptions.some((o) => o.id === categoryFilter);
-  const moreLabel = moreSelected ? (moreCategoryOptions.find((o) => o.id === categoryFilter)?.label ?? "更多") : "更多";
+  const moreLabel = moreSelected ? (moreCategoryOptions.find((o) => o.id === categoryFilter)?.label ?? "More") : "More";
   const totalCount = searched.length;
   const shownCount = visible.length;
 
   return (
     <section className="connections-browser page-stack" data-connections-root>
       <header className="page-hero">
-        <h1 className="page-hero-title">应用连接</h1>
+        <h1 className="page-hero-title">App connections</h1>
         <p className="page-hero-lead">
-          配置公司对外 SaaS 账号（GitHub、飞书等）。密钥只存服务端；Agent 通过 MCP /v1 调用。
+          Configure company SaaS accounts (GitHub, Feishu, and more). Secrets stay server-side; agents call via MCP /v1.
         </p>
       </header>
       <div className="connections-chrome">
         <div className="connections-toolbar">
-          <h2 className="connections-title">服务商列表</h2>
+          <h2 className="connections-title">Providers</h2>
           <div className="connections-toolbar-actions">
             <label className="connections-search">
               <Search className="connections-search-icon" size={15} aria-hidden />
@@ -214,8 +214,8 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
                 className="connections-search-input"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="搜索服务商"
-                aria-label="搜索服务商"
+                placeholder="Search providers"
+                aria-label="Search providers"
               />
             </label>
             <Button
@@ -224,11 +224,15 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
               type="button"
               className="connections-tool-btn"
               onClick={() => setSortMode((mode) => (mode === "recommended" ? "name" : "recommended"))}
-              aria-label={sortMode === "recommended" ? "当前：推荐排序，点击按名称" : "当前：名称排序，点击推荐排序"}
-              title={sortMode === "recommended" ? "推荐排序" : "按名称"}
+              aria-label={
+                sortMode === "recommended"
+                  ? "Recommended sort — click for name sort"
+                  : "Name sort — click for recommended"
+              }
+              title={sortMode === "recommended" ? "Recommended" : "By name"}
             >
               <ArrowUpDown size={14} />
-              <span className="connections-tool-label">{sortMode === "recommended" ? "推荐排序" : "按名称"}</span>
+              <span className="connections-tool-label">{sortMode === "recommended" ? "Recommended" : "By name"}</span>
             </Button>
             <div className="connections-menu-anchor align-end" ref={filterMenuRef}>
               <Button
@@ -237,18 +241,18 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
                 type="button"
                 className="connections-tool-btn"
                 aria-expanded={filterMenuOpen}
-                title="更多筛选"
+                title="More filters"
                 onClick={() => {
                   setFilterMenuOpen((v) => !v);
                   setMoreOpen(false);
                 }}
               >
                 <ListFilter size={14} />
-                <span className="connections-tool-label">更多筛选</span>
+                <span className="connections-tool-label">More filters</span>
               </Button>
               {filterMenuOpen ? (
                 <div className="connections-menu" role="menu">
-                  <div className="connections-menu-label">筛选与工具</div>
+                  <div className="connections-menu-label">Filters & tools</div>
                   <button
                     type="button"
                     role="menuitem"
@@ -258,7 +262,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
                       setFilterMenuOpen(false);
                     }}
                   >
-                    重置全部筛选
+                    Reset filters
                   </button>
                   <button
                     type="button"
@@ -269,7 +273,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
                       setFilterMenuOpen(false);
                     }}
                   >
-                    刷新数据
+                    Refresh
                   </button>
                   <div className="connections-menu-divider" />
                   <Link
@@ -278,7 +282,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
                     className="connections-menu-item"
                     onClick={() => setFilterMenuOpen(false)}
                   >
-                    提供商目录（高级）
+                    Provider catalog (advanced)
                   </Link>
                 </div>
               ) : null}
@@ -293,7 +297,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
               type="single"
               value={statusFilter}
               onValueChange={(value) => (value ? setStatusFilter(value as StatusFilter) : undefined)}
-              aria-label="连接状态"
+              aria-label="Connection status"
             >
               {statusCounts.map((opt) => (
                 <ToggleGroupItem
@@ -319,7 +323,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
                 setCategoryFilter(value as CategoryFilter);
                 setMoreOpen(false);
               }}
-              aria-label="应用分类"
+              aria-label="App category"
               className="connections-chip-group"
             >
               {primaryCategoryOptions.map((opt) => {
@@ -357,7 +361,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
               </button>
               {moreOpen ? (
                 <div className="connections-menu" role="menu">
-                  <div className="connections-menu-label">更多分类</div>
+                  <div className="connections-menu-label">More categories</div>
                   {moreCategoryOptions.map((opt) => {
                     const count = categoryCounts.get(opt.id) ?? 0;
                     const active = categoryFilter === opt.id;
@@ -385,13 +389,13 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
             {filtersActive ? (
               <button type="button" className="connections-reset" onClick={resetFilters}>
                 <X size={13} />
-                重置
+                Reset
               </button>
             ) : null}
           </div>
 
           <div className="connections-result-meta" aria-live="polite">
-            显示 {shownCount}/{totalCount}
+            Showing {shownCount}/{totalCount}
           </div>
         </div>
       </div>
@@ -400,10 +404,10 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
         <div className="console-card connections-list-card">
           <div className="console-empty">
             <div>
-              <p style={{ margin: 0 }}>没有匹配的应用连接</p>
+              <p style={{ margin: 0 }}>No matching app connections</p>
               {filtersActive ? (
                 <Button variant="outline" size="sm" type="button" onClick={resetFilters} style={{ marginTop: 12 }}>
-                  重置筛选
+                  Reset filters
                 </Button>
               ) : null}
             </div>
@@ -421,7 +425,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
           {hasMore ? (
             <div ref={loadMoreRef} className="connections-load-more">
               <Button variant="outline" size="sm" type="button" onClick={loadMore}>
-                显示更多
+                Show more
               </Button>
             </div>
           ) : null}
@@ -436,21 +440,21 @@ function AppConnectionRow(props: { provider: ProviderDefinition; status: Provide
   const locallyAvailable = isProviderLocallyAvailable(props.provider);
   const { status } = props;
 
-  let actionLabel = "连接";
+  let actionLabel = "Connect";
   let badge: { text: string; tone: "ok" | "warn" | "muted" } | null = null;
 
   if (!locallyAvailable) {
-    actionLabel = "详情";
-    badge = { text: "运行时不可用", tone: "muted" };
+    actionLabel = "Details";
+    badge = { text: "Runtime unavailable", tone: "muted" };
   } else if (status.noSetupRequired) {
-    actionLabel = "打开";
-    badge = { text: "可直接使用", tone: "ok" };
+    actionLabel = "Open";
+    badge = { text: "Ready to use", tone: "ok" };
   } else if (status.connected) {
-    actionLabel = "管理";
-    badge = { text: "已配置", tone: "ok" };
+    actionLabel = "Manage";
+    badge = { text: "Configured", tone: "ok" };
   } else if (status.oauthClientRequired) {
-    actionLabel = "配置";
-    badge = { text: "需要处理", tone: "warn" };
+    actionLabel = "Configure";
+    badge = { text: "Needs attention", tone: "warn" };
   }
 
   const categoryLabel = primaryCategoryLabel(props.provider);
@@ -490,8 +494,12 @@ function AppConnectionRow(props: { provider: ProviderDefinition; status: Provide
         </div>
       </Link>
       <div className="console-row-actions">
-        <Link to={actionsTo} className="console-row-action console-row-action-secondary" title="查看该应用的操作并试跑">
-          操作
+        <Link
+          to={actionsTo}
+          className="console-row-action console-row-action-secondary"
+          title="View actions for this app"
+        >
+          Actions
         </Link>
         <Link to={to} className="console-row-action">
           {actionLabel}
@@ -563,7 +571,7 @@ function primaryCategoryLabel(provider: ProviderDefinition): string | undefined 
   for (const opt of allCategoryOptions) {
     if (opt.id !== "Other" && matchCategory(provider, opt.id)) return opt.label;
   }
-  return "其他";
+  return "Other";
 }
 
 function useProgressiveLimit(total: number, resetKey: string): { hasMore: boolean; limit: number; loadMore(): void } {

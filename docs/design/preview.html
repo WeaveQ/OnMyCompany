@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="light">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <title>OnMyCompany DESIGN.md — Light Preview</title>
     <meta
       name="description"
-      content="Visual catalog rendering OnMyCompany DESIGN.md tokens (OMA-style preview). Preview only — does not change app styles."
+      content="OnMyCompany design catalog (light). Same components as the other theme. Preview only."
     />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="./preview.css" />
@@ -16,8 +16,8 @@
         <div>
           <h1>OnMyCompany — Visual Contract Preview</h1>
           <p>
-            对齐 OMA <code>docs/design/preview.html</code> 结构。渲染仓库根 <code>DESIGN.md</code> 与
-            <code>theme.css</code> 语义 token。 <strong>仅预览</strong>，不改管理台页面样式。
+            Light and Dark share the same component catalog (§0–§8). Mirrors OMA <code>docs/design/preview.*</code>.
+            <strong>Preview only</strong> — does not change product CSS.
           </p>
         </div>
         <nav class="pv-nav">
@@ -33,8 +33,8 @@
       <section class="pv-section">
         <h2>0 · Reference ranking</h2>
         <p class="pv-desc">
-          对照 <a href="https://github.com/VoltAgent/awesome-design-md">awesome-design-md</a> + OMA 预览体例。主选
-          <strong>Cal.com</strong>（白底 + 近黑 CTA + 8px 控件）；辅选 Vercel 灰阶、Linear 暗色阶梯与强调色克制。
+          Ranked against <a href="https://github.com/VoltAgent/awesome-design-md">awesome-design-md</a>. Primary:
+          <strong>Cal.com</strong>. Secondary: Vercel grays, Linear dark ladder + scarce accent.
         </p>
         <div class="pv-grid-3">
           <span class="pv-status-pill is-ok">1 · Cal.com</span>
@@ -46,55 +46,66 @@
       <section class="pv-section">
         <h2>1 · Color Palette</h2>
         <p class="pv-desc">
-          语义色来自 <code>web/src/styles/theme.css</code> <code>:root</code>。主按钮是 ink，不是 brand 蓝。
+          Semantic colors from <code>theme.css</code>. Swatches use CSS variables (light/dark switch with
+          <code>data-theme</code>). Primary CTA is ink, not brand blue.
         </p>
         <div class="pv-swatch-grid">
           <div class="pv-swatch">
-            <div class="pv-chip" style="background: #ffffff"></div>
-            <div class="pv-swatch-label"><strong>canvas / background</strong><span>#ffffff</span></div>
+            <div class="pv-chip pv-chip--canvas"></div>
+            <div class="pv-swatch-label"><strong>canvas / background</strong><span class="pv-hex-canvas"></span></div>
           </div>
           <div class="pv-swatch">
-            <div class="pv-chip" style="background: #292929"></div>
-            <div class="pv-swatch-label"><strong>ink / primary CTA</strong><span>#292929</span></div>
+            <div class="pv-chip pv-chip--surface"></div>
+            <div class="pv-swatch-label"><strong>card / surface</strong><span class="pv-hex-surface"></span></div>
           </div>
           <div class="pv-swatch">
-            <div class="pv-chip" style="background: #f4f4f4; border: 1px solid #e9e9e9"></div>
-            <div class="pv-swatch-label"><strong>muted</strong><span>#f4f4f4</span></div>
+            <div class="pv-chip pv-chip--ink"></div>
+            <div class="pv-swatch-label"><strong>ink / primary CTA</strong><span class="pv-hex-ink"></span></div>
           </div>
           <div class="pv-swatch">
-            <div class="pv-chip" style="background: #f8f8f8; border: 1px solid #e9e9e9"></div>
-            <div class="pv-swatch-label"><strong>sidebar</strong><span>#f8f8f8</span></div>
+            <div class="pv-chip pv-chip--muted"></div>
+            <div class="pv-swatch-label"><strong>muted</strong><span class="pv-hex-muted"></span></div>
           </div>
           <div class="pv-swatch">
-            <div class="pv-chip" style="background: #e9e9e9"></div>
-            <div class="pv-swatch-label"><strong>border / hairline</strong><span>#e9e9e9</span></div>
+            <div class="pv-chip pv-chip--sidebar"></div>
+            <div class="pv-swatch-label"><strong>sidebar</strong><span class="pv-hex-sidebar"></span></div>
           </div>
           <div class="pv-swatch">
-            <div class="pv-chip" style="background: #7c9dff"></div>
-            <div class="pv-swatch-label"><strong>brand / ring</strong><span>#7c9dff · focus only</span></div>
+            <div class="pv-chip pv-chip--border"></div>
+            <div class="pv-swatch-label"><strong>border / hairline</strong><span class="pv-hex-border"></span></div>
           </div>
           <div class="pv-swatch">
-            <div class="pv-chip" style="background: #3b63fb"></div>
-            <div class="pv-swatch-label"><strong>info</strong><span>#3b63fb</span></div>
+            <div class="pv-chip pv-chip--accent"></div>
+            <div class="pv-swatch-label"><strong>accent / surface-3</strong><span class="pv-hex-accent"></span></div>
           </div>
           <div class="pv-swatch">
-            <div class="pv-chip" style="background: #05834e"></div>
-            <div class="pv-swatch-label"><strong>success</strong><span>#05834e · 已启用</span></div>
+            <div class="pv-chip pv-chip--brand"></div>
+            <div class="pv-swatch-label"><strong>brand / ring</strong><span class="pv-hex-brand"></span></div>
           </div>
           <div class="pv-swatch">
-            <div class="pv-chip" style="background: #fc7d00"></div>
-            <div class="pv-swatch-label"><strong>warning</strong><span>#fc7d00 · 未激活</span></div>
+            <div class="pv-chip pv-chip--info"></div>
+            <div class="pv-swatch-label"><strong>info</strong><span class="pv-hex-info"></span></div>
           </div>
           <div class="pv-swatch">
-            <div class="pv-chip" style="background: #d73220"></div>
-            <div class="pv-swatch-label"><strong>destructive</strong><span>#d73220</span></div>
+            <div class="pv-chip pv-chip--success"></div>
+            <div class="pv-swatch-label"><strong>success</strong><span class="pv-hex-success"></span></div>
+          </div>
+          <div class="pv-swatch">
+            <div class="pv-chip pv-chip--warning"></div>
+            <div class="pv-swatch-label"><strong>warning</strong><span class="pv-hex-warning"></span></div>
+          </div>
+          <div class="pv-swatch">
+            <div class="pv-chip pv-chip--danger"></div>
+            <div class="pv-swatch-label"><strong>destructive</strong><span class="pv-hex-danger"></span></div>
           </div>
         </div>
       </section>
 
       <section class="pv-section">
         <h2>2 · Typography</h2>
-        <p class="pv-desc">管控台密度（非营销 display）。字体栈 SF Pro / 系统；中文见 <code>html[lang=zh-*]</code>。</p>
+        <p class="pv-desc">
+          Console density (not marketing display). SF Pro / system stack; CJK stacks under <code>html[lang=zh-*]</code>.
+        </p>
         <div class="pv-type-list">
           <div class="pv-type">
             <span class="pv-type-tag">caption · 12</span
@@ -128,7 +139,7 @@
 
       <section class="pv-section">
         <h2>3 · Radii</h2>
-        <p class="pv-desc"><code>--radius: 0.5rem</code>（8px）为控件基准。Pill 仅用于状态 chip。</p>
+        <p class="pv-desc"><code>--radius: 0.5rem</code> (8px) for controls. Pills only for status chips.</p>
         <div class="pv-radii">
           <div class="pv-radius">
             <div class="pv-radius-box" style="border-radius: 5px"></div>
@@ -156,85 +167,75 @@
       <section class="pv-section">
         <h2>4 · Buttons</h2>
         <p class="pv-desc">
-          Primary = near-black（light）/ near-white（dark）。<strong>不要</strong>把 brand 蓝当默认 CTA。
+          Primary = near-black (light) / near-white (dark). <strong>Do not</strong> use brand blue for default CTAs.
         </p>
         <div class="pv-btn-family">
           <div class="pv-eyebrow">Primary family · rounded 8px</div>
           <div class="pv-row">
-            <button type="button" class="pv-btn pv-btn-primary pv-btn-sm">添加成员</button>
-            <button type="button" class="pv-btn pv-btn-primary">保存</button>
-            <button type="button" class="pv-btn pv-btn-outline">编辑团队</button>
-            <button type="button" class="pv-btn pv-btn-ghost">应用连接</button>
-            <button type="button" class="pv-btn pv-btn-danger pv-btn-sm">删除</button>
+            <button type="button" class="pv-btn pv-btn-primary pv-btn-sm">Add member</button>
+            <button type="button" class="pv-btn pv-btn-primary">Save</button>
+            <button type="button" class="pv-btn pv-btn-outline">Edit team</button>
+            <button type="button" class="pv-btn pv-btn-ghost">App connections</button>
+            <button type="button" class="pv-btn pv-btn-danger pv-btn-sm">Delete</button>
             <button type="button" class="pv-btn pv-btn-icon" aria-label="more">⋯</button>
           </div>
         </div>
         <div class="pv-btn-family">
-          <div class="pv-eyebrow">Anti-pattern · brand fill as primary（不要）</div>
+          <div class="pv-eyebrow">Anti-pattern · brand fill as primary (avoid)</div>
           <div class="pv-row">
-            <button type="button" class="pv-btn pv-btn-brand" disabled title="示意：勿用作默认主按钮">
+            <button type="button" class="pv-btn pv-btn-brand" disabled title="Do not use as default primary CTA">
               Brand as CTA ✗
             </button>
-            <span class="pv-status-pill is-warn">brand 仅 ring / chart</span>
+            <span class="pv-status-pill is-warn">brand = ring / chart only</span>
           </div>
         </div>
       </section>
 
       <section class="pv-section">
         <h2>5 · Filters &amp; status</h2>
-        <p class="pv-desc">人员页：状态筛选替代「本团队 / 组织全员」双 Tab。生命周期：未激活 / 已启用 / 已停用。</p>
-        <div class="pv-filter-track" role="tablist" aria-label="人员筛选">
-          <button type="button" class="pv-filter-chip is-active">全部</button>
-          <button type="button" class="pv-filter-chip">未激活 1</button>
-          <button type="button" class="pv-filter-chip">已启用</button>
-          <button type="button" class="pv-filter-chip">已停用</button>
-          <button type="button" class="pv-filter-chip">全公司</button>
+        <p class="pv-desc">People page: status filters replace dual tabs. Lifecycle: Pending / Active / Deactivated.</p>
+        <div class="pv-filter-track" role="tablist" aria-label="People filters">
+          <button type="button" class="pv-filter-chip is-active">All</button>
+          <button type="button" class="pv-filter-chip">Pending 1</button>
+          <button type="button" class="pv-filter-chip">Active</button>
+          <button type="button" class="pv-filter-chip">Deactivated</button>
+          <button type="button" class="pv-filter-chip">Company-wide</button>
         </div>
         <div class="pv-row" style="margin-top: 14px">
-          <span class="pv-status-pill is-warn">未激活</span>
-          <span class="pv-status-pill is-ok">已启用</span>
-          <span class="pv-status-pill is-muted">已停用</span>
-          <span class="pv-status-pill is-danger">错误</span>
+          <span class="pv-status-pill is-warn">Pending</span>
+          <span class="pv-status-pill is-ok">Active</span>
+          <span class="pv-status-pill is-muted">Deactivated</span>
+          <span class="pv-status-pill is-danger">Error</span>
         </div>
       </section>
 
       <section class="pv-section">
         <h2>6 · Shell · table · card</h2>
-        <p class="pv-desc">左侧栏 + 主区表格是管控台主骨架（非 OMA 三栏聊天壳）。</p>
+        <p class="pv-desc">Sidebar + main table is the control-plane shell (not OMA three-column chat).</p>
         <div class="pv-shell">
           <aside class="pv-shell-side">
             <div class="pv-shell-brand">OnMyCompany</div>
-            <a class="pv-nav-item is-active" href="#">概览</a>
-            <a class="pv-nav-item" href="#">应用连接</a>
-            <a class="pv-nav-item" href="#">团队</a>
-            <a class="pv-nav-item" href="#">运行</a>
-            <a class="pv-nav-item" href="#">组织配置</a>
+            <a class="pv-nav-item is-active" href="#">Overview</a>
+            <a class="pv-nav-item" href="#">App connections</a>
+            <a class="pv-nav-item" href="#">Team</a>
+            <a class="pv-nav-item" href="#">Runs</a>
+            <a class="pv-nav-item" href="#">Enterprise settings</a>
           </aside>
           <div class="pv-shell-main">
-            <div class="pv-card" style="padding: 0; overflow: hidden">
-              <div
-                style="
-                  padding: 12px 14px;
-                  border-bottom: 1px solid var(--pv-border);
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  gap: 12px;
-                  flex-wrap: wrap;
-                "
-              >
+            <div class="pv-card pv-card--flush">
+              <div class="pv-shell-toolbar">
                 <div>
-                  <div class="pv-card-title">个人团队</div>
-                  <div class="pv-card-sub">3 人 · 状态筛选</div>
+                  <div class="pv-card-title">Personal team</div>
+                  <div class="pv-card-sub">3 people · status filters</div>
                 </div>
-                <button type="button" class="pv-btn pv-btn-primary pv-btn-sm">添加成员</button>
+                <button type="button" class="pv-btn pv-btn-primary pv-btn-sm">Add member</button>
               </div>
               <table class="pv-table">
                 <thead>
                   <tr>
-                    <th>用户</th>
-                    <th>角色</th>
-                    <th>状态</th>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -243,24 +244,24 @@
                       <div class="pv-user-email">admin@company.internal</div>
                       <div class="pv-user-meta">creator · a1b2…c3d4</div>
                     </td>
-                    <td>创建者</td>
-                    <td><span class="pv-status-pill is-ok">已启用</span></td>
+                    <td>Owner</td>
+                    <td><span class="pv-status-pill is-ok">Active</span></td>
                   </tr>
                   <tr>
                     <td>
                       <div class="pv-user-email">test@company.internal</div>
                       <div class="pv-user-meta">member</div>
                     </td>
-                    <td>成员</td>
-                    <td><span class="pv-status-pill is-ok">已启用</span></td>
+                    <td>Member</td>
+                    <td><span class="pv-status-pill is-ok">Active</span></td>
                   </tr>
                   <tr>
                     <td>
                       <div class="pv-user-email">new@company.internal</div>
                       <div class="pv-user-meta">invited</div>
                     </td>
-                    <td>成员</td>
-                    <td><span class="pv-status-pill is-warn">未激活</span></td>
+                    <td>Member</td>
+                    <td><span class="pv-status-pill is-warn">Pending</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -275,26 +276,25 @@
           <div class="pv-card">
             <div class="pv-eyebrow">Form fields</div>
             <label class="pv-field">
-              <span class="pv-field-label">邮箱</span>
+              <span class="pv-field-label">Email</span>
               <input class="pv-input" value="user@company.com" />
             </label>
             <label class="pv-field">
-              <span class="pv-field-label">显示名（可选）</span>
-              <input class="pv-input" placeholder="可选" />
+              <span class="pv-field-label">Display name (optional)</span>
+              <input class="pv-input" placeholder="Optional" />
             </label>
             <div class="pv-row" style="justify-content: flex-end; margin-top: 14px">
-              <button type="button" class="pv-btn pv-btn-outline">取消</button>
-              <button type="button" class="pv-btn pv-btn-primary">添加</button>
+              <button type="button" class="pv-btn pv-btn-outline">Cancel</button>
+              <button type="button" class="pv-btn pv-btn-primary">Add</button>
             </div>
           </div>
           <div class="pv-card">
             <div class="pv-eyebrow">Focus ring = brand</div>
             <p class="pv-card-body">
-              输入 focus 使用 <code>#7c9dff</code> ring，按钮 primary 仍为 ink。这是 Linear 式「强调色克制」+ Cal 式「黑
-              CTA」的组合。
+              Inputs use brand ring on focus; primary buttons stay ink. Linear-style scarce accent + Cal monochrome CTA.
             </p>
             <label class="pv-field">
-              <span class="pv-field-label">Tab 到此看 ring</span>
+              <span class="pv-field-label">Tab here to see ring</span>
               <input class="pv-input" value="focus me" />
             </label>
           </div>
@@ -307,28 +307,29 @@
           <div class="pv-card">
             <div class="pv-eyebrow pv-eyebrow-good">Do</div>
             <ul class="pv-list">
-              <li>用 <code>var(--primary)</code> 等语义变量，不写死灰阶。</li>
-              <li>主 CTA = ink；brand 仅 focus / chart。</li>
-              <li>人员用状态 pill + 筛选，不双 Tab 两套名单。</li>
-              <li>管控台密度：14px 正文、8px 控件圆角、轻阴影。</li>
-              <li>中英文字体栈按 <code>lang</code> 切换。</li>
+              <li>Use semantic CSS variables — no hard-coded grays.</li>
+              <li>Primary CTA = ink; brand for focus / charts only.</li>
+              <li>People: status pills + filters, not dual org/team tabs.</li>
+              <li>Console density: 14px body, 8px control radius, soft elevation.</li>
+              <li>Keep light/dark component sets identical (this preview).</li>
+              <li>User-visible CJK only in locale files — not hard-coded in TSX (OMA-style checks).</li>
             </ul>
           </div>
           <div class="pv-card">
             <div class="pv-eyebrow pv-eyebrow-bad">Don’t</div>
             <ul class="pv-list">
-              <li>不要 mesh 渐变 / 营销 hero（见 PRODUCT.md）。</li>
-              <li>不要把 OMA 三栏聊天壳硬搬到企业管控台。</li>
-              <li>不要用 brand 蓝当默认「添加 / 保存」。</li>
-              <li>不要普通 CTA 用 <code>rounded-full</code>。</li>
-              <li>不要为预览去改 <code>web/src/styles/*</code> 产品样式。</li>
+              <li>No mesh gradients / marketing heroes.</li>
+              <li>Don’t paste OMA three-column chat chrome into the control plane.</li>
+              <li>Don’t use brand blue for default Add / Save.</li>
+              <li>Don’t use <code>rounded-full</code> on ordinary CTAs.</li>
+              <li>Don’t restyle the app only from preview CSS — implement via <code>theme.css</code>.</li>
             </ul>
           </div>
         </div>
         <p class="pv-note">
-          打开方式：本地直接打开本文件，或 <code>open docs/design/preview.html</code>。 对照
-          OMA：<code>onmyagent/docs/design/preview.html</code>。 实现 SoT 仍是
-          <code>web/src/styles/theme.css</code>；本预览独立 CSS，零耦合应用包。
+          Light and Dark share the same §0–§8 structure; only <code>data-theme</code> differs. SoT:
+          <code>web/src/styles/theme.css</code> · Contract: <code>DESIGN.md</code> · Checks:
+          <code>npm run check:design</code> / <code>check:i18n:cjk</code>
         </p>
       </section>
     </main>

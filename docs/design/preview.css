@@ -1,79 +1,8 @@
-/* OnMyCompany DESIGN.md preview stylesheet (mirrors OMA docs/design/preview.css shape).
-   Tokens from web/src/styles/theme.css / DESIGN.md. Preview-only — does not affect app UI. */
-
-:root,
-[data-theme="light"] {
-  --pv-canvas: #ffffff;
-  --pv-background: #ffffff;
-  --pv-surface: #ffffff;
-  --pv-surface-muted: #f4f4f4;
-  --pv-surface-secondary: #f6f6f6;
-  --pv-surface-accent: #f0f0f0;
-  --pv-sidebar: #f8f8f8;
-  --pv-sidebar-accent: #e9e9e9;
-  --pv-ink: #292929;
-  --pv-ink-muted: #6b6b6b;
-  --pv-border: #e9e9e9;
-  --pv-primary: #292929;
-  --pv-on-primary: #ffffff;
-  --pv-brand: #7c9dff;
-  --pv-brand-soft: #eef2ff;
-  --pv-ring: #7c9dff;
-  --pv-info: #3b63fb;
-  --pv-success: #05834e;
-  --pv-success-soft: color-mix(in oklab, #05834e 14%, transparent);
-  --pv-warning: #fc7d00;
-  --pv-warning-soft: color-mix(in oklab, #fc7d00 16%, transparent);
-  --pv-warning-fg: #b45309;
-  --pv-danger: #d73220;
-  --pv-danger-soft: color-mix(in oklab, #d73220 12%, transparent);
-  --pv-code-bg: #f4f4f4;
-  --pv-shadow-sm:
-    0 1px 2px color-mix(in oklch, black 5%, transparent), 0 0 1px color-mix(in oklch, black 8%, transparent);
-  --pv-shadow-md:
-    0 2px 6px color-mix(in oklch, black 6%, transparent), 0 1px 2px color-mix(in oklch, black 8%, transparent);
-  --pv-shadow-modal: 0 14px 40px color-mix(in oklab, #292929 12%, transparent);
-  --pv-radius: 8px;
-  --pv-radius-sm: 5px;
-  --pv-radius-md: 6px;
-  --pv-radius-xl: 11px;
-  --pv-font-sans:
-    "SF Pro Text", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-  --pv-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-}
-
-[data-theme="dark"] {
-  --pv-canvas: #111111;
-  --pv-background: #111111;
-  --pv-surface: #1b1b1b;
-  --pv-surface-muted: #222222;
-  --pv-surface-secondary: #222222;
-  --pv-surface-accent: #393939;
-  --pv-sidebar: #1b1b1b;
-  --pv-sidebar-accent: #393939;
-  --pv-ink: #ebebeb;
-  --pv-ink-muted: #a0a0a0;
-  --pv-border: #393939;
-  --pv-primary: #ebebeb;
-  --pv-on-primary: #111111;
-  --pv-brand: #7c9dff;
-  --pv-brand-soft: color-mix(in oklab, #7c9dff 18%, #1b1b1b);
-  --pv-ring: #7c9dff;
-  --pv-info: #4069fd;
-  --pv-success: #068850;
-  --pv-success-soft: color-mix(in oklab, #068850 18%, transparent);
-  --pv-warning: #da9f00;
-  --pv-warning-soft: color-mix(in oklab, #da9f00 18%, transparent);
-  --pv-warning-fg: #fbbf24;
-  --pv-danger: #df3422;
-  --pv-danger-soft: color-mix(in oklab, #df3422 16%, transparent);
-  --pv-code-bg: #222222;
-  --pv-shadow-sm:
-    0 1px 2px color-mix(in oklch, black 22%, transparent), 0 0 1px color-mix(in oklch, white 10%, transparent);
-  --pv-shadow-md:
-    0 2px 8px color-mix(in oklch, black 26%, transparent), 0 0 1px color-mix(in oklch, white 12%, transparent);
-  --pv-shadow-modal: 0 14px 40px color-mix(in oklab, black 45%, transparent);
-}
+/* OnMyCompany design preview component styles.
+ * Tokens: @import tokens.generated.css (from theme.css via sync-tokens.mjs).
+ * Preview-only — does not affect product UI.
+ */
+@import "./tokens.generated.css";
 
 html,
 body {
@@ -194,6 +123,43 @@ code {
   border-radius: 8px;
   border: 1px solid var(--pv-border);
 }
+/* Semantic swatches — same class in light & dark; hex via data-theme only */
+.pv-chip--canvas {
+  background: var(--pv-canvas);
+}
+.pv-chip--ink {
+  background: var(--pv-ink);
+}
+.pv-chip--muted {
+  background: var(--pv-surface-muted);
+}
+.pv-chip--sidebar {
+  background: var(--pv-sidebar);
+}
+.pv-chip--border {
+  background: var(--pv-border);
+}
+.pv-chip--brand {
+  background: var(--pv-brand);
+}
+.pv-chip--info {
+  background: var(--pv-info);
+}
+.pv-chip--success {
+  background: var(--pv-success);
+}
+.pv-chip--warning {
+  background: var(--pv-warning);
+}
+.pv-chip--danger {
+  background: var(--pv-danger);
+}
+.pv-chip--surface {
+  background: var(--pv-surface);
+}
+.pv-chip--accent {
+  background: var(--pv-surface-accent);
+}
 .pv-swatch-label {
   display: grid;
   gap: 2px;
@@ -206,6 +172,91 @@ code {
   color: var(--pv-ink-muted);
   font-family: var(--pv-font-mono);
   font-size: 11px;
+}
+/* Theme-specific hex captions (keep light/dark labels in sync structure) */
+[data-theme="light"] .pv-hex-canvas::after {
+  content: "#ffffff";
+}
+[data-theme="dark"] .pv-hex-canvas::after {
+  content: "#111111";
+}
+[data-theme="light"] .pv-hex-ink::after {
+  content: "#292929";
+}
+[data-theme="dark"] .pv-hex-ink::after {
+  content: "#ebebeb";
+}
+[data-theme="light"] .pv-hex-muted::after {
+  content: "#f4f4f4";
+}
+[data-theme="dark"] .pv-hex-muted::after {
+  content: "#222222";
+}
+[data-theme="light"] .pv-hex-sidebar::after {
+  content: "#f8f8f8";
+}
+[data-theme="dark"] .pv-hex-sidebar::after {
+  content: "#1b1b1b";
+}
+[data-theme="light"] .pv-hex-border::after {
+  content: "#e9e9e9";
+}
+[data-theme="dark"] .pv-hex-border::after {
+  content: "#393939";
+}
+[data-theme="light"] .pv-hex-brand::after,
+[data-theme="dark"] .pv-hex-brand::after {
+  content: "#7c9dff · focus only";
+}
+[data-theme="light"] .pv-hex-info::after {
+  content: "#3b63fb";
+}
+[data-theme="dark"] .pv-hex-info::after {
+  content: "#4069fd";
+}
+[data-theme="light"] .pv-hex-success::after {
+  content: "#05834e · Active";
+}
+[data-theme="dark"] .pv-hex-success::after {
+  content: "#068850 · Active";
+}
+[data-theme="light"] .pv-hex-warning::after {
+  content: "#fc7d00 · Pending";
+}
+[data-theme="dark"] .pv-hex-warning::after {
+  content: "#da9f00 · Pending";
+}
+[data-theme="light"] .pv-hex-danger::after {
+  content: "#d73220";
+}
+[data-theme="dark"] .pv-hex-danger::after {
+  content: "#df3422";
+}
+[data-theme="light"] .pv-hex-surface::after {
+  content: "#ffffff · card";
+}
+[data-theme="dark"] .pv-hex-surface::after {
+  content: "#1b1b1b · card";
+}
+[data-theme="light"] .pv-hex-accent::after {
+  content: "#f0f0f0";
+}
+[data-theme="dark"] .pv-hex-accent::after {
+  content: "#393939";
+}
+
+.pv-shell-toolbar {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--pv-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pv-card--flush {
+  padding: 0;
+  overflow: hidden;
 }
 
 /* Type */

@@ -30,8 +30,8 @@
   width: 34px;
   height: 34px;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: rgb(255, 255, 255);
+  border-radius: var(--radius-lg, 8px);
+  background: var(--card);
   object-fit: cover;
 }
 
@@ -72,6 +72,9 @@
   text-align: left;
   text-decoration: none;
   font-size: 14px;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
 }
 
 .nav-item:hover,
@@ -81,7 +84,7 @@
 }
 
 .nav-item.active {
-  font-weight: 560;
+  font-weight: 600;
   box-shadow: none;
 }
 
@@ -519,7 +522,7 @@
   width: min(1240px, calc(100% - 48px));
   max-width: 1240px;
   margin: 0 auto;
-  padding: 24px 0 56px;
+  padding: 22px 0 48px;
   box-sizing: border-box;
 }
 
@@ -561,7 +564,7 @@
 
 .page-stack {
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
 
 .main-browser > .page-stack {
