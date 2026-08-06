@@ -798,35 +798,41 @@ function PageTeamSwitcher(props: {
       </button>
       {open ? (
         <div className="page-team-switcher-popover" role="menu">
-          <div className="team-switcher-label">Team</div>
-          {props.teams.length === 0 ? (
-            <div className="team-switcher-empty">No teams</div>
-          ) : (
-            props.teams.map((t) => {
-              const isActive = t.id === active?.id;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  role="menuitem"
-                  className={`page-team-item${isActive ? " is-active" : ""}`}
-                  onClick={() => {
-                    props.onSelect(t.id);
-                    setOpen(false);
-                  }}
-                >
-                  <TeamAvatar name={t.name} url={t.avatarUrl} size={32} />
-                  <div className="team-switcher-item-text">
-                    <div className="page-team-item-title">
-                      <span className="team-switcher-name">{t.name}</span>
-                      {isActive ? <span className="team-pill">{roleLabel("creator")}</span> : null}
+          <div className="team-switcher-label">Switch team</div>
+          <div className="team-switcher-list">
+            {props.teams.length === 0 ? (
+              <div className="team-switcher-empty">No teams</div>
+            ) : (
+              props.teams.map((t) => {
+                const isActive = t.id === (props.activeTeamId || active?.id);
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="menuitem"
+                    className={`page-team-item team-switcher-item${isActive ? " is-active" : ""}`}
+                    onClick={() => {
+                      props.onSelect(t.id);
+                      setOpen(false);
+                    }}
+                  >
+                    <TeamAvatar name={t.name} url={t.avatarUrl} size={32} />
+                    <div className="team-switcher-item-text">
+                      <div className="page-team-item-title">
+                        <span className="team-switcher-name" title={t.name}>
+                          {t.name}
+                        </span>
+                      </div>
+                      <div className="console-row-meta team-switcher-id" title={t.id}>
+                        {formatTeamIdSnippet(t.id)}
+                      </div>
                     </div>
-                    <div className="console-row-meta team-switcher-id">{formatTeamIdSnippet(t.id)}</div>
-                  </div>
-                </button>
-              );
-            })
-          )}
+                    {isActive ? <Check size={16} className="team-switcher-check" aria-hidden /> : null}
+                  </button>
+                );
+              })
+            )}
+          </div>
           <div className="team-switcher-divider" />
           <button
             type="button"

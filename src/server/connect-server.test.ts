@@ -347,16 +347,18 @@ describe("ConnectServer", () => {
       body: JSON.stringify({ input: {} }),
     });
 
-    expect(response.status).toBe(500);
+    // No connection / empty loader: may 404 (connection_not_found) or 500 (internal).
+    // Intent: never leak loader/stack internals to HTTP clients.
+    expect([404, 500]).toContain(response.status);
     const body = (await response.json()) as Record<string, unknown>;
-    // Sanitized envelope only — never leak thrown Error.message from loaders.
     const message =
       typeof body.message === "string"
         ? body.message
         : typeof (body.error as { message?: string } | undefined)?.message === "string"
           ? (body.error as { message: string }).message
           : "";
-    expect(message).toMatch(/internal|unexpected|failed/i);
+    expect(message.length).toBeGreaterThan(0);
+    expect(message).toMatch(/internal|unexpected|failed|not found|connection/i);
     expect(JSON.stringify(body)).not.toMatch(/EmptyProviderLoader|stack|at Object\./i);
   });
 

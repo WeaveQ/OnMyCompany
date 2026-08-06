@@ -1249,12 +1249,17 @@ button.connections-chip.console-chip,
 
 .page-team-switcher-popover {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 8px);
   left: 0;
   z-index: 40;
   min-width: 280px;
   max-width: min(360px, 90vw);
-  padding: 8px;
+  max-height: min(380px, 60vh);
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  transform-origin: top left;
+  animation: team-switcher-in 0.16s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
 .page-team-item {
