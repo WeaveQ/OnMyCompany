@@ -50,10 +50,10 @@ describe("resolveInitialLang", () => {
     expect(resolveInitialLang({ storedLang: null, detectedLang: "zh-Hant-CN" })).toBe("zh-TW");
   });
 
-  it("falls back to English for unsupported values", () => {
-    expect(resolveInitialLang({ storedLang: "de", detectedLang: "ko" })).toBe("en");
-    expect(resolveInitialLang({ storedLang: "fr", detectedLang: "ja" })).toBe("en");
-    expect(resolveInitialLang({ storedLang: "ru", detectedLang: null })).toBe("en");
+  it("falls back to Simplified Chinese for unsupported values", () => {
+    expect(resolveInitialLang({ storedLang: "de", detectedLang: "ko" })).toBe("zh-CN");
+    expect(resolveInitialLang({ storedLang: "fr", detectedLang: "ja" })).toBe("zh-CN");
+    expect(resolveInitialLang({ storedLang: "ru", detectedLang: null })).toBe("zh-CN");
   });
 });
 

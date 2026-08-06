@@ -17,11 +17,13 @@ const locales = {
 } satisfies Locales;
 
 export function createAppI18n(initialLang: AppLang): I18n {
-  return new I18n(initialLang, locales, { fallback: "en" });
+  // Prefer zh-CN strings when a key is missing in another locale.
+  return new I18n(initialLang, locales, { fallback: "zh-CN" });
 }
 
 export function resolveInitialLang(input: { storedLang: string | null; detectedLang: string | null }): AppLang {
-  return toAppLang(input.storedLang) ?? matchAppLang(input.detectedLang) ?? "en";
+  // Product default: Simplified Chinese when no stored preference and browser is not a supported lang.
+  return toAppLang(input.storedLang) ?? matchAppLang(input.detectedLang) ?? "zh-CN";
 }
 
 export function readInitialLang(storage: Storage | undefined = globalThis.localStorage): AppLang {

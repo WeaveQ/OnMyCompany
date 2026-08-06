@@ -625,8 +625,8 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
       }
       const body = await readJsonBody(context);
       const name = String(body.name ?? "").trim() || `member-${member.email}`;
+      // Bind happens exactly once inside createMemberRuntimeToken (connect-app composition).
       const created = await options.createMemberRuntimeToken({ name, memberId: member.id });
-      await tokenBindings.bind(created.tokenId, member.id);
       await auditEvents.append({
         type: "token.create",
         actorMemberId: member.id,

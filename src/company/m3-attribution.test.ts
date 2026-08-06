@@ -63,6 +63,9 @@ describe("M3 policy sync + token binding", () => {
       devOtp: "000000",
       createMemberRuntimeToken: async ({ name, memberId }) => {
         tokens.push({ name, memberId });
+        // Product contract: composition binds exactly once (no route re-bind).
+        const { TokenMemberBindingStore } = await import("./auth/token-bindings.ts");
+        await new TokenMemberBindingStore(dataDir).bind("tok-1", memberId);
         return { token: "oct_test_token", tokenId: "tok-1" };
       },
     });

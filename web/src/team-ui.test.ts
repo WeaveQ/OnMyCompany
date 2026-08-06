@@ -92,13 +92,15 @@ describe("resolveActiveTeamId (default personal team)", () => {
 });
 
 describe("console IA paths", () => {
-  it("primary nav is overview + connections + accounts + team (directory not in sidebar)", () => {
-    expect(getPrimaryNavPaths()).toEqual(["/overview", "/connections", "/members", "/team"]);
+  it("primary nav is overview + accounts + team (directory not in sidebar)", () => {
+    expect(getPrimaryNavPaths()).toEqual(["/overview", "/members", "/team"]);
+    expect(getPrimaryNavPaths()).not.toContain("/connections");
     expect(getPrimaryNavPaths()).not.toContain("/org/teams");
   });
 
-  it("secondary sidebar includes tools without standalone actions nav", () => {
+  it("secondary sidebar includes connections under capability without standalone actions nav", () => {
     const more = getMoreNavPaths();
+    expect(more).toContain("/connections");
     expect(more).toContain("/skills");
     expect(more).not.toContain("/actions");
     expect(more).toContain("/runs");
@@ -133,6 +135,6 @@ describe("overview + connections structural markers", () => {
   });
 
   it("connections status chips match product labels (English source)", () => {
-    expect([...CONNECTION_STATUS_LABELS]).toEqual(["All", "Configured", "Needs attention", "Ready to use"]);
+    expect([...CONNECTION_STATUS_LABELS]).toEqual(["全部", "已配置", "需要处理", "可直接使用"]);
   });
 });

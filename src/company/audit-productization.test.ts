@@ -90,7 +90,8 @@ describe("audit productization HTTP", () => {
     expect(tokenEvt?.summary?.toLowerCase()).toContain("token");
     expect(tokenEvt?.client).toBe("admin_console");
     expect(tokenEvt?.ip).toBe("203.0.113.10");
-    // list must not leak minted secret
+    // correlation id survives sanitize; raw secret must not
+    expect(tokenEvt?.details?.tokenId).toBe(mintBody.tokenId);
     expect(JSON.stringify(listBody)).not.toContain("SECRETVALUE");
 
     const exportRes = await app.request(

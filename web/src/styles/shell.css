@@ -1,7 +1,9 @@
 .app-shell {
   display: grid;
   grid-template-columns: 15.5rem minmax(0, 1fr);
-  min-height: 100svh;
+  height: 100svh;
+  max-height: 100svh;
+  overflow: hidden;
 }
 
 .sidebar {
@@ -465,23 +467,29 @@
   background: var(--destructive);
 }
 
+/* Header row stays put; only .main scrolls (all pages). */
 .main-region {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   min-width: 0;
-  min-height: 100svh;
-  overflow-x: hidden;
+  height: 100svh;
+  max-height: 100svh;
+  overflow: hidden;
 }
 
 .main-region-browser {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   height: 100svh;
+  max-height: 100svh;
   overflow: hidden;
 }
 
 .shell-header {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -490,8 +498,8 @@
   height: 56px;
   padding: 0 24px;
   border-bottom: 1px solid var(--border);
-  background: color-mix(in oklab, var(--background) 95%, transparent);
-  backdrop-filter: blur(8px);
+  background: color-mix(in oklab, var(--background) 96%, transparent);
+  backdrop-filter: blur(10px);
 }
 
 .shell-header-title {
@@ -518,19 +526,47 @@
 
 .main {
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   /* Shared content rail for overview / connections / org / team / audit */
-  width: min(1240px, calc(100% - 48px));
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 22px 0 48px;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 22px 24px 48px;
   box-sizing: border-box;
 }
 
+/* Connections: shell header + page top fixed; only provider list scrolls */
+.main.connections-main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 12px 24px 0;
+}
+
+.main.connections-main > .connections-browser {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  width: min(1240px, 100%);
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Center content rail inside the scrollport */
 .main > .page-stack,
 .main > .console-page,
-.main > .connections-browser {
-  width: 100%;
-  max-width: none;
+.main > .connections-browser,
+.main > .inline-error,
+.main > .org-config-page {
+  width: min(1240px, 100%);
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
   box-sizing: border-box;
 }
 
@@ -658,23 +694,19 @@
   }
 
   .main {
-    display: block;
-    width: calc(100% - 32px);
-    height: auto;
-    overflow: visible;
-    padding: 24px 0 40px;
+    width: 100%;
+    padding: 20px 16px 40px;
   }
 
   .main-region,
   .main-region-browser {
-    display: block;
-    height: auto;
-    min-height: 0;
-    overflow: visible;
+    /* Keep shell header fixed; only main scrolls on tablet too */
+    height: 100svh;
+    max-height: 100svh;
+    overflow: hidden;
   }
 
   .shell-header {
-    position: static;
     padding: 0 16px;
   }
 

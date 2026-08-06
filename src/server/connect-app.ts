@@ -85,7 +85,10 @@ export async function createConnectApp(options: ConnectAppOptions): Promise<Conn
       ? async (event) => {
           await companyAuditEvents.append({
             type: event.op === "create" ? "connection.create" : "connection.delete",
-            client: "admin_console",
+            client: event.client || "admin_console",
+            ip: event.ip,
+            actorMemberId: event.actorMemberId,
+            actorEmail: event.actorEmail,
             details: { service: event.service, connectionName: event.connectionName },
           });
         }

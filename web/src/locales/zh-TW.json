@@ -95,8 +95,8 @@
         "subtitle": "團隊 Skill 包 — 從公開或我的貨架關聯。"
       },
       "connections": {
-        "title": "團隊的應用連接",
-        "subtitle": "依狀態與分類篩選，在閘道側連接團隊應用。"
+        "title": "應用連接",
+        "subtitle": "企業共用閘道連線池：依狀態與分類篩選；密鑰在公司側，非每隊私有庫。"
       },
       "team": {
         "title": "團隊",
@@ -129,6 +129,10 @@
       "resources": {
         "title": "資源",
         "subtitle": "產生的 API 參考文件與工具中繼資料。"
+      },
+      "auditEvents": {
+        "title": "審計事件",
+        "subtitle": "登入、成員、設定、token、連線與策略等營運事件。"
       }
     }
   },
@@ -165,6 +169,52 @@
     "callCountMany": "{{count}} 次呼叫",
     "noRecentCallsTitle": "沒有近期呼叫",
     "noRecentCallsDescription": "執行一個動作以查看服務提供者的呼叫次數。"
+  },
+  "connectionsPage": {
+    "title": "應用連接",
+    "lead": "企業共用閘道連線池（GitHub、飛書等）。密鑰保存在公司側，不是每個團隊一套私有庫。Agent 透過 MCP /v1 呼叫。",
+    "providers": "服務提供者",
+    "searchPlaceholder": "搜尋應用",
+    "sortRecommended": "推薦",
+    "sortByName": "依名稱",
+    "sortRecommendedAria": "目前推薦排序，點擊改為依名稱",
+    "sortByNameAria": "目前依名稱排序，點擊改為推薦",
+    "moreFilters": "更多篩選",
+    "filtersAndTools": "篩選與工具",
+    "resetFilters": "重設篩選",
+    "refresh": "重新整理",
+    "providerCatalogAdvanced": "服務提供者目錄（進階）",
+    "statusAria": "連線狀態",
+    "categoryAria": "應用分類",
+    "statusAll": "全部",
+    "statusConfigured": "已設定",
+    "statusNeedsAttention": "需要處理",
+    "statusReady": "可直接使用",
+    "categoryAI": "AI",
+    "categoryProductivity": "效率",
+    "categoryCommunication": "溝通",
+    "categoryDocuments": "文件",
+    "categoryDeveloper": "開發工具",
+    "categoryMarketing": "行銷",
+    "categoryDataStorage": "資料與儲存",
+    "categoryOther": "其他",
+    "more": "更多",
+    "moreCategories": "更多分類",
+    "reset": "重設",
+    "showing": "顯示 {{shown}}/{{total}}",
+    "empty": "沒有符合的應用連接",
+    "showMore": "顯示更多",
+    "actionConnect": "連接",
+    "actionDetails": "詳情",
+    "actionOpen": "開啟",
+    "actionManage": "管理",
+    "actionConfigure": "設定",
+    "badgeRuntimeUnavailable": "執行階段不可用",
+    "badgeReady": "可直接使用",
+    "badgeConfigured": "已設定",
+    "badgeNeedsAttention": "需要處理",
+    "actions": "動作",
+    "viewActionsTitle": "查看此應用的動作"
   },
   "providers": {
     "catalogTitle": "服務提供者",

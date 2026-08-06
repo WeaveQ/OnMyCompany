@@ -1,6 +1,8 @@
 import type { ProviderDefinition } from "./model";
 
 import { I18nProvider } from "@embra/i18n/react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
@@ -10,6 +12,7 @@ import {
   App,
   getMoreNavPaths,
   getPrimaryNavPaths,
+  getShellHeadingKey,
   loadRuntimeData,
   nextAuthLoadState,
   nextLogoutState,
@@ -22,18 +25,55 @@ afterEach(() => {
 });
 
 describe("primary nav IA", () => {
-  it("lists overview, connections, accounts, and team as primary peers (directory is not a nav peer)", () => {
+  it("lists overview, accounts, and team as primary peers (connections live under capability)", () => {
     const paths = getPrimaryNavPaths();
-    expect(paths).toEqual(["/overview", "/connections", "/members", "/team"]);
+    expect(paths).toEqual(["/overview", "/members", "/team"]);
+    expect(paths).not.toContain("/connections");
     expect(paths).not.toContain("/org/teams");
     expect(paths).not.toContain("/providers");
   });
 
-  it("lists secondary sidebar paths flat (no 更多 group); actions is deep-link only", () => {
+  it("lists secondary sidebar paths flat; connections under capability with skills/access", () => {
     const more = getMoreNavPaths();
-    expect(more).toEqual(expect.arrayContaining(["/skills", "/runs", "/access", "/org-config", "/metering"]));
+    expect(more).toEqual(
+      expect.arrayContaining(["/connections", "/skills", "/runs", "/access", "/org-config", "/metering"]),
+    );
+    // Capability cluster: connections before skills/access in group order
+    expect(more.indexOf("/connections")).toBeLessThan(more.indexOf("/skills"));
     expect(more).not.toContain("/actions");
     expect(more).not.toContain("/built-in-tools");
+  });
+
+  it("maps shell header title keys for all primary sections including audit", () => {
+    expect(getShellHeadingKey("/overview")).toBe("overview");
+    expect(getShellHeadingKey("/audit-events")).toBe("auditEvents");
+    expect(getShellHeadingKey("/metering")).toBe("metering");
+    expect(getShellHeadingKey("/connections")).toBe("connections");
+    expect(getShellHeadingKey("/members")).toBe("members");
+    expect(getShellHeadingKey("/team")).toBe("team");
+    expect(getShellHeadingKey("/org/teams")).toBe("orgTeams");
+    expect(getShellHeadingKey("/org-config")).toBe("orgConfig");
+  });
+
+  it("connections headings describe enterprise-shared pool, not per-team vault", () => {
+    const zh = JSON.parse(readFileSync(join(import.meta.dirname, "locales/zh-CN.json"), "utf8")) as {
+      shell: { headings: { connections: { title: string; subtitle: string } } };
+    };
+    const en = JSON.parse(readFileSync(join(import.meta.dirname, "locales/en.json"), "utf8")) as {
+      shell: { headings: { connections: { title: string; subtitle: string } } };
+    };
+    expect(zh.shell.headings.connections.title).toBe("应用连接");
+    expect(zh.shell.headings.connections.title).not.toContain("团队的");
+    expect(zh.shell.headings.connections.subtitle).toMatch(/企业共享|公司/);
+    expect(en.shell.headings.connections.title).toBe("App connections");
+    expect(en.shell.headings.connections.title.toLowerCase()).not.toMatch(/^team app/);
+    expect(en.shell.headings.connections.subtitle.toLowerCase()).toMatch(/enterprise-shared|company/);
+
+    const pageSrc = readFileSync(join(import.meta.dirname, "connections-page.tsx"), "utf8");
+    expect(pageSrc).toContain("useTranslate");
+    expect(pageSrc).toContain("connectionsPage.title");
+    expect(pageSrc).not.toContain("App connections");
+    expect(pageSrc).not.toContain("Team app connections");
   });
 });
 

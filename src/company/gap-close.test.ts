@@ -160,6 +160,8 @@ describe("P5 logout revokes member runtime tokens (route option)", () => {
       devOtp: "000000",
       createMemberRuntimeToken: async ({ name, memberId }) => {
         const tokenId = `tok-${name}-${memberId.slice(0, 4)}`;
+        // Product contract: composition binds exactly once (no route re-bind).
+        await new TokenMemberBindingStore(dataDir).bind(tokenId, memberId);
         return { token: `oct_${tokenId}`, tokenId };
       },
       revokeMemberRuntimeTokens: async (memberId) => {

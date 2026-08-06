@@ -13,8 +13,27 @@ import type {
 import type { IOAuthCredentialRefresher } from "./oauth/oauth-credential-refresh-service.ts";
 import type { IProviderLoader } from "./providers/provider-loader.ts";
 
+import { AsyncLocalStorage } from "node:async_hooks";
 import { normalizeCredentialValues } from "./core/credential-fields.ts";
 import { providerFetch } from "./providers/provider-runtime.ts";
+
+/** Optional operator context for connection mutation audit (no secrets). */
+export interface ConnectionMutationAuditMeta {
+  client?: string;
+  ip?: string;
+  actorMemberId?: string;
+  actorEmail?: string;
+}
+
+const connectionMutationAuditAls = new AsyncLocalStorage<ConnectionMutationAuditMeta>();
+
+/** Run connection create/delete with request-scoped audit meta (safe under concurrency). */
+export function runWithConnectionMutationAudit<T>(
+  meta: ConnectionMutationAuditMeta,
+  fn: () => Promise<T>,
+): Promise<T> {
+  return connectionMutationAuditAls.run(meta, fn);
+}
 
 export const defaultConnectionName = "default";
 
@@ -58,12 +77,16 @@ export interface ConnectionServiceOptions {
   isConnectionDisabled?: (service: string, connectionName: string) => Promise<boolean> | boolean;
   /**
    * Fired after successful create (credential store) or delete — for company audit.
-   * Must not receive secrets.
+   * Must not receive secrets. May include ALS request meta (client/ip/actor).
    */
   onConnectionMutation?: (event: {
     op: "create" | "delete";
     service: string;
     connectionName: string;
+    client?: string;
+    ip?: string;
+    actorMemberId?: string;
+    actorEmail?: string;
   }) => void | Promise<void>;
 }
 
@@ -333,7 +356,7 @@ export class ConnectionService {
     };
     const connectionName = normalizeConnectionName(input.connectionName);
     const stored = await this.store.set(service, connectionName, credential);
-    await this.onConnectionMutation?.({ op: "create", service, connectionName });
+    await this.emitConnectionMutation("create", service, connectionName);
 
     return this.withEnabledFlag(this.createStoredConnectionSummary(provider, stored.id, connectionName, credential));
   }
@@ -363,7 +386,7 @@ export class ConnectionService {
     };
     const connectionName = normalizeConnectionName(input.connectionName);
     const stored = await this.store.set(service, connectionName, credential);
-    await this.onConnectionMutation?.({ op: "create", service, connectionName });
+    await this.emitConnectionMutation("create", service, connectionName);
 
     return this.withEnabledFlag(this.createStoredConnectionSummary(provider, stored.id, connectionName, credential));
   }
@@ -392,7 +415,7 @@ export class ConnectionService {
       ...this.mergeCredentialRuntimeData(provider, "oauth2", credential, validation),
     };
     const stored = await this.store.set(service, connectionName, storedCredential);
-    await this.onConnectionMutation?.({ op: "create", service, connectionName });
+    await this.emitConnectionMutation("create", service, connectionName);
     return this.withEnabledFlag(
       this.createStoredConnectionSummary(provider, stored.id, connectionName, storedCredential),
     );
@@ -404,13 +427,30 @@ export class ConnectionService {
   ): Promise<ConnectionSummary | DisconnectedConnectionSummary> {
     const connectionName = normalizeConnectionName(connectionNameInput);
     await this.store.delete(service, connectionName);
-    await this.onConnectionMutation?.({ op: "delete", service, connectionName });
+    await this.emitConnectionMutation("delete", service, connectionName);
     const provider = this.catalog.providers.find((provider) => provider.service === service);
     if (provider && this.supportsAuth(provider, "no_auth")) {
       return this.connectWithoutAuth(service, { connectionName });
     }
 
     return { service, connectionName, configured: false };
+  }
+
+  private async emitConnectionMutation(
+    op: "create" | "delete",
+    service: string,
+    connectionName: string,
+  ): Promise<void> {
+    const meta = connectionMutationAuditAls.getStore();
+    await this.onConnectionMutation?.({
+      op,
+      service,
+      connectionName,
+      client: meta?.client,
+      ip: meta?.ip,
+      actorMemberId: meta?.actorMemberId,
+      actorEmail: meta?.actorEmail,
+    });
   }
 
   private async checkDisabled(service: string, connectionName: string): Promise<boolean> {

@@ -87,10 +87,10 @@ type NavGroup = {
 /**
  * Sidebar IA — grouped with dividers (not a flat dump).
  *
- * 1. 工作台：日常主路径（企业账号 / 团队）
+ * 1. 工作台：概览 / 企业账号 / 团队
  *    「团队」= 本队成员；全公司上下文或页内「全部团队」→ 团队列表（/org/teams，不进侧栏）
  * 2. 观测：用量 / 运行 / 审计
- * 3. 能力：Skills / 接入凭证
+ * 3. 能力：应用连接（企业共享）/ Skills / 接入凭证
  * 4. 配置：企业设置 / 文档（模型路由单独外链）
  *
  * 操作 (/actions) 不进侧栏：从「应用连接」行内深链进入。
@@ -99,7 +99,6 @@ const navGroups: readonly NavGroup[] = [
   {
     items: [
       { path: "/overview", labelKey: "nav.overview", icon: Home },
-      { path: "/connections", labelKey: "nav.connections", icon: Cable },
       { path: "/members", labelKey: "nav.members", icon: UserRound },
       { path: "/team", labelKey: "nav.team", icon: Users },
     ],
@@ -115,6 +114,7 @@ const navGroups: readonly NavGroup[] = [
   {
     labelKey: "nav.group.capability",
     items: [
+      { path: "/connections", labelKey: "nav.connections", icon: Cable },
       { path: "/skills", labelKey: "nav.skills", icon: Sparkles },
       { path: "/access", labelKey: "nav.access", icon: KeyRound },
     ],
@@ -413,10 +413,12 @@ function AppShell(props: {
   const isOverviewPage = heading === "overview";
   const isBrowserPage = section === "actions" || section === "runs";
   const isRunsPage = section === "runs";
+  const isConnectionsPage = section === "connections";
   const mainClassName = [
     isBrowserPage ? "main main-browser" : "main",
     isOverviewPage ? "overview-main" : "",
     isRunsPage ? "runs-main" : "",
+    isConnectionsPage ? "connections-main" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -1004,6 +1006,9 @@ function headingForPath(pathname: string): string {
   if (section === "metering") {
     return "metering";
   }
+  if (section === "audit-events") {
+    return "auditEvents";
+  }
   if (section === "connections") {
     return "connections";
   }
@@ -1028,5 +1033,13 @@ function headingForPath(pathname: string): string {
   if (section === "resources") {
     return "resources";
   }
+  if (section === "overview" || !section) {
+    return "overview";
+  }
   return "overview";
+}
+
+/** Exported for IA tests: shell top bar title key. */
+export function getShellHeadingKey(pathname: string): string {
+  return headingForPath(pathname);
 }

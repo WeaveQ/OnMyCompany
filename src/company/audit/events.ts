@@ -1,6 +1,8 @@
 import { randomBytes } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+
+import { JsonWriteQueue, writeJsonAtomic } from "../json-write-queue.ts";
 
 export type CompanyAuditEventType =
   | "login"
@@ -64,20 +66,35 @@ interface EventsFile {
 
 const MAX_EVENTS = 10_000;
 
-/** Keys that must never appear in exported audit details. */
+/** Exact keys that must never appear in exported audit details. */
 const SECRET_KEY_RE =
   /^(api[_-]?key|token|secret|password|passwd|authorization|access[_-]?token|refresh[_-]?token|client[_-]?secret|private[_-]?key|credential|credentials|cookie|session)$/i;
 
 /**
+ * Correlation / identity fields that must survive sanitization (not secrets).
+ * Matched case-insensitively against the full key.
+ */
+const SAFE_ID_KEY_RE =
+  /^(tokenid|runtimetokenid|memberid|actormemberid|packageid|teamid|connectionid|sharetoken|id|name|service|connectionname|actionid|code|caller|provider|section|version|reason|kind|format|count|disabled|enabled|roles|visibletoroles|attempt|revokedruntimetokens)$/i;
+
+/**
  * Append-only company audit events (A2 / C8): login, config writes, token, connections, etc.
  * Stored under data/company/audit-events.json (not secrets).
+ * Concurrent appends are serialized via an in-process write queue.
  */
 export class CompanyAuditEventStore {
   private readonly filePath: string;
   private cache: EventsFile | undefined;
+  private readonly writeQueue = new JsonWriteQueue();
+  private truncations = 0;
 
   constructor(dataDir: string) {
     this.filePath = join(dataDir, "company", "audit-events.json");
+  }
+
+  /** How many times the ring buffer dropped oldest events (process lifetime). */
+  get truncationCount(): number {
+    return this.truncations;
   }
 
   async append(input: {
@@ -90,26 +107,34 @@ export class CompanyAuditEventStore {
     result?: AuditResult;
     details?: Record<string, unknown>;
   }): Promise<CompanyAuditEvent> {
-    const data = await this.read();
-    const sanitizedDetails = input.details ? sanitizeAuditDetails(input.details) : undefined;
-    const event: CompanyAuditEvent = {
-      id: `evt_${randomBytes(10).toString("hex")}`,
-      type: input.type,
-      at: new Date().toISOString(),
-      actorMemberId: input.actorMemberId,
-      actorEmail: input.actorEmail,
-      summary: input.summary ?? defaultSummary(input.type, input.actorEmail, sanitizedDetails),
-      client: input.client,
-      ip: input.ip,
-      result: input.result ?? "ok",
-      details: sanitizedDetails,
-    };
-    data.events.push(event);
-    if (data.events.length > MAX_EVENTS) {
-      data.events = data.events.slice(-MAX_EVENTS);
-    }
-    await this.write(data);
-    return event;
+    return this.writeQueue.run(async () => {
+      const data = await this.read();
+      const sanitizedDetails = input.details ? sanitizeAuditDetails(input.details) : undefined;
+      const event: CompanyAuditEvent = {
+        id: `evt_${randomBytes(10).toString("hex")}`,
+        type: input.type,
+        at: new Date().toISOString(),
+        actorMemberId: input.actorMemberId,
+        actorEmail: input.actorEmail,
+        summary: input.summary ?? defaultSummary(input.type, input.actorEmail, sanitizedDetails),
+        client: input.client,
+        ip: input.ip,
+        result: input.result ?? "ok",
+        details: sanitizedDetails,
+      };
+      data.events.push(event);
+      if (data.events.length > MAX_EVENTS) {
+        const dropped = data.events.length - MAX_EVENTS;
+        data.events = data.events.slice(-MAX_EVENTS);
+        this.truncations += 1;
+        // Best-effort observability for operators (no secrets).
+        console.warn(
+          `[omc-audit] truncated ${dropped} oldest event(s); cap=${MAX_EVENTS} truncations=${this.truncations}`,
+        );
+      }
+      await this.write(data);
+      return event;
+    });
   }
 
   /**
@@ -165,8 +190,7 @@ export class CompanyAuditEventStore {
   }
 
   private async write(data: EventsFile): Promise<void> {
-    await mkdir(join(this.filePath, ".."), { recursive: true });
-    await writeFile(this.filePath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
+    await writeJsonAtomic(this.filePath, data);
     this.cache = { events: [...data.events] };
   }
 }
@@ -247,6 +271,17 @@ export function sanitizeEventForExport(event: CompanyAuditEvent): CompanyAuditEv
 export function sanitizeAuditDetails(details: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(details)) {
+    if (isSafeCorrelationKey(key)) {
+      // Keep ids / non-secret correlation fields even if the name contains "token".
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        out[key] = sanitizeAuditDetails(value as Record<string, unknown>);
+      } else if (typeof value === "string" && isSecretShapedValue(value)) {
+        out[key] = "[redacted]";
+      } else {
+        out[key] = value;
+      }
+      continue;
+    }
     if (SECRET_KEY_RE.test(key)) {
       out[key] = "[redacted]";
       continue;
@@ -264,10 +299,21 @@ export function sanitizeAuditDetails(details: Record<string, unknown>): Record<s
   return out;
 }
 
+export function isSafeCorrelationKey(key: string): boolean {
+  return SAFE_ID_KEY_RE.test(key);
+}
+
+function isSecretShapedValue(value: string): boolean {
+  // opaque runtime tokens / long secrets — never keep raw secret material
+  return /^(omc_|oct_|sk-|ghp_|ghp_|github_pat_)/i.test(value) && value.length >= 16;
+}
+
 function looksLikeSecretString(key: string, value: string): boolean {
-  if (/token|secret|password|apikey|api_key|bearer/i.test(key)) return true;
-  // opaque runtime tokens / long secrets
-  if (/^(omc_|oct_|sk-|ghp_)/i.test(value) && value.length >= 16) return true;
+  // Exact secret keys already handled; here catch nested-ish names that are not safe ids.
+  if (/^(.*[_-])?(secret|password|passwd|apikey|api_key|authorization|bearer)([_-].*)?$/i.test(key)) {
+    return true;
+  }
+  if (isSecretShapedValue(value)) return true;
   return false;
 }
 

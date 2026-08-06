@@ -1,7 +1,8 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { defaultConnectionName } from "../../connection-service.ts";
+import { JsonWriteQueue, writeJsonAtomic } from "../json-write-queue.ts";
 
 export interface DisabledConnectionKey {
   service: string;
@@ -15,10 +16,12 @@ interface DisableFile {
 /**
  * Org-level connection enable/disable flags (no secrets).
  * Key format: `${service}::${connectionName}`.
+ * Concurrent setDisabled calls are serialized via an in-process write queue.
  */
 export class ConnectionDisableStore {
   private readonly filePath: string;
   private cache: DisableFile | undefined;
+  private readonly writeQueue = new JsonWriteQueue();
 
   constructor(dataDir: string) {
     this.filePath = join(dataDir, "company", "connection-disabled.json");
@@ -33,17 +36,23 @@ export class ConnectionDisableStore {
     return data.disabled[ConnectionDisableStore.key(service, connectionName)] === true;
   }
 
-  async setDisabled(service: string, connectionName: string | undefined, disabled: boolean): Promise<DisabledConnectionKey> {
-    const data = await this.read();
-    const name = normalizeName(connectionName);
-    const key = ConnectionDisableStore.key(service, name);
-    if (disabled) {
-      data.disabled[key] = true;
-    } else {
-      delete data.disabled[key];
-    }
-    await this.write(data);
-    return { service, connectionName: name };
+  async setDisabled(
+    service: string,
+    connectionName: string | undefined,
+    disabled: boolean,
+  ): Promise<DisabledConnectionKey> {
+    return this.writeQueue.run(async () => {
+      const data = await this.read();
+      const name = normalizeName(connectionName);
+      const key = ConnectionDisableStore.key(service, name);
+      if (disabled) {
+        data.disabled[key] = true;
+      } else {
+        delete data.disabled[key];
+      }
+      await this.write(data);
+      return { service, connectionName: name };
+    });
   }
 
   async listDisabled(): Promise<DisabledConnectionKey[]> {
@@ -68,8 +77,7 @@ export class ConnectionDisableStore {
   }
 
   private async write(data: DisableFile): Promise<void> {
-    await mkdir(join(this.filePath, ".."), { recursive: true });
-    await writeFile(this.filePath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
+    await writeJsonAtomic(this.filePath, data);
     this.cache = { disabled: { ...data.disabled } };
   }
 }

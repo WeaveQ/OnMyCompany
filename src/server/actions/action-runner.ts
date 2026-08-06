@@ -222,11 +222,11 @@ export class ActionRunner {
     const deadline = input.startedAtMs + this.fallbackPolicy.totalBudgetMs;
     const maxAttempts = Math.min(this.fallbackPolicy.maxAttempts, Math.max(1, candidates.length));
 
-    // Load executor once per action (not per connection attempt).
+    // Lazy-load executor only after a connection resolves successfully so
+    // connection_disabled / connection_not_found fail closed without provider work.
     const displayName = this.options.catalog.providers.find((p) => p.service === input.service)?.displayName;
-    const executor = input.action.execution.locallyExecutable
-      ? await this.options.providerLoader.loadActionExecutor(input.service, input.actionId, displayName)
-      : undefined;
+    let executor: Awaited<ReturnType<IProviderLoader["loadActionExecutor"]>> | undefined;
+    let executorLoaded = false;
 
     let lastResult: ExecutionResult = {
       ok: false,
@@ -248,6 +248,14 @@ export class ActionRunner {
 
       try {
         lastConnection = await this.options.connections.resolveForExecution(input.service, candidate.connectionName);
+        if (!executorLoaded && input.action.execution.locallyExecutable) {
+          executor = await this.options.providerLoader.loadActionExecutor(
+            input.service,
+            input.actionId,
+            displayName,
+          );
+          executorLoaded = true;
+        }
         lastResult = await executeProviderAction(
           input.action,
           executor,

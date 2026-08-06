@@ -1,6 +1,7 @@
 import type { AppData, ProviderConnectionStatus, ProviderDefinition } from "./model";
 import type { CSSProperties, ReactNode } from "react";
 
+import { useTranslate } from "@embra/i18n/react";
 import { ArrowUpDown, ChevronRight, ListFilter, Search, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
@@ -16,12 +17,11 @@ interface ConnectionsPageProps {
   onRefresh(): void;
 }
 
-/** Status chips: All / Configured / Needs attention / Ready to use */
+/** Status chips: all / configured / needs_attention / ready */
 type StatusFilter = "all" | "configured" | "needs_attention" | "ready";
 
 /**
- * Primary + overflow category chips (AI / Productivity / Documents / Developer / More).
- * Values match catalog `provider.categories` English tags.
+ * Primary + overflow category chips. Values match catalog English tags.
  */
 type CategoryFilter =
   | "all"
@@ -36,33 +36,25 @@ type CategoryFilter =
 
 const pageSize = 48;
 
-/** Exported for structural tests (status chip labels). */
-export const CONNECTION_STATUS_LABELS = ["All", "Configured", "Needs attention", "Ready to use"] as const;
+/** Structural status order (labels come from i18n). */
+export const CONNECTION_STATUS_IDS = ["all", "configured", "needs_attention", "ready"] as const;
 
-const statusOptions: Array<{ id: StatusFilter; label: string }> = [
-  { id: "all", label: "All" },
-  { id: "configured", label: "Configured" },
-  { id: "needs_attention", label: "Needs attention" },
-  { id: "ready", label: "Ready to use" },
+/** @deprecated Prefer CONNECTION_STATUS_IDS + i18n; kept for tests as zh product labels. */
+export const CONNECTION_STATUS_LABELS = ["全部", "已配置", "需要处理", "可直接使用"] as const;
+
+const statusOptionIds: StatusFilter[] = ["all", "configured", "needs_attention", "ready"];
+
+const primaryCategoryIds: CategoryFilter[] = [
+  "AI",
+  "Productivity",
+  "Communication",
+  "Documents",
+  "Developer Tools",
 ];
 
-/** Visible primary chips (office-focused order). */
-const primaryCategoryOptions: Array<{ id: CategoryFilter; label: string }> = [
-  { id: "AI", label: "AI" },
-  { id: "Productivity", label: "Productivity" },
-  { id: "Communication", label: "Communication" },
-  { id: "Documents", label: "Documents" },
-  { id: "Developer Tools", label: "Developer tools" },
-];
+const moreCategoryIds: CategoryFilter[] = ["Marketing", "DataStorage", "Other"];
 
-/** Under the More dropdown. */
-const moreCategoryOptions: Array<{ id: CategoryFilter; label: string }> = [
-  { id: "Marketing", label: "Marketing" },
-  { id: "DataStorage", label: "Data & storage" },
-  { id: "Other", label: "Other" },
-];
-
-const allCategoryOptions = [...primaryCategoryOptions, ...moreCategoryOptions];
+const allCategoryIds = [...primaryCategoryIds, ...moreCategoryIds];
 
 const compactNumber = Intl.NumberFormat(undefined, {
   notation: "compact",
@@ -74,13 +66,43 @@ const rowStyle = {
   containIntrinsicSize: "56px",
 } satisfies CSSProperties;
 
-/**
- * Team app connections — catalog of gateway apps with status + category distinction
- * (status chips + category filters).
- */
 type SortMode = "recommended" | "name";
 
+function statusLabelKey(id: StatusFilter): string {
+  if (id === "all") return "connectionsPage.statusAll";
+  if (id === "configured") return "connectionsPage.statusConfigured";
+  if (id === "needs_attention") return "connectionsPage.statusNeedsAttention";
+  return "connectionsPage.statusReady";
+}
+
+function categoryLabelKey(id: CategoryFilter): string {
+  switch (id) {
+    case "AI":
+      return "connectionsPage.categoryAI";
+    case "Productivity":
+      return "connectionsPage.categoryProductivity";
+    case "Communication":
+      return "connectionsPage.categoryCommunication";
+    case "Documents":
+      return "connectionsPage.categoryDocuments";
+    case "Developer Tools":
+      return "connectionsPage.categoryDeveloper";
+    case "Marketing":
+      return "connectionsPage.categoryMarketing";
+    case "DataStorage":
+      return "connectionsPage.categoryDataStorage";
+    case "Other":
+      return "connectionsPage.categoryOther";
+    default:
+      return "connectionsPage.categoryOther";
+  }
+}
+
+/**
+ * Enterprise-shared app connections — gateway app catalog with status + category.
+ */
 export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
+  const t = useTranslate();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
@@ -157,21 +179,22 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
 
   const statusCounts = useMemo(
     () =>
-      statusOptions.map((opt) => ({
-        ...opt,
+      statusOptionIds.map((id) => ({
+        id,
+        label: t(statusLabelKey(id)),
         count:
-          opt.id === "all"
+          id === "all"
             ? searched.length
-            : searched.filter((p) => matchStatus(statusByService.get(p.service), opt.id)).length,
+            : searched.filter((p) => matchStatus(statusByService.get(p.service), id)).length,
       })),
-    [searched, statusByService],
+    [searched, statusByService, t],
   );
 
   const categoryCounts = useMemo(() => {
     const base = byStatus;
     const counts = new Map<CategoryFilter, number>();
-    for (const opt of allCategoryOptions) {
-      counts.set(opt.id, base.filter((p) => matchCategory(p, opt.id)).length);
+    for (const id of allCategoryIds) {
+      counts.set(id, base.filter((p) => matchCategory(p, id)).length);
     }
     return counts;
   }, [byStatus]);
@@ -191,22 +214,24 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
     setFilterMenuOpen(false);
   }
 
-  const moreSelected = moreCategoryOptions.some((o) => o.id === categoryFilter);
-  const moreLabel = moreSelected ? (moreCategoryOptions.find((o) => o.id === categoryFilter)?.label ?? "More") : "More";
+  const moreSelected = moreCategoryIds.some((id) => id === categoryFilter);
+  const moreLabel = moreSelected
+    ? t(categoryLabelKey(categoryFilter === "all" ? "Other" : categoryFilter))
+    : t("connectionsPage.more");
   const totalCount = searched.length;
   const shownCount = visible.length;
 
   return (
     <section className="connections-browser page-stack" data-connections-root>
+      {/* Hero + filters stay fixed; only the provider list scrolls. */}
+      <div className="connections-sticky-top">
       <header className="page-hero">
-        <h1 className="page-hero-title">App connections</h1>
-        <p className="page-hero-lead">
-          Configure company SaaS accounts (GitHub, Feishu, and more). Secrets stay server-side; agents call via MCP /v1.
-        </p>
+        <h1 className="page-hero-title">{t("connectionsPage.title")}</h1>
+        <p className="page-hero-lead">{t("connectionsPage.lead")}</p>
       </header>
       <div className="connections-chrome">
         <div className="connections-toolbar">
-          <h2 className="connections-title">Providers</h2>
+          <h2 className="connections-title">{t("connectionsPage.providers")}</h2>
           <div className="connections-toolbar-actions">
             <label className="connections-search">
               <Search className="connections-search-icon" size={15} aria-hidden />
@@ -214,8 +239,8 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
                 className="connections-search-input"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search providers"
-                aria-label="Search providers"
+                placeholder={t("connectionsPage.searchPlaceholder")}
+                aria-label={t("connectionsPage.searchPlaceholder")}
               />
             </label>
             <Button
@@ -226,13 +251,21 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
               onClick={() => setSortMode((mode) => (mode === "recommended" ? "name" : "recommended"))}
               aria-label={
                 sortMode === "recommended"
-                  ? "Recommended sort — click for name sort"
-                  : "Name sort — click for recommended"
+                  ? t("connectionsPage.sortRecommendedAria")
+                  : t("connectionsPage.sortByNameAria")
               }
-              title={sortMode === "recommended" ? "Recommended" : "By name"}
+              title={
+                sortMode === "recommended"
+                  ? t("connectionsPage.sortRecommended")
+                  : t("connectionsPage.sortByName")
+              }
             >
               <ArrowUpDown size={14} />
-              <span className="connections-tool-label">{sortMode === "recommended" ? "Recommended" : "By name"}</span>
+              <span className="connections-tool-label">
+                {sortMode === "recommended"
+                  ? t("connectionsPage.sortRecommended")
+                  : t("connectionsPage.sortByName")}
+              </span>
             </Button>
             <div className="connections-menu-anchor align-end" ref={filterMenuRef}>
               <Button
@@ -241,18 +274,18 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
                 type="button"
                 className="connections-tool-btn"
                 aria-expanded={filterMenuOpen}
-                title="More filters"
+                title={t("connectionsPage.moreFilters")}
                 onClick={() => {
                   setFilterMenuOpen((v) => !v);
                   setMoreOpen(false);
                 }}
               >
                 <ListFilter size={14} />
-                <span className="connections-tool-label">More filters</span>
+                <span className="connections-tool-label">{t("connectionsPage.moreFilters")}</span>
               </Button>
               {filterMenuOpen ? (
                 <div className="connections-menu" role="menu">
-                  <div className="connections-menu-label">Filters & tools</div>
+                  <div className="connections-menu-label">{t("connectionsPage.filtersAndTools")}</div>
                   <button
                     type="button"
                     role="menuitem"
@@ -262,7 +295,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
                       setFilterMenuOpen(false);
                     }}
                   >
-                    Reset filters
+                    {t("connectionsPage.resetFilters")}
                   </button>
                   <button
                     type="button"
@@ -273,7 +306,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
                       setFilterMenuOpen(false);
                     }}
                   >
-                    Refresh
+                    {t("connectionsPage.refresh")}
                   </button>
                   <div className="connections-menu-divider" />
                   <Link
@@ -282,7 +315,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
                     className="connections-menu-item"
                     onClick={() => setFilterMenuOpen(false)}
                   >
-                    Provider catalog (advanced)
+                    {t("connectionsPage.providerCatalogAdvanced")}
                   </Link>
                 </div>
               ) : null}
@@ -297,7 +330,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
               type="single"
               value={statusFilter}
               onValueChange={(value) => (value ? setStatusFilter(value as StatusFilter) : undefined)}
-              aria-label="Connection status"
+              aria-label={t("connectionsPage.statusAria")}
             >
               {statusCounts.map((opt) => (
                 <ToggleGroupItem
@@ -323,19 +356,19 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
                 setCategoryFilter(value as CategoryFilter);
                 setMoreOpen(false);
               }}
-              aria-label="App category"
+              aria-label={t("connectionsPage.categoryAria")}
               className="connections-chip-group"
             >
-              {primaryCategoryOptions.map((opt) => {
-                const count = categoryCounts.get(opt.id) ?? 0;
+              {primaryCategoryIds.map((id) => {
+                const count = categoryCounts.get(id) ?? 0;
                 return (
                   <ToggleGroupItem
-                    key={opt.id}
-                    value={opt.id}
+                    key={id}
+                    value={id}
                     className="console-chip connections-chip"
                     disabled={count === 0}
                   >
-                    <span>{opt.label}</span>
+                    <span>{t(categoryLabelKey(id))}</span>
                     <span className="console-chip-count">{compactNumber.format(count)}</span>
                   </ToggleGroupItem>
                 );
@@ -361,23 +394,23 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
               </button>
               {moreOpen ? (
                 <div className="connections-menu" role="menu">
-                  <div className="connections-menu-label">More categories</div>
-                  {moreCategoryOptions.map((opt) => {
-                    const count = categoryCounts.get(opt.id) ?? 0;
-                    const active = categoryFilter === opt.id;
+                  <div className="connections-menu-label">{t("connectionsPage.moreCategories")}</div>
+                  {moreCategoryIds.map((id) => {
+                    const count = categoryCounts.get(id) ?? 0;
+                    const active = categoryFilter === id;
                     return (
                       <button
-                        key={opt.id}
+                        key={id}
                         type="button"
                         role="menuitem"
                         className={active ? "connections-menu-item is-active" : "connections-menu-item"}
                         disabled={count === 0}
                         onClick={() => {
-                          setCategoryFilter(opt.id);
+                          setCategoryFilter(id);
                           setMoreOpen(false);
                         }}
                       >
-                        <span>{opt.label}</span>
+                        <span>{t(categoryLabelKey(id))}</span>
                         <span className="connections-menu-count">{compactNumber.format(count)}</span>
                       </button>
                     );
@@ -389,25 +422,27 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
             {filtersActive ? (
               <button type="button" className="connections-reset" onClick={resetFilters}>
                 <X size={13} />
-                Reset
+                {t("connectionsPage.reset")}
               </button>
             ) : null}
           </div>
 
           <div className="connections-result-meta" aria-live="polite">
-            Showing {shownCount}/{totalCount}
+            {t("connectionsPage.showing", { shown: shownCount, total: totalCount })}
           </div>
         </div>
       </div>
+      </div>
 
+      <div className="connections-scroll-body">
       {visible.length === 0 ? (
         <div className="console-card connections-list-card">
           <div className="console-empty">
             <div>
-              <p style={{ margin: 0 }}>No matching app connections</p>
+              <p style={{ margin: 0 }}>{t("connectionsPage.empty")}</p>
               {filtersActive ? (
                 <Button variant="outline" size="sm" type="button" onClick={resetFilters} style={{ marginTop: 12 }}>
-                  Reset filters
+                  {t("connectionsPage.resetFilters")}
                 </Button>
               ) : null}
             </div>
@@ -425,39 +460,41 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
           {hasMore ? (
             <div ref={loadMoreRef} className="connections-load-more">
               <Button variant="outline" size="sm" type="button" onClick={loadMore}>
-                Show more
+                {t("connectionsPage.showMore")}
               </Button>
             </div>
           ) : null}
         </div>
       )}
+      </div>
     </section>
   );
 }
 
 function AppConnectionRow(props: { provider: ProviderDefinition; status: ProviderConnectionStatus }): ReactNode {
+  const t = useTranslate();
   const to = `/providers/${encodeURIComponent(props.provider.service)}`;
   const locallyAvailable = isProviderLocallyAvailable(props.provider);
   const { status } = props;
 
-  let actionLabel = "Connect";
+  let actionLabel = t("connectionsPage.actionConnect");
   let badge: { text: string; tone: "ok" | "warn" | "muted" } | null = null;
 
   if (!locallyAvailable) {
-    actionLabel = "Details";
-    badge = { text: "Runtime unavailable", tone: "muted" };
+    actionLabel = t("connectionsPage.actionDetails");
+    badge = { text: t("connectionsPage.badgeRuntimeUnavailable"), tone: "muted" };
   } else if (status.noSetupRequired) {
-    actionLabel = "Open";
-    badge = { text: "Ready to use", tone: "ok" };
+    actionLabel = t("connectionsPage.actionOpen");
+    badge = { text: t("connectionsPage.badgeReady"), tone: "ok" };
   } else if (status.connected) {
-    actionLabel = "Manage";
-    badge = { text: "Configured", tone: "ok" };
+    actionLabel = t("connectionsPage.actionManage");
+    badge = { text: t("connectionsPage.badgeConfigured"), tone: "ok" };
   } else if (status.oauthClientRequired) {
-    actionLabel = "Configure";
-    badge = { text: "Needs attention", tone: "warn" };
+    actionLabel = t("connectionsPage.actionConfigure");
+    badge = { text: t("connectionsPage.badgeNeedsAttention"), tone: "warn" };
   }
 
-  const categoryLabel = primaryCategoryLabel(props.provider);
+  const categoryLabel = primaryCategoryLabel(props.provider, t);
 
   const actionsTo = `/actions?service=${encodeURIComponent(props.provider.service)}`;
 
@@ -497,9 +534,9 @@ function AppConnectionRow(props: { provider: ProviderDefinition; status: Provide
         <Link
           to={actionsTo}
           className="console-row-action console-row-action-secondary"
-          title="View actions for this app"
+          title={t("connectionsPage.viewActionsTitle")}
         >
-          Actions
+          {t("connectionsPage.actions")}
         </Link>
         <Link to={to} className="console-row-action">
           {actionLabel}
@@ -561,17 +598,19 @@ function matchCategory(provider: ProviderDefinition, filter: CategoryFilter): bo
     return cats.some((c) => c === "data" || c.includes("storage") || c.includes("finance"));
   }
   if (filter === "Other") {
-    // Not in any primary/more bucket above
-    return !allCategoryOptions.some((opt) => opt.id !== "Other" && matchCategory(provider, opt.id));
+    return !allCategoryIds.some((id) => id !== "Other" && matchCategory(provider, id));
   }
   return true;
 }
 
-function primaryCategoryLabel(provider: ProviderDefinition): string | undefined {
-  for (const opt of allCategoryOptions) {
-    if (opt.id !== "Other" && matchCategory(provider, opt.id)) return opt.label;
+function primaryCategoryLabel(
+  provider: ProviderDefinition,
+  t: (key: string, params?: Record<string, string | number>) => string,
+): string | undefined {
+  for (const id of allCategoryIds) {
+    if (id !== "Other" && matchCategory(provider, id)) return t(categoryLabelKey(id));
   }
-  return "Other";
+  return t("connectionsPage.categoryOther");
 }
 
 function useProgressiveLimit(total: number, resetKey: string): { hasMore: boolean; limit: number; loadMore(): void } {

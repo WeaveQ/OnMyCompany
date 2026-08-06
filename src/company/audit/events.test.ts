@@ -60,8 +60,11 @@ describe("CompanyAuditEventStore product fields", () => {
     expect(all.total).toBe(3);
     expect(all.items[0]?.type).toBe("policy.deny");
     expect(all.items.some((e) => e.summary?.includes("signed in"))).toBe(true);
-    expect(all.items.find((e) => e.type === "token.create")?.details?.secret).toBe("[redacted]");
-    expect(all.items.find((e) => e.type === "token.create")?.details?.apiKey).toBe("[redacted]");
+    const tokenEvt = all.items.find((e) => e.type === "token.create");
+    expect(tokenEvt?.details?.secret).toBe("[redacted]");
+    expect(tokenEvt?.details?.apiKey).toBe("[redacted]");
+    // correlation id kept
+    expect(tokenEvt?.details?.tokenId).toBe("tok-1");
 
     const byClient = await store.list({ client: "api" });
     expect(byClient.items).toHaveLength(1);
@@ -134,5 +137,28 @@ describe("audit helpers", () => {
     expect(cleaned.service).toBe("gmail");
     expect((cleaned.nested as { access_token: string }).access_token).toBe("[redacted]");
     expect(cleaned.credential).toBe("[redacted]");
+  });
+
+  it("keeps correlation ids but redacts secret keys and secret-shaped values", () => {
+    const cleaned = sanitizeAuditDetails({
+      tokenId: "tok-abc123",
+      runtimeTokenId: "rt-xyz",
+      memberId: "mem-1",
+      packageId: "skill@1.0.0",
+      token: "oct_should_hide_this_value",
+      password: "hunter2",
+      apiKey: "sk-live-not-for-export",
+      name: "ci",
+      leaked: "oct_runtime_secret_value_xx",
+    });
+    expect(cleaned.tokenId).toBe("tok-abc123");
+    expect(cleaned.runtimeTokenId).toBe("rt-xyz");
+    expect(cleaned.memberId).toBe("mem-1");
+    expect(cleaned.packageId).toBe("skill@1.0.0");
+    expect(cleaned.name).toBe("ci");
+    expect(cleaned.token).toBe("[redacted]");
+    expect(cleaned.password).toBe("[redacted]");
+    expect(cleaned.apiKey).toBe("[redacted]");
+    expect(cleaned.leaked).toBe("[redacted]");
   });
 });

@@ -95,8 +95,8 @@
         "subtitle": "团队 Skill 包 — 从公开或我的货架关联。"
       },
       "connections": {
-        "title": "团队的应用连接",
-        "subtitle": "按状态与分类筛选，在网关侧连接团队应用。"
+        "title": "应用连接",
+        "subtitle": "企业共享网关连接池：按状态与分类筛选；密钥在公司侧，非每队私有库。"
       },
       "team": {
         "title": "团队",
@@ -129,6 +129,10 @@
       "resources": {
         "title": "资源",
         "subtitle": "生成的 API 参考和工具元数据。"
+      },
+      "auditEvents": {
+        "title": "审计事件",
+        "subtitle": "登录、成员、配置、token、连接与策略等运营事件。"
       }
     }
   },
@@ -165,6 +169,52 @@
     "callCountMany": "{{count}} 次调用",
     "noRecentCallsTitle": "暂无最近调用",
     "noRecentCallsDescription": "运行一个操作后会显示提供商调用次数。"
+  },
+  "connectionsPage": {
+    "title": "应用连接",
+    "lead": "企业共享网关连接池（GitHub、飞书等）。密钥保存在公司侧，不是每个团队一套私有库。Agent 通过 MCP /v1 调用。",
+    "providers": "提供商",
+    "searchPlaceholder": "搜索应用",
+    "sortRecommended": "推荐",
+    "sortByName": "按名称",
+    "sortRecommendedAria": "当前推荐排序，点击改为按名称",
+    "sortByNameAria": "当前按名称排序，点击改为推荐",
+    "moreFilters": "更多筛选",
+    "filtersAndTools": "筛选与工具",
+    "resetFilters": "重置筛选",
+    "refresh": "刷新",
+    "providerCatalogAdvanced": "提供商目录（高级）",
+    "statusAria": "连接状态",
+    "categoryAria": "应用分类",
+    "statusAll": "全部",
+    "statusConfigured": "已配置",
+    "statusNeedsAttention": "需要处理",
+    "statusReady": "可直接使用",
+    "categoryAI": "AI",
+    "categoryProductivity": "效率",
+    "categoryCommunication": "沟通",
+    "categoryDocuments": "文档",
+    "categoryDeveloper": "开发工具",
+    "categoryMarketing": "营销",
+    "categoryDataStorage": "数据与存储",
+    "categoryOther": "其他",
+    "more": "更多",
+    "moreCategories": "更多分类",
+    "reset": "重置",
+    "showing": "显示 {{shown}}/{{total}}",
+    "empty": "没有匹配的应用连接",
+    "showMore": "显示更多",
+    "actionConnect": "连接",
+    "actionDetails": "详情",
+    "actionOpen": "打开",
+    "actionManage": "管理",
+    "actionConfigure": "配置",
+    "badgeRuntimeUnavailable": "运行时不可用",
+    "badgeReady": "可直接使用",
+    "badgeConfigured": "已配置",
+    "badgeNeedsAttention": "需要处理",
+    "actions": "操作",
+    "viewActionsTitle": "查看该应用的操作"
   },
   "providers": {
     "catalogTitle": "提供商",

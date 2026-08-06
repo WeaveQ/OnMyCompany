@@ -95,8 +95,8 @@
         "subtitle": "Team skill packages — add from public or personal catalog."
       },
       "connections": {
-        "title": "Team app connections",
-        "subtitle": "Filter by status and category; credentials stay on the company gateway."
+        "title": "App connections",
+        "subtitle": "Enterprise-shared gateway connections. Credentials stay company-side — not a per-team private vault."
       },
       "team": {
         "title": "Team",
@@ -129,6 +129,10 @@
       "resources": {
         "title": "Resources",
         "subtitle": "Generated API references and tool metadata."
+      },
+      "auditEvents": {
+        "title": "Audit events",
+        "subtitle": "Login, members, config, tokens, connections, and policy events."
       }
     }
   },
@@ -165,6 +169,52 @@
     "callCountMany": "{{count}} calls",
     "noRecentCallsTitle": "No recent calls",
     "noRecentCallsDescription": "Run an action to see provider call counts."
+  },
+  "connectionsPage": {
+    "title": "App connections",
+    "lead": "Enterprise-shared gateway connections. Secrets stay company-side — not a per-team private vault. Agents call via MCP /v1.",
+    "providers": "Providers",
+    "searchPlaceholder": "Search providers",
+    "sortRecommended": "Recommended",
+    "sortByName": "By name",
+    "sortRecommendedAria": "Recommended sort — click for name sort",
+    "sortByNameAria": "Name sort — click for recommended",
+    "moreFilters": "More filters",
+    "filtersAndTools": "Filters & tools",
+    "resetFilters": "Reset filters",
+    "refresh": "Refresh",
+    "providerCatalogAdvanced": "Provider catalog (advanced)",
+    "statusAria": "Connection status",
+    "categoryAria": "App category",
+    "statusAll": "All",
+    "statusConfigured": "Configured",
+    "statusNeedsAttention": "Needs attention",
+    "statusReady": "Ready to use",
+    "categoryAI": "AI",
+    "categoryProductivity": "Productivity",
+    "categoryCommunication": "Communication",
+    "categoryDocuments": "Documents",
+    "categoryDeveloper": "Developer tools",
+    "categoryMarketing": "Marketing",
+    "categoryDataStorage": "Data & storage",
+    "categoryOther": "Other",
+    "more": "More",
+    "moreCategories": "More categories",
+    "reset": "Reset",
+    "showing": "Showing {{shown}}/{{total}}",
+    "empty": "No matching app connections",
+    "showMore": "Show more",
+    "actionConnect": "Connect",
+    "actionDetails": "Details",
+    "actionOpen": "Open",
+    "actionManage": "Manage",
+    "actionConfigure": "Configure",
+    "badgeRuntimeUnavailable": "Runtime unavailable",
+    "badgeReady": "Ready to use",
+    "badgeConfigured": "Configured",
+    "badgeNeedsAttention": "Needs attention",
+    "actions": "Actions",
+    "viewActionsTitle": "View actions for this app"
   },
   "providers": {
     "catalogTitle": "Providers",
