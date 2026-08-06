@@ -135,6 +135,6 @@ describe("overview + connections structural markers", () => {
   });
 
   it("connections status chips match product labels (English source)", () => {
-    expect([...CONNECTION_STATUS_LABELS]).toEqual(["全部", "已配置", "需要处理", "可直接使用"]);
+    expect([...CONNECTION_STATUS_LABELS]).toEqual(["All", "Configured", "Needs attention", "Ready to use"]);
   });
 });

@@ -39,8 +39,8 @@ const pageSize = 48;
 /** Structural status order (labels come from i18n). */
 export const CONNECTION_STATUS_IDS = ["all", "configured", "needs_attention", "ready"] as const;
 
-/** @deprecated Prefer CONNECTION_STATUS_IDS + i18n; kept for tests as zh product labels. */
-export const CONNECTION_STATUS_LABELS = ["全部", "已配置", "需要处理", "可直接使用"] as const;
+/** English source labels (UI uses i18n via connectionsPage.status*). */
+export const CONNECTION_STATUS_LABELS = ["All", "Configured", "Needs attention", "Ready to use"] as const;
 
 const statusOptionIds: StatusFilter[] = ["all", "configured", "needs_attention", "ready"];
 

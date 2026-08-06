@@ -70,7 +70,8 @@
     "account": {
       "admin": "管理员",
       "settings": "设置",
-      "support": "支持"
+      "support": "支持",
+      "signedInAs": "当前身份"
     },
     "themeMode": {
       "auto": "自动",

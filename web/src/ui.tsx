@@ -831,7 +831,7 @@ function AccountMenu(props: {
       {/* Gear only — sits to the right of team name, not a second identity row */}
       <button
         type="button"
-        className="footer-gear"
+        className={`footer-gear${open ? " is-open" : ""}`}
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label={t("shell.account.settings")}
@@ -843,7 +843,10 @@ function AccountMenu(props: {
 
       {open ? (
         <div className="account-menu-popover" role="menu">
-          <div className="account-menu-identity">{identity}</div>
+          <div className="account-menu-header">
+            <div className="account-menu-identity-label">{t("shell.account.signedInAs")}</div>
+            <div className="account-menu-identity">{identity}</div>
+          </div>
 
           <div className="account-menu-section">
             <button
@@ -855,31 +858,40 @@ function AccountMenu(props: {
                 props.onOpenOrgConfig();
               }}
             >
-              <Settings2 size={15} />
+              <Settings2 size={15} strokeWidth={1.85} className="account-menu-item-icon" />
               <span>{t("shell.account.settings")}</span>
             </button>
             <button
               type="button"
               role="menuitem"
               className="account-menu-item"
+              disabled={props.loading}
               onClick={() => {
                 props.onRefresh();
               }}
             >
-              {props.loading ? <Loader2 className="spin" size={15} /> : <RefreshCw size={15} />}
+              {props.loading ? (
+                <Loader2 className="spin account-menu-item-icon" size={15} />
+              ) : (
+                <RefreshCw size={15} strokeWidth={1.85} className="account-menu-item-icon" />
+              )}
               <span>{t("shell.refreshData")}</span>
             </button>
+          </div>
 
+          <div className="account-menu-divider" />
+
+          <div className="account-menu-section account-menu-prefs">
             <div className="account-menu-inline-row" role="none">
               <span className="account-menu-inline-label">
-                <Languages size={15} />
+                <Languages size={15} strokeWidth={1.85} className="account-menu-item-icon" />
                 <span>{t("language.label")}</span>
               </span>
               <LanguageSelect compact />
             </div>
             <div className="account-menu-inline-row" role="none">
               <span className="account-menu-inline-label">
-                <Palette size={15} />
+                <Palette size={15} strokeWidth={1.85} className="account-menu-item-icon" />
                 <span>{t("shell.theme")}</span>
               </span>
               <ThemeControl compact theme={props.theme} onThemeChange={props.onThemeChange} />
@@ -899,7 +911,7 @@ function AccountMenu(props: {
                     props.onLogout();
                   }}
                 >
-                  <LogOut size={15} />
+                  <LogOut size={15} strokeWidth={1.85} className="account-menu-item-icon" />
                   <span>{t("shell.logout")}</span>
                 </button>
               </div>
@@ -910,16 +922,17 @@ function AccountMenu(props: {
           <div className="account-menu-section">
             <a
               role="menuitem"
-              className="account-menu-item account-menu-item-muted"
+              className="account-menu-item account-menu-item-muted account-menu-support"
               href={`mailto:${SUPPORT_EMAIL}`}
+              title={SUPPORT_EMAIL}
               onClick={(event) => {
                 event.preventDefault();
                 setOpen(false);
                 props.onOpenSupport();
               }}
             >
-              <Mail size={15} />
-              <span>{SUPPORT_EMAIL}</span>
+              <Mail size={15} strokeWidth={1.85} className="account-menu-item-icon" />
+              <span className="account-menu-support-email">{SUPPORT_EMAIL}</span>
             </a>
           </div>
         </div>

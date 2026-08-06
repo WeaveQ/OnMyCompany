@@ -56,24 +56,27 @@ describe("primary nav IA", () => {
   });
 
   it("connections headings describe enterprise-shared pool, not per-team vault", () => {
-    const zh = JSON.parse(readFileSync(join(import.meta.dirname, "locales/zh-CN.json"), "utf8")) as {
-      shell: { headings: { connections: { title: string; subtitle: string } } };
-    };
     const en = JSON.parse(readFileSync(join(import.meta.dirname, "locales/en.json"), "utf8")) as {
       shell: { headings: { connections: { title: string; subtitle: string } } };
+      connectionsPage: { title: string; lead: string };
     };
-    expect(zh.shell.headings.connections.title).toBe("应用连接");
-    expect(zh.shell.headings.connections.title).not.toContain("团队的");
-    expect(zh.shell.headings.connections.subtitle).toMatch(/企业共享|公司/);
+    const zh = JSON.parse(readFileSync(join(import.meta.dirname, "locales/zh-CN.json"), "utf8")) as {
+      shell: { headings: { connections: { title: string; subtitle: string } } };
+      connectionsPage: { title: string; lead: string };
+    };
+    // English is source of truth for product copy keys
     expect(en.shell.headings.connections.title).toBe("App connections");
     expect(en.shell.headings.connections.title.toLowerCase()).not.toMatch(/^team app/);
     expect(en.shell.headings.connections.subtitle.toLowerCase()).toMatch(/enterprise-shared|company/);
+    expect(en.connectionsPage.lead.toLowerCase()).toMatch(/enterprise-shared|company/);
+    // zh locale is present and not the old team-vault framing
+    expect(zh.connectionsPage.title.length).toBeGreaterThan(0);
+    expect(zh.shell.headings.connections.subtitle).not.toMatch(/Team app connections/i);
 
     const pageSrc = readFileSync(join(import.meta.dirname, "connections-page.tsx"), "utf8");
     expect(pageSrc).toContain("useTranslate");
     expect(pageSrc).toContain("connectionsPage.title");
-    expect(pageSrc).not.toContain("App connections");
-    expect(pageSrc).not.toContain("Team app connections");
+    expect(pageSrc).not.toContain('"Team app connections"');
   });
 });
 

@@ -70,7 +70,8 @@
     "account": {
       "admin": "Admin",
       "settings": "Settings",
-      "support": "Support"
+      "support": "Support",
+      "signedInAs": "Signed in as"
     },
     "themeMode": {
       "auto": "Auto",
