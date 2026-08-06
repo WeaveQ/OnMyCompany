@@ -101,28 +101,33 @@ for (const [name, rgb] of designRequiredHex) {
   }
 }
 
-// tokens.json parity
-const tokensPath = join(repoRoot, "data/org/default/config/design/tokens.json");
+// Committed snapshot is the repo SoT (data/org/** is gitignored).
 const snapPath = join(repoRoot, "docs/design/tokens-snapshot.json");
-if (!existsSync(tokensPath) || !existsSync(snapPath)) {
-  issues.push("tokens.json or tokens-snapshot.json missing — run: node scripts/design/sync-tokens.mjs");
+const localTokensPath = join(repoRoot, "data/org/default/config/design/tokens.json");
+if (!existsSync(snapPath)) {
+  issues.push("docs/design/tokens-snapshot.json missing — run: node scripts/design/sync-tokens.mjs");
 } else {
-  const tokens = JSON.parse(readFileSync(tokensPath, "utf8"));
   const snap = JSON.parse(readFileSync(snapPath, "utf8"));
-  if (JSON.stringify(tokens) !== JSON.stringify(snap)) {
-    issues.push("tokens.json !== docs/design/tokens-snapshot.json (run sync-tokens.mjs)");
+  // When local org config tokens exist, they must match the committed snapshot.
+  if (existsSync(localTokensPath)) {
+    const local = JSON.parse(readFileSync(localTokensPath, "utf8"));
+    if (JSON.stringify(local) !== JSON.stringify(snap)) {
+      issues.push(
+        "data/org/.../tokens.json !== docs/design/tokens-snapshot.json (run sync-tokens.mjs)",
+      );
+    }
   }
   const checks = [
-    ["colors.light.background", light["--background"], tokens.colors?.light?.background],
-    ["colors.light.brand", light["--brand"], tokens.colors?.light?.brand],
-    ["colors.light.success", light["--success"], tokens.colors?.light?.success],
-    ["colors.light.info", light["--info"], tokens.colors?.light?.info],
-    ["colors.dark.background", dark["--background"], tokens.colors?.dark?.background],
-    ["colors.dark.card", dark["--card"], tokens.colors?.dark?.card],
-    ["colors.dark.success", dark["--success"], tokens.colors?.dark?.success],
-    ["hex.brand", rgbToHex(light["--brand"]), tokens.hex?.brand],
-    ["hex.info", rgbToHex(light["--info"]), tokens.hex?.info],
-    ["hex.darkInk", rgbToHex(dark["--foreground"]), tokens.hex?.darkInk],
+    ["colors.light.background", light["--background"], snap.colors?.light?.background],
+    ["colors.light.brand", light["--brand"], snap.colors?.light?.brand],
+    ["colors.light.success", light["--success"], snap.colors?.light?.success],
+    ["colors.light.info", light["--info"], snap.colors?.light?.info],
+    ["colors.dark.background", dark["--background"], snap.colors?.dark?.background],
+    ["colors.dark.card", dark["--card"], snap.colors?.dark?.card],
+    ["colors.dark.success", dark["--success"], snap.colors?.dark?.success],
+    ["hex.brand", rgbToHex(light["--brand"]), snap.hex?.brand],
+    ["hex.info", rgbToHex(light["--info"]), snap.hex?.info],
+    ["hex.darkInk", rgbToHex(dark["--foreground"]), snap.hex?.darkInk],
   ];
   for (const [path, expected, actual] of checks) {
     if (String(expected) !== String(actual)) {
