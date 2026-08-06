@@ -112,9 +112,7 @@ if (!existsSync(snapPath)) {
   if (existsSync(localTokensPath)) {
     const local = JSON.parse(readFileSync(localTokensPath, "utf8"));
     if (JSON.stringify(local) !== JSON.stringify(snap)) {
-      issues.push(
-        "data/org/.../tokens.json !== docs/design/tokens-snapshot.json (run sync-tokens.mjs)",
-      );
+      issues.push("data/org/.../tokens.json !== docs/design/tokens-snapshot.json (run sync-tokens.mjs)");
     }
   }
   const checks = [
