@@ -4,29 +4,29 @@
 
 **Audience: AI agents / human developers.** Runbook, not a marketing page.
 
-| Field                 | Value                                                                                                                                  |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| **Product**           | OnMyCompany (enterprise control plane + Gateway)                                                                                       |
-| **License**           | **Non-commercial** (`LICENSE`); commercial use needs a separate license. OMA is Apache-2.0                                             |
-| **Desktop companion** | `../onmyagent` / WeaveQ OnMyAgent (Phase 2; minimal company integration landed)                                                        |
+| Field                 | Value                                                                                                                                   |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **Product**           | OnMyCompany (enterprise control plane + Gateway)                                                                                        |
+| **License**           | **Non-commercial** (`LICENSE`); commercial use needs a separate license. OMA is Apache-2.0                                              |
+| **Desktop companion** | `../onmyagent` / WeaveQ OnMyAgent (Phase 2; minimal company integration landed)                                                         |
 | **Current stage**     | **Pilot MVP + org/team IA Phase 1** — see [ROADMAP](docs/onmycompany/ROADMAP.md) · [TEAM-ISOLATION](docs/onmycompany/TEAM-ISOLATION.md) |
-| **Verification**      | `npm run ci` (= Actions); layered `test:company` / `test:web` / `test:server`                                                          |
-| **Architecture SoT**  | [`docs/Architecture.md`](docs/Architecture.md)                                                                                         |
-| **Config SoT**        | [`docs/onmycompany/CONFIG-SCHEMA.md`](docs/onmycompany/CONFIG-SCHEMA.md)                                                               |
-| **API paths**         | [`docs/onmycompany/API-NOTES.md`](docs/onmycompany/API-NOTES.md)                                                                       |
-| **Dual-end contract** | [`docs/onmycompany/DESKTOP-CONTRACT.md`](docs/onmycompany/DESKTOP-CONTRACT.md)                                                         |
+| **Verification**      | `npm run ci` (= Actions); layered `test:company` / `test:web` / `test:server`                                                           |
+| **Architecture SoT**  | [`docs/Architecture.md`](docs/Architecture.md)                                                                                          |
+| **Config SoT**        | [`docs/onmycompany/CONFIG-SCHEMA.md`](docs/onmycompany/CONFIG-SCHEMA.md)                                                                |
+| **API paths**         | [`docs/onmycompany/API-NOTES.md`](docs/onmycompany/API-NOTES.md)                                                                        |
+| **Dual-end contract** | [`docs/onmycompany/DESKTOP-CONTRACT.md`](docs/onmycompany/DESKTOP-CONTRACT.md)                                                          |
 
 ---
 
 ## 0. Read before you start (by task)
 
-| Task type                       | Minimum reading                               |
-| ------------------------------- | --------------------------------------------- |
-| Any change                      | **Iron rules below** + Architecture §1–2      |
-| Config / OrgConfig / policy     | CONFIG-SCHEMA + Architecture §3               |
-| Auth / members / tokens         | BOOTSTRAP + RBAC + API-NOTES                  |
-| Desktop integration / mocks     | DESKTOP-CONTRACT + OMA config-consistency     |
-| Gateway / provider              | `docs/runtime-api.md` + coding conventions    |
+| Task type                   | Minimum reading                            |
+| --------------------------- | ------------------------------------------ |
+| Any change                  | **Iron rules below** + Architecture §1–2   |
+| Config / OrgConfig / policy | CONFIG-SCHEMA + Architecture §3            |
+| Auth / members / tokens     | BOOTSTRAP + RBAC + API-NOTES               |
+| Desktop integration / mocks | DESKTOP-CONTRACT + OMA config-consistency  |
+| Gateway / provider          | `docs/runtime-api.md` + coding conventions |
 
 Do **not** copy long desktop docs into this repo; link them:
 
@@ -75,15 +75,15 @@ OnMyAgent (desktop)                  OnMyCompany (this repo)
   Mode A fully usable when logged out  single process · SQLite (intranet)
 ```
 
-| Do (this repo)                                      | Don't                             |
-| --------------------------------------------------- | --------------------------------- |
-| Org login, members, teams, bootstrap                | Desktop OpenCode main track       |
-| OrgConfig CRUD · Skills catalog · export/import     | Local migration 2a (lives in OMA) |
-| Policy synthesis, token↔member · logout revoke      | Second Electron policy truth      |
-| Connection secrets, runs audit · lean usage metering| Employee chat-to-cloud / billing  |
-| Admin console (overview/connections/teams/usage/Skills…) | Enterprise approval-queue main path |
-| G0 concurrency caps · G1a connection primary/standby · office catalog | Default full LLM reverse-proxy (G1b) |
-| Desktop company API + contract                      | Real Feishu production ticket exchange (stub exists) |
+| Do (this repo)                                                        | Don't                                                |
+| --------------------------------------------------------------------- | ---------------------------------------------------- |
+| Org login, members, teams, bootstrap                                  | Desktop OpenCode main track                          |
+| OrgConfig CRUD · Skills catalog · export/import                       | Local migration 2a (lives in OMA)                    |
+| Policy synthesis, token↔member · logout revoke                        | Second Electron policy truth                         |
+| Connection secrets, runs audit · lean usage metering                  | Employee chat-to-cloud / billing                     |
+| Admin console (overview/connections/teams/usage/Skills…)              | Enterprise approval-queue main path                  |
+| G0 concurrency caps · G1a connection primary/standby · office catalog | Default full LLM reverse-proxy (G1b)                 |
+| Desktop company API + contract                                        | Real Feishu production ticket exchange (stub exists) |
 
 Diagram: [`docs/Architecture.md`](docs/Architecture.md). Path table: [`docs/onmycompany/API-NOTES.md`](docs/onmycompany/API-NOTES.md).
 
@@ -109,13 +109,13 @@ Mount: `registerCompanyRoutes` → same process as `/health`; see `src/server/co
 
 ## 4. Config & data (quick reference)
 
-| Channel         | Path/API                                       | Notes                              |
-| --------------- | ---------------------------------------------- | ---------------------------------- |
-| ① OrgConfig     | `data/org/default/config` · `/api/org/config`  | **Isomorphic** with OMA profile config |
-| ② UserData      | `/api/me/userdata/*`                           | Deferred; same-machine by default  |
-| Secrets         | connections + encryption key                   | Server-side only                   |
-| Desktop local   | `~/.onmyagent/profiles/local/config`           | 2a landed                          |
-| Desktop company | `profiles/company/config`                      | Mirror after login                 |
+| Channel         | Path/API                                      | Notes                                  |
+| --------------- | --------------------------------------------- | -------------------------------------- |
+| ① OrgConfig     | `data/org/default/config` · `/api/org/config` | **Isomorphic** with OMA profile config |
+| ② UserData      | `/api/me/userdata/*`                          | Deferred; same-machine by default      |
+| Secrets         | connections + encryption key                  | Server-side only                       |
+| Desktop local   | `~/.onmyagent/profiles/local/config`          | 2a landed                              |
+| Desktop company | `profiles/company/config`                     | Mirror after login                     |
 
 Hard rules: [`CONFIG-SCHEMA.md`](docs/onmycompany/CONFIG-SCHEMA.md).
 
@@ -146,18 +146,18 @@ curl -s -X POST http://localhost:3100/v1/actions/hackernews.get_top_stories \
 
 ## 6. Environment variables (minimum)
 
-| Variable                       | Purpose                                               |
-| ------------------------------ | ----------------------------------------------------- |
+| Variable                       | Purpose                                                 |
+| ------------------------------ | ------------------------------------------------------- |
 | `PORT`                         | Default **3100** (matches `.env.example` / `dev-local`) |
-| `OMC_DATA_DIR`                 | SQLite + org tree                                     |
-| `OMC_ADMIN_TOKEN`              | ops-admin                                             |
-| `OMC_ENCRYPTION_KEY`           | Credential encryption                                 |
-| `OMC_ALLOWED_ACTIONS`          | Execution-surface allowlist                           |
-| `OMC_BOOTSTRAP_ADMIN_EMAIL`    | First org-admin                                       |
-| `OMC_CATALOG_PROFILE`          | `office` (default) / `full`                           |
-| `OMC_ALLOWED_SERVICES`         | Override profile service list or `*`                  |
-| `OMC_MAX_IN_FLIGHT`            | G0 global concurrency cap (default 100)               |
-| `OMC_MAX_IN_FLIGHT_PER_MEMBER` | G0 per-member cap (default 10)                        |
+| `OMC_DATA_DIR`                 | SQLite + org tree                                       |
+| `OMC_ADMIN_TOKEN`              | ops-admin                                               |
+| `OMC_ENCRYPTION_KEY`           | Credential encryption                                   |
+| `OMC_ALLOWED_ACTIONS`          | Execution-surface allowlist                             |
+| `OMC_BOOTSTRAP_ADMIN_EMAIL`    | First org-admin                                         |
+| `OMC_CATALOG_PROFILE`          | `office` (default) / `full`                             |
+| `OMC_ALLOWED_SERVICES`         | Override profile service list or `*`                    |
+| `OMC_MAX_IN_FLIGHT`            | G0 global concurrency cap (default 100)                 |
+| `OMC_MAX_IN_FLIGHT_PER_MEMBER` | G0 per-member cap (default 10)                          |
 
 **Canonical = `OMC_*`**. Full table: [`ENV.md`](docs/onmycompany/ENV.md).
 
@@ -195,10 +195,10 @@ curl -s -X POST http://localhost:3100/v1/actions/hackernews.get_top_stories \
 
 ## 8. Division of labor with OMA agent
 
-| Repo            | Owns                                                   | Forbidden                                      |
-| --------------- | ------------------------------------------------------ | ---------------------------------------------- |
-| **This repo**   | Company server, Gateway, admin console, OrgConfig      | Changing OMA desktop main business path        |
-| **onmyagent**   | 2a solidify, 2b BaseUrl/login/mirror config, Gateway client | Enterprise DB/policy editing truth in Electron |
+| Repo          | Owns                                                        | Forbidden                                      |
+| ------------- | ----------------------------------------------------------- | ---------------------------------------------- |
+| **This repo** | Company server, Gateway, admin console, OrgConfig           | Changing OMA desktop main business path        |
+| **onmyagent** | 2a solidify, 2b BaseUrl/login/mirror config, Gateway client | Enterprise DB/policy editing truth in Electron |
 
 Contract changes: update `DESKTOP-CONTRACT` + `CONFIG-SCHEMA` + API-NOTES first, then both codebases.
 
@@ -217,11 +217,11 @@ Contract changes: update `DESKTOP-CONTRACT` + `CONFIG-SCHEMA` + API-NOTES first,
 
 ## 10. Links
 
-| Resource              | Path                                                                   |
-| --------------------- | ---------------------------------------------------------------------- |
-| README                | [README.md](README.md) · [中文](README.zh-CN.md)                       |
-| Architecture          | [docs/Architecture.md](docs/Architecture.md)                           |
-| Product engineering   | [docs/onmycompany/README.md](docs/onmycompany/README.md)               |
-| Roadmap               | [docs/onmycompany/ROADMAP.md](docs/onmycompany/ROADMAP.md)             |
-| Runtime API           | [docs/runtime-api.md](docs/runtime-api.md)                             |
-| Desktop Architecture  | [../onmyagent/docs/Architecture.md](../onmyagent/docs/Architecture.md) |
+| Resource             | Path                                                                   |
+| -------------------- | ---------------------------------------------------------------------- |
+| README               | [README.md](README.md) · [中文](README.zh-CN.md)                       |
+| Architecture         | [docs/Architecture.md](docs/Architecture.md)                           |
+| Product engineering  | [docs/onmycompany/README.md](docs/onmycompany/README.md)               |
+| Roadmap              | [docs/onmycompany/ROADMAP.md](docs/onmycompany/ROADMAP.md)             |
+| Runtime API          | [docs/runtime-api.md](docs/runtime-api.md)                             |
+| Desktop Architecture | [../onmyagent/docs/Architecture.md](../onmyagent/docs/Architecture.md) |

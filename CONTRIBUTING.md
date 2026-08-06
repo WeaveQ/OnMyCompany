@@ -38,13 +38,13 @@ npm run generate:catalog
 
 ## Where to put code
 
-| Change type                         | Location                                  |
-| ----------------------------------- | ----------------------------------------- |
-| Org identity / OrgConfig / audit    | `src/company/`                            |
-| Route mounting                      | Thin changes in `src/server/`             |
-| Gateway execution / providers       | Only with reason: `src/core` / `src/providers` |
-| Admin console                       | `web/`                                    |
-| Product docs                        | `docs/onmycompany/`                       |
+| Change type                      | Location                                       |
+| -------------------------------- | ---------------------------------------------- |
+| Org identity / OrgConfig / audit | `src/company/`                                 |
+| Route mounting                   | Thin changes in `src/server/`                  |
+| Gateway execution / providers    | Only with reason: `src/core` / `src/providers` |
+| Admin console                    | `web/`                                         |
+| Product docs                     | `docs/onmycompany/`                            |
 
 ## Adding providers
 

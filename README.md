@@ -4,14 +4,14 @@
 
 **Enterprise agent control plane + outbound Gateway** (intranet pilot; **not open for commercial use**).
 
-|                    |                                                                                                              |
-| ------------------ | ------------------------------------------------------------------------------------------------------------ |
-| **Product**        | OnMyCompany                                                                                                  |
-| **Desktop companion** | [OnMyAgent](https://github.com/WeaveQ/OnMyAgent) (Apache-2.0, local-first)                                |
-| **Repository**     | https://github.com/WeaveQ/OnMyCompany                                                                        |
-| **MVP deploy**     | Docker Compose + SQLite                                                                                      |
-| **Stage**          | **Pilot main path complete** (gap-close · G0/G1a/G2 · office catalog · org/team IA Phase 1)                |
-| **License**        | **Source-available non-commercial** — see `LICENSE` / `NOTICE`; commercial use needs a separate license. OnMyAgent remains Apache-2.0. |
+|                       |                                                                                                                                        |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **Product**           | OnMyCompany                                                                                                                            |
+| **Desktop companion** | [OnMyAgent](https://github.com/WeaveQ/OnMyAgent) (Apache-2.0, local-first)                                                             |
+| **Repository**        | https://github.com/WeaveQ/OnMyCompany                                                                                                  |
+| **MVP deploy**        | Docker Compose + SQLite                                                                                                                |
+| **Stage**             | **Pilot main path complete** (gap-close · G0/G1a/G2 · office catalog · org/team IA Phase 1)                                            |
+| **License**           | **Source-available non-commercial** — see `LICENSE` / `NOTICE`; commercial use needs a separate license. OnMyAgent remains Apache-2.0. |
 
 ---
 
@@ -41,18 +41,18 @@ Company HTTP path table: [docs/onmycompany/API-NOTES.md](docs/onmycompany/API-NO
 
 Requires **Node.js 22.18+** (24 recommended).
 
-| Command                            | Purpose                                                    |
-| ---------------------------------- | ---------------------------------------------------------- |
-| `npm run dev`                      | Local API + admin console                                  |
-| `npm test`                         | Full vitest suite                                          |
-| `npm run test:company`             | Company layer `src/company`                                |
-| `npm run test:web`                 | Admin console `web/src`                                    |
-| `npm run test:server`              | Gateway `src/server`                                       |
-| `npm run test:unit`                | Backend `src`                                              |
-| `npm run typecheck` / `check:type` | Typecheck                                                  |
-| `npm run check`                    | typecheck + test                                           |
-| `npm run ci` / `verify`            | lint + format + typecheck + test (matches GitHub Actions)  |
-| `npm run check:docs`               | API-NOTES ↔ routes check                                   |
+| Command                            | Purpose                                                   |
+| ---------------------------------- | --------------------------------------------------------- |
+| `npm run dev`                      | Local API + admin console                                 |
+| `npm test`                         | Full vitest suite                                         |
+| `npm run test:company`             | Company layer `src/company`                               |
+| `npm run test:web`                 | Admin console `web/src`                                   |
+| `npm run test:server`              | Gateway `src/server`                                      |
+| `npm run test:unit`                | Backend `src`                                             |
+| `npm run typecheck` / `check:type` | Typecheck                                                 |
+| `npm run check`                    | typecheck + test                                          |
+| `npm run ci` / `verify`            | lint + format + typecheck + test (matches GitHub Actions) |
+| `npm run check:docs`               | API-NOTES ↔ routes check                                  |
 
 CI: `.github/workflows/ci.yml` runs `npm run ci` on `main` / `feat/**` / PRs.
 
@@ -104,18 +104,18 @@ docker compose -f docker-compose.yml -f docker-compose.build.yml up --build
 
 ## Docs map
 
-| Doc                                                                                              | Purpose                                              |
-| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
-| **[AGENTS.md](AGENTS.md)** / [中文](AGENTS.zh-CN.md)                                             | Dev / agent runbook                                  |
-| **[docs/Architecture.md](docs/Architecture.md)**                                                 | System architecture · layering with OnMyAgent        |
-| **[docs/onmycompany/CONFIG-SCHEMA.md](docs/onmycompany/CONFIG-SCHEMA.md)**                       | Config isomorphism                                   |
-| **[docs/onmycompany/DESKTOP-CONTRACT.md](docs/onmycompany/DESKTOP-CONTRACT.md)**                 | Dual-end contract                                    |
+| Doc                                                                                              | Purpose                                                   |
+| ------------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| **[AGENTS.md](AGENTS.md)** / [中文](AGENTS.zh-CN.md)                                             | Dev / agent runbook                                       |
+| **[docs/Architecture.md](docs/Architecture.md)**                                                 | System architecture · layering with OnMyAgent             |
+| **[docs/onmycompany/CONFIG-SCHEMA.md](docs/onmycompany/CONFIG-SCHEMA.md)**                       | Config isomorphism                                        |
+| **[docs/onmycompany/DESKTOP-CONTRACT.md](docs/onmycompany/DESKTOP-CONTRACT.md)**                 | Dual-end contract                                         |
 | **[docs/onmycompany/API-NOTES.md](docs/onmycompany/API-NOTES.md)**                               | Company HTTP paths (aligned with `src/company/routes.ts`) |
-| [docs/onmycompany/ROADMAP.md](docs/onmycompany/ROADMAP.md)                                       | Completeness · deferred items · **goal status**      |
-| [docs/onmycompany/GATEWAY-OBSERVABILITY-PLAN.md](docs/onmycompany/GATEWAY-OBSERVABILITY-PLAN.md) | G0/G1a/G2 plan and landing                           |
-| [docs/onmycompany/ENV.md](docs/onmycompany/ENV.md)                                               | `OMC_*` environment variables                        |
-| [docs/runtime-api.md](docs/runtime-api.md)                                                       | `/v1` · MCP · OpenAPI (Gateway)                      |
-| [docs/configuration.md](docs/configuration.md)                                                   | Configuration guide                                  |
+| [docs/onmycompany/ROADMAP.md](docs/onmycompany/ROADMAP.md)                                       | Completeness · deferred items · **goal status**           |
+| [docs/onmycompany/GATEWAY-OBSERVABILITY-PLAN.md](docs/onmycompany/GATEWAY-OBSERVABILITY-PLAN.md) | G0/G1a/G2 plan and landing                                |
+| [docs/onmycompany/ENV.md](docs/onmycompany/ENV.md)                                               | `OMC_*` environment variables                             |
+| [docs/runtime-api.md](docs/runtime-api.md)                                                       | `/v1` · MCP · OpenAPI (Gateway)                           |
+| [docs/configuration.md](docs/configuration.md)                                                   | Configuration guide                                       |
 
 **Desktop side:**
 
@@ -177,14 +177,14 @@ examples/
 
 ## Engineering stages (summary)
 
-| Stage                 | Status | Goal                                                         |
-| --------------------- | ------ | ------------------------------------------------------------ |
-| **M0–M7**             | ✅     | Gateway + org identity + OrgConfig + admin console + minimal desktop link |
-| **Skills S1–S5**      | ✅     | Org/personal Skills catalog and sharing                      |
-| **Gap-close**         | ✅     | P7/P5 audit/export/members                                   |
-| **G0 / G1a / G2**     | ✅     | Concurrency caps · connection primary/standby · lean metering |
-| **Office catalog**    | ✅     | Default office allowlist + ready-to-use + doc filters        |
-| **G1b / G3 / real Feishu** | ⏳ | Optional or deferred                                      |
+| Stage                      | Status | Goal                                                                      |
+| -------------------------- | ------ | ------------------------------------------------------------------------- |
+| **M0–M7**                  | ✅     | Gateway + org identity + OrgConfig + admin console + minimal desktop link |
+| **Skills S1–S5**           | ✅     | Org/personal Skills catalog and sharing                                   |
+| **Gap-close**              | ✅     | P7/P5 audit/export/members                                                |
+| **G0 / G1a / G2**          | ✅     | Concurrency caps · connection primary/standby · lean metering             |
+| **Office catalog**         | ✅     | Default office allowlist + ready-to-use + doc filters                     |
+| **G1b / G3 / real Feishu** | ⏳     | Optional or deferred                                                      |
 
 Details: [docs/onmycompany/ROADMAP.md](docs/onmycompany/ROADMAP.md).
 
