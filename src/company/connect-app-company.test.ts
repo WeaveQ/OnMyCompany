@@ -177,11 +177,11 @@ function emptyTransitFiles(): ITransitFileService {
 function plainSecretCodec(): ISecretCodec {
   return {
     encrypted: false,
-    encode(value: unknown) {
-      return JSON.stringify(value);
+    async encode(plaintext: string) {
+      return plaintext;
     },
-    decode(value: string) {
-      return JSON.parse(value);
+    async decode(value: string) {
+      return value;
     },
   };
 }

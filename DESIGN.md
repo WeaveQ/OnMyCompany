@@ -1,4 +1,16 @@
 ---
+spec: stitch-design-md/v-alpha
+product: OnMyCompany
+platform: web-console
+authority: draft-for-review
+maintenance: manual
+last-reviewed: 2026-08-06
+# Preview (OMA-style, does NOT change product CSS):
+#   docs/design/preview.html
+#   docs/design/preview-dark.html
+#   docs/design/preview.css
+# Implementation SoT:
+#   web/src/styles/theme.css
 version: alpha
 name: OnMyCompany-console-design
 description: >
@@ -7,7 +19,9 @@ description: >
   stack, dense sidebar + table UI. shadcn base-nova + neutral CSS variables.
   Design language ranked against VoltAgent/awesome-design-md: Cal.com (primary),
   Vercel (secondary for monochrome ladder), Linear (dark surfaces + accent scarcity).
+  Preview layout mirrors OnMyAgent docs/design/preview.html.
 source_repo: https://github.com/VoltAgent/awesome-design-md
+oma_reference: ../onmyagent/docs/design/preview.html
 primary_reference: design-md/cal
 secondary_references:
   - design-md/vercel
@@ -17,6 +31,7 @@ implementation:
   shell: web/src/styles/shell.css
   polish: web/src/styles/console-polish.css
   tokens_json: data/org/default/config/design/tokens.json
+  preview: docs/design/preview.html
   components: web/components.json (shadcn base-nova, baseColor neutral)
 
 colors:
@@ -188,8 +203,16 @@ components:
 
 # OnMyCompany Console — DESIGN.md
 
-> Authoritative visual contract for AI agents and humans working on the **OnMyCompany 管理台** (enterprise control plane).  
-> Concrete CSS lives in `web/src/styles/theme.css`. Machine-readable tokens: `data/org/default/config/design/tokens.json`.
+> Visual contract for AI agents and humans on the **OnMyCompany 管理台** (enterprise control plane).  
+> Status: **draft for review** — open the OMA-style preview first; **do not treat this as a mandate to restyle the app yet**.
+>
+> | What                   | Where                                                            |
+> | ---------------------- | ---------------------------------------------------------------- |
+> | Light preview          | [`docs/design/preview.html`](docs/design/preview.html)           |
+> | Dark preview           | [`docs/design/preview-dark.html`](docs/design/preview-dark.html) |
+> | Live product CSS (SoT) | `web/src/styles/theme.css`                                       |
+> | Org config tokens      | `data/org/default/config/design/tokens.json`                     |
+> | OMA sibling preview    | `onmyagent/docs/design/preview.html`                             |
 
 ## 0. Why this reference (awesome-design-md scan)
 

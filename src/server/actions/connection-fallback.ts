@@ -18,7 +18,7 @@ export function markConnectionCooldown(service: string, connectionName: string, 
   cooldownUntil.set(connectionCooldownKey(service, connectionName), Date.now() + ms);
 }
 
-export function isConnectionCoolingDown(service: string, connectionName: string, now = Date.now()): boolean {
+export function isConnectionCoolingDown(service: string, connectionName: string, now: number = Date.now()): boolean {
   const until = cooldownUntil.get(connectionCooldownKey(service, connectionName));
   if (until === undefined) return false;
   if (until <= now) {
@@ -41,7 +41,7 @@ export function orderConnectionCandidates(
   service: string,
   names: string[],
   preferredName?: string,
-  now = Date.now(),
+  now: number = Date.now(),
 ): ConnectionCandidate[] {
   const unique = [...new Set(names.map((n) => n.trim()).filter(Boolean))];
   if (preferredName?.trim()) {

@@ -622,7 +622,7 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         packageId = form.packageId ? String(form.packageId) : undefined;
         name = form.name ? String(form.name) : undefined;
         scope = form.scope === "personal" ? "personal" : "public";
-        enable = form.enable !== "false" && form.enable !== false;
+        enable = String(form.enable ?? "true") !== "false";
         description = form.description ? String(form.description) : undefined;
       } else {
         const body = await readJsonBody(context);

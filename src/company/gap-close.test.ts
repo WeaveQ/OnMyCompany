@@ -236,7 +236,7 @@ describe("P7 companyPolicyWriteOnly + Org policy sync via createConnectApp", () 
     };
 
     let policy: RuntimePolicyRecord = {
-      rules: { allowedActions: [], blockedActions: [], allowedProxies: [] },
+      rules: { allowedActions: [], blockedActions: [], allowedProxies: [], blockedProxies: [] },
       updatedAt: new Date(0).toISOString(),
     };
     const policyStore: IRuntimePolicyStore = {
@@ -347,13 +347,16 @@ describe("P7 companyPolicyWriteOnly + Org policy sync via createConnectApp", () 
       providerLoader,
       runtimeDatabase,
       transitFiles: {
+        maxBytes: 1024,
         async create() {
           throw new Error("unused");
         },
-        async get() {
-          return undefined;
+        async read() {
+          throw new Error("unused");
         },
-        async delete() {},
+        async delete() {
+          return true;
+        },
         async cleanupExpired() {},
       },
       publicOrigin: "http://localhost:3000",
@@ -402,8 +405,8 @@ describe("P7 companyPolicyWriteOnly + Org policy sync via createConnectApp", () 
     expect(put.status).toBe(200);
 
     const snap = await policyStore.get();
-    expect(snap.rules.allowedActions).toEqual(["hackernews.*"]);
-    expect(snap.rules.blockedActions).toEqual(["admin.*"]);
+    expect(snap?.rules.allowedActions).toEqual(["hackernews.*"]);
+    expect(snap?.rules.blockedActions).toEqual(["admin.*"]);
 
     const minted = await app.request("/api/company/runtime-tokens", {
       method: "POST",
@@ -495,7 +498,7 @@ describe("P5 shared store via createConnectApp: warm resolve → bind → logout
     };
 
     let policy: RuntimePolicyRecord = {
-      rules: { allowedActions: [], blockedActions: [], allowedProxies: [] },
+      rules: { allowedActions: [], blockedActions: [], allowedProxies: [], blockedProxies: [] },
       updatedAt: new Date(0).toISOString(),
     };
     const policyStore: IRuntimePolicyStore = {
@@ -606,13 +609,16 @@ describe("P5 shared store via createConnectApp: warm resolve → bind → logout
       providerLoader,
       runtimeDatabase,
       transitFiles: {
+        maxBytes: 1024,
         async create() {
           throw new Error("unused");
         },
-        async get() {
-          return undefined;
+        async read() {
+          throw new Error("unused");
         },
-        async delete() {},
+        async delete() {
+          return true;
+        },
         async cleanupExpired() {},
       },
       publicOrigin: "http://localhost:3000",

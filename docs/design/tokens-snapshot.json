@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "name": "onmycompany-console",
+  "updatedAt": "2026-08-06",
+  "source": {
+    "awesomeDesignMd": "https://github.com/VoltAgent/awesome-design-md",
+    "primaryReference": "cal",
+    "secondaryReferences": ["vercel", "linear.app"],
+    "rationale": "Light enterprise console: white canvas + near-black CTA (Cal/Vercel) + scarce periwinkle brand #7c9dff (Linear-like accent) + SF Pro. Avoid marketing systems (Stripe/Airbnb)."
+  },
+  "cssSource": "web/src/styles/theme.css",
+  "designMd": "DESIGN.md",
+  "colors": {
+    "light": {
+      "background": "rgb(255, 255, 255)",
+      "foreground": "rgb(41, 41, 41)",
+      "card": "rgb(255, 255, 255)",
+      "popover": "rgb(255, 255, 255)",
+      "primary": "rgb(41, 41, 41)",
+      "primaryForeground": "rgb(255, 255, 255)",
+      "secondary": "rgb(246, 246, 246)",
+      "muted": "rgb(244, 244, 244)",
+      "mutedForeground": "color-mix(in oklab, var(--foreground) 55%, transparent)",
+      "accent": "rgb(240, 240, 240)",
+      "brand": "rgb(124, 157, 255)",
+      "brandForeground": "rgb(255, 255, 255)",
+      "destructive": "rgb(215, 50, 32)",
+      "info": "rgb(59, 99, 251)",
+      "success": "rgb(5, 131, 78)",
+      "warning": "rgb(252, 125, 0)",
+      "reward": "rgb(252, 125, 0)",
+      "border": "rgb(233, 233, 233)",
+      "input": "rgb(233, 233, 233)",
+      "ring": "rgb(124, 157, 255)",
+      "sidebar": "rgb(248, 248, 248)",
+      "sidebarAccent": "rgb(233, 233, 233)",
+      "sidebarBorder": "rgb(233, 233, 233)",
+      "chart1": "rgb(124, 157, 255)",
+      "chart2": "rgb(59, 99, 251)",
+      "chart3": "rgb(5, 131, 78)",
+      "chart4": "rgb(252, 125, 0)",
+      "chart5": "rgb(215, 50, 32)"
+    },
+    "dark": {
+      "background": "rgb(17, 17, 17)",
+      "foreground": "rgb(235, 235, 235)",
+      "card": "rgb(27, 27, 27)",
+      "popover": "rgb(34, 34, 34)",
+      "primary": "rgb(235, 235, 235)",
+      "primaryForeground": "rgb(17, 17, 17)",
+      "secondary": "rgb(34, 34, 34)",
+      "muted": "rgb(34, 34, 34)",
+      "mutedForeground": "color-mix(in oklab, var(--foreground) 64%, transparent)",
+      "accent": "rgb(57, 57, 57)",
+      "brand": "rgb(124, 157, 255)",
+      "brandForeground": "rgb(255, 255, 255)",
+      "destructive": "rgb(223, 52, 34)",
+      "info": "rgb(64, 105, 253)",
+      "success": "rgb(6, 136, 80)",
+      "warning": "rgb(218, 159, 0)",
+      "border": "rgb(57, 57, 57)",
+      "input": "rgb(57, 57, 57)",
+      "ring": "rgb(124, 157, 255)",
+      "sidebar": "rgb(27, 27, 27)",
+      "sidebarAccent": "rgb(57, 57, 57)",
+      "sidebarBorder": "rgb(57, 57, 57)"
+    }
+  },
+  "hex": {
+    "ink": "#292929",
+    "canvas": "#ffffff",
+    "brand": "#7c9dff",
+    "hairline": "#e9e9e9",
+    "sidebar": "#f8f8f8",
+    "success": "#05834e",
+    "warning": "#fc7d00",
+    "destructive": "#d73220",
+    "darkCanvas": "#111111",
+    "darkCard": "#1b1b1b"
+  },
+  "typography": {
+    "fontSans": "SF Pro Text, system-ui, -apple-system, sans-serif",
+    "fontMono": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+    "scale": {
+      "pageTitle": { "size": 20, "weight": 650 },
+      "sectionTitle": { "size": 15, "weight": 600 },
+      "body": { "size": 14, "weight": 400 },
+      "caption": { "size": 12, "weight": 400 },
+      "button": { "size": 13, "weight": 520 }
+    }
+  },
+  "radius": {
+    "baseRem": 0.5,
+    "lg": "0.5rem",
+    "pill": "9999px"
+  },
+  "spacing": {
+    "base": 4,
+    "sidebarWidth": "15.5rem",
+    "navItemHeight": 36,
+    "headerHeight": 56
+  },
+  "components": {
+    "buttonPrimary": { "bg": "primary", "fg": "primaryForeground", "radius": "lg" },
+    "statusPill": {
+      "active": "success",
+      "pending": "warning",
+      "deactivated": "muted"
+    },
+    "filterChipActive": { "bg": "card", "shadow": "console-sm" }
+  },
+  "rules": [
+    "Primary CTA is monochrome ink, not brand blue",
+    "Brand #7c9dff for focus ring and charts only",
+    "No marketing mesh gradients",
+    "Prefer CSS variables from theme.css over hardcoded hex in components"
+  ]
+}
