@@ -7,8 +7,8 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { ConnectionService } from "../connection-service.ts";
 import { createCatalogStore } from "../catalog-store.ts";
+import { ConnectionService } from "../connection-service.ts";
 import { CompanyAuditEventStore } from "./audit/events.ts";
 import { ConnectionDisableStore } from "./connections/disable-store.ts";
 import { registerCompanyRoutes } from "./routes.ts";
@@ -19,11 +19,7 @@ afterEach(async () => {
   await Promise.all(tempRoots.splice(0).map((root) => rm(root, { recursive: true, force: true })));
 });
 
-async function login(
-  app: Hono,
-  email: string,
-  code = "000000",
-): Promise<{ token: string; memberId: string }> {
+async function login(app: Hono, email: string, code = "000000"): Promise<{ token: string; memberId: string }> {
   await app.request("/api/company/auth/email/start", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -55,7 +51,7 @@ describe("audit productization HTTP", () => {
       bootstrapAdminEmail: "admin@acme.test",
       devOtp: "000000",
       auditEvents,
-      createMemberRuntimeToken: async ({ name, memberId }) => {
+      createMemberRuntimeToken: async ({ name: _name, memberId }) => {
         const tokenId = `tok-${memberId.slice(0, 6)}`;
         const token = `oct_${tokenId}_SECRETVALUE`;
         tokens.set(tokenId, token);
@@ -94,10 +90,9 @@ describe("audit productization HTTP", () => {
     expect(tokenEvt?.details?.tokenId).toBe(mintBody.tokenId);
     expect(JSON.stringify(listBody)).not.toContain("SECRETVALUE");
 
-    const exportRes = await app.request(
-      "/api/company/audit/export?kind=events&format=csv&type=token",
-      { headers: auth },
-    );
+    const exportRes = await app.request("/api/company/audit/export?kind=events&format=csv&type=token", {
+      headers: auth,
+    });
     expect(exportRes.status).toBe(200);
     const csv = await exportRes.text();
     expect(csv).toContain("token.create");

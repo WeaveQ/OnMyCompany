@@ -65,12 +65,8 @@ export async function createConnectApp(options: ConnectAppOptions): Promise<Conn
     store: options.runtimeDatabase.oauthClientConfigStore,
   });
 
-  const companyAuditEvents = options.company
-    ? new CompanyAuditEventStore(options.company.dataDir)
-    : undefined;
-  const connectionDisableStore = options.company
-    ? new ConnectionDisableStore(options.company.dataDir)
-    : undefined;
+  const companyAuditEvents = options.company ? new CompanyAuditEventStore(options.company.dataDir) : undefined;
+  const connectionDisableStore = options.company ? new ConnectionDisableStore(options.company.dataDir) : undefined;
 
   const connections = new ConnectionService({
     catalog: options.catalog,

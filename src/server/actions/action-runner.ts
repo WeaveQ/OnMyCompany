@@ -249,11 +249,7 @@ export class ActionRunner {
       try {
         lastConnection = await this.options.connections.resolveForExecution(input.service, candidate.connectionName);
         if (!executorLoaded && input.action.execution.locallyExecutable) {
-          executor = await this.options.providerLoader.loadActionExecutor(
-            input.service,
-            input.actionId,
-            displayName,
-          );
+          executor = await this.options.providerLoader.loadActionExecutor(input.service, input.actionId, displayName);
           executorLoaded = true;
         }
         lastResult = await executeProviderAction(

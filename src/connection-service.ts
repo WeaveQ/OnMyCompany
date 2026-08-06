@@ -28,10 +28,7 @@ export interface ConnectionMutationAuditMeta {
 const connectionMutationAuditAls = new AsyncLocalStorage<ConnectionMutationAuditMeta>();
 
 /** Run connection create/delete with request-scoped audit meta (safe under concurrency). */
-export function runWithConnectionMutationAudit<T>(
-  meta: ConnectionMutationAuditMeta,
-  fn: () => Promise<T>,
-): Promise<T> {
+export function runWithConnectionMutationAudit<T>(meta: ConnectionMutationAuditMeta, fn: () => Promise<T>): Promise<T> {
   return connectionMutationAuditAls.run(meta, fn);
 }
 
@@ -207,9 +204,7 @@ export class ConnectionService {
       }
 
       if (this.supportsAuth(provider, "no_auth")) {
-        summaries.push(
-          await this.withEnabledFlag(this.createNoAuthConnectionSummary(provider, defaultConnectionName)),
-        );
+        summaries.push(await this.withEnabledFlag(this.createNoAuthConnectionSummary(provider, defaultConnectionName)));
       }
     }
     return summaries;
@@ -259,9 +254,7 @@ export class ConnectionService {
     }
 
     if (stored) {
-      return this.withEnabledFlag(
-        this.createConfiguredConnectionSummary(provider, stored.id, name, stored.credential),
-      );
+      return this.withEnabledFlag(this.createConfiguredConnectionSummary(provider, stored.id, name, stored.credential));
     }
     return this.supportsAuth(provider, "no_auth")
       ? this.withEnabledFlag(this.createNoAuthConnectionSummary(provider, name))

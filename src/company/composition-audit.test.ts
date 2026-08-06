@@ -1,17 +1,13 @@
+import { Hono } from "hono";
 /**
  * Composition contracts: single token bind; connection mutation audit carries IP/client.
  */
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-
-import { Hono } from "hono";
 import { afterEach, describe, expect, it } from "vitest";
 import { createCatalogStore } from "../catalog-store.ts";
-import {
-  ConnectionService,
-  runWithConnectionMutationAudit,
-} from "../connection-service.ts";
+import { ConnectionService, runWithConnectionMutationAudit } from "../connection-service.ts";
 import { CompanyAuditEventStore } from "./audit/events.ts";
 import { TokenMemberBindingStore } from "./auth/token-bindings.ts";
 import { registerCompanyRoutes } from "./routes.ts";
@@ -120,7 +116,13 @@ describe("composition: token bind once + connection audit meta", () => {
         revision: string;
         service: string;
         connectionName: string;
-        credential: { authType: "api_key"; apiKey: string; values: Record<string, string>; profile: unknown; metadata: Record<string, unknown> };
+        credential: {
+          authType: "api_key";
+          apiKey: string;
+          values: Record<string, string>;
+          profile: { accountId: string; displayName: string; grantedScopes: string[] };
+          metadata: Record<string, unknown>;
+        };
       }
     >();
     const connections = new ConnectionService({

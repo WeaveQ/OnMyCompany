@@ -17,12 +17,8 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import { Scalar } from "@scalar/hono-api-reference";
 import { Hono } from "hono";
 import { compress } from "hono/compress";
-import {
-  ConnectionError,
-  defaultConnectionName,
-  runWithConnectionMutationAudit,
-} from "../connection-service.ts";
 import { resolveAuditClient, resolveClientIp } from "../company/audit/events.ts";
+import { ConnectionError, defaultConnectionName, runWithConnectionMutationAudit } from "../connection-service.ts";
 import { ActionPolicyService, emptyPolicyRules } from "../core/action-policy.ts";
 import { DEFAULT_ACTION_SEARCH_LIMIT, createActionSearchIndexProvider, searchActions } from "../core/action-search.ts";
 import { optionalRecord, optionalString, requiredString } from "../core/cast.ts";

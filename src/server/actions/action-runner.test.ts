@@ -3,12 +3,13 @@ import type { ActionDefinition, ActionExecutor, ProviderDefinition, ResolvedCred
 import type { IProviderLoader } from "../../providers/provider-loader.ts";
 import type { Logger } from "../logger.ts";
 import type { IRunLogStore, RunLog, RunLogListInput, RunLogPage } from "../storage/runtime-store.ts";
+import type { ActionRunnerOptions } from "./action-runner.ts";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createCatalogStore } from "../../catalog-store.ts";
 import { ConnectionService } from "../../connection-service.ts";
 import { ActionPolicyService } from "../../core/action-policy.ts";
-import { ActionRunner, type ActionRunnerOptions } from "./action-runner.ts";
+import { ActionRunner } from "./action-runner.ts";
 import * as runLogSummary from "./run-log-summary.ts";
 
 const echoAction: ActionDefinition = {
@@ -249,8 +250,7 @@ describe("ActionRunner", () => {
       catalog,
       providerLoader,
       store: new MemoryConnectionStore(),
-      isConnectionDisabled: async (service, connectionName) =>
-        service === "example" && connectionName === "default",
+      isConnectionDisabled: async (service, connectionName) => service === "example" && connectionName === "default",
     });
     const runner = new ActionRunner({
       catalog,

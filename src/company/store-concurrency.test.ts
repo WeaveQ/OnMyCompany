@@ -4,7 +4,6 @@
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-
 import { afterEach, describe, expect, it } from "vitest";
 import { CompanyAuditEventStore } from "./audit/events.ts";
 import { ConnectionDisableStore } from "./connections/disable-store.ts";

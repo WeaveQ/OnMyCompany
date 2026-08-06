@@ -67,9 +67,11 @@ export function buildAuditEventsQuery(options?: AuditListQuery): string {
  * Load company audit events via the product API.
  * Works with member admin/auditor session, or console ops-admin (same-origin cookie).
  */
-export async function loadAuditEvents(options?: AuditListQuery & {
-  fetchImpl?: typeof fetch;
-}): Promise<AuditEventsPageResult> {
+export async function loadAuditEvents(
+  options?: AuditListQuery & {
+    fetchImpl?: typeof fetch;
+  },
+): Promise<AuditEventsPageResult> {
   const path = `/api/company/audit/events?${buildAuditEventsQuery(options)}`;
 
   if (options?.fetchImpl) {
@@ -416,10 +418,7 @@ export function AuditEventsPage(): ReactNode {
             {items.map((ev, i) => {
               const when = ev.at || ev.createdAt || "—";
               const actor = ev.actorEmail || ev.actorMemberId || "—";
-              const summary =
-                ev.summary ||
-                (ev.details ? compactDetails(ev.details) : "") ||
-                "—";
+              const summary = ev.summary || (ev.details ? compactDetails(ev.details) : "") || "—";
               return (
                 <tr key={ev.id || `${ev.type}-${when}-${i}`}>
                   <td className="console-row-meta mono">{when}</td>

@@ -1,7 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-
 import { JsonWriteQueue, writeJsonAtomic } from "../json-write-queue.ts";
 
 export type CompanyAuditEventType =
@@ -325,11 +324,7 @@ function csvCell(value: unknown): string {
   return s;
 }
 
-export function defaultSummary(
-  type: string,
-  actorEmail?: string,
-  details?: Record<string, unknown>,
-): string {
+export function defaultSummary(type: string, actorEmail?: string, details?: Record<string, unknown>): string {
   const who = actorEmail || "someone";
   switch (type) {
     case "login":

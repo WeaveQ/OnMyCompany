@@ -44,13 +44,7 @@ export const CONNECTION_STATUS_LABELS = ["全部", "已配置", "需要处理", 
 
 const statusOptionIds: StatusFilter[] = ["all", "configured", "needs_attention", "ready"];
 
-const primaryCategoryIds: CategoryFilter[] = [
-  "AI",
-  "Productivity",
-  "Communication",
-  "Documents",
-  "Developer Tools",
-];
+const primaryCategoryIds: CategoryFilter[] = ["AI", "Productivity", "Communication", "Documents", "Developer Tools"];
 
 const moreCategoryIds: CategoryFilter[] = ["Marketing", "DataStorage", "Other"];
 
@@ -225,247 +219,243 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
     <section className="connections-browser page-stack" data-connections-root>
       {/* Hero + filters stay fixed; only the provider list scrolls. */}
       <div className="connections-sticky-top">
-      <header className="page-hero">
-        <h1 className="page-hero-title">{t("connectionsPage.title")}</h1>
-        <p className="page-hero-lead">{t("connectionsPage.lead")}</p>
-      </header>
-      <div className="connections-chrome">
-        <div className="connections-toolbar">
-          <h2 className="connections-title">{t("connectionsPage.providers")}</h2>
-          <div className="connections-toolbar-actions">
-            <label className="connections-search">
-              <Search className="connections-search-icon" size={15} aria-hidden />
-              <Input
-                className="connections-search-input"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t("connectionsPage.searchPlaceholder")}
-                aria-label={t("connectionsPage.searchPlaceholder")}
-              />
-            </label>
-            <Button
-              variant="outline"
-              size="sm"
-              type="button"
-              className="connections-tool-btn"
-              onClick={() => setSortMode((mode) => (mode === "recommended" ? "name" : "recommended"))}
-              aria-label={
-                sortMode === "recommended"
-                  ? t("connectionsPage.sortRecommendedAria")
-                  : t("connectionsPage.sortByNameAria")
-              }
-              title={
-                sortMode === "recommended"
-                  ? t("connectionsPage.sortRecommended")
-                  : t("connectionsPage.sortByName")
-              }
-            >
-              <ArrowUpDown size={14} />
-              <span className="connections-tool-label">
-                {sortMode === "recommended"
-                  ? t("connectionsPage.sortRecommended")
-                  : t("connectionsPage.sortByName")}
-              </span>
-            </Button>
-            <div className="connections-menu-anchor align-end" ref={filterMenuRef}>
+        <header className="page-hero">
+          <h1 className="page-hero-title">{t("connectionsPage.title")}</h1>
+          <p className="page-hero-lead">{t("connectionsPage.lead")}</p>
+        </header>
+        <div className="connections-chrome">
+          <div className="connections-toolbar">
+            <h2 className="connections-title">{t("connectionsPage.providers")}</h2>
+            <div className="connections-toolbar-actions">
+              <label className="connections-search">
+                <Search className="connections-search-icon" size={15} aria-hidden />
+                <Input
+                  className="connections-search-input"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={t("connectionsPage.searchPlaceholder")}
+                  aria-label={t("connectionsPage.searchPlaceholder")}
+                />
+              </label>
               <Button
                 variant="outline"
                 size="sm"
                 type="button"
                 className="connections-tool-btn"
-                aria-expanded={filterMenuOpen}
-                title={t("connectionsPage.moreFilters")}
-                onClick={() => {
-                  setFilterMenuOpen((v) => !v);
+                onClick={() => setSortMode((mode) => (mode === "recommended" ? "name" : "recommended"))}
+                aria-label={
+                  sortMode === "recommended"
+                    ? t("connectionsPage.sortRecommendedAria")
+                    : t("connectionsPage.sortByNameAria")
+                }
+                title={
+                  sortMode === "recommended" ? t("connectionsPage.sortRecommended") : t("connectionsPage.sortByName")
+                }
+              >
+                <ArrowUpDown size={14} />
+                <span className="connections-tool-label">
+                  {sortMode === "recommended" ? t("connectionsPage.sortRecommended") : t("connectionsPage.sortByName")}
+                </span>
+              </Button>
+              <div className="connections-menu-anchor align-end" ref={filterMenuRef}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  className="connections-tool-btn"
+                  aria-expanded={filterMenuOpen}
+                  title={t("connectionsPage.moreFilters")}
+                  onClick={() => {
+                    setFilterMenuOpen((v) => !v);
+                    setMoreOpen(false);
+                  }}
+                >
+                  <ListFilter size={14} />
+                  <span className="connections-tool-label">{t("connectionsPage.moreFilters")}</span>
+                </Button>
+                {filterMenuOpen ? (
+                  <div className="connections-menu" role="menu">
+                    <div className="connections-menu-label">{t("connectionsPage.filtersAndTools")}</div>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="connections-menu-item"
+                      onClick={() => {
+                        resetFilters();
+                        setFilterMenuOpen(false);
+                      }}
+                    >
+                      {t("connectionsPage.resetFilters")}
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="connections-menu-item"
+                      onClick={() => {
+                        props.onRefresh();
+                        setFilterMenuOpen(false);
+                      }}
+                    >
+                      {t("connectionsPage.refresh")}
+                    </button>
+                    <div className="connections-menu-divider" />
+                    <Link
+                      to="/providers"
+                      role="menuitem"
+                      className="connections-menu-item"
+                      onClick={() => setFilterMenuOpen(false)}
+                    >
+                      {t("connectionsPage.providerCatalogAdvanced")}
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <div className="connections-filter-bar" data-connections-status-filters data-connections-category-filters>
+            <div className="connections-filter-scroll">
+              <ToggleGroup
+                className="connections-chip-group"
+                type="single"
+                value={statusFilter}
+                onValueChange={(value) => (value ? setStatusFilter(value as StatusFilter) : undefined)}
+                aria-label={t("connectionsPage.statusAria")}
+              >
+                {statusCounts.map((opt) => (
+                  <ToggleGroupItem
+                    key={opt.id}
+                    value={opt.id}
+                    className="console-chip connections-chip"
+                    disabled={opt.count === 0 && opt.id !== "all"}
+                  >
+                    <span>{opt.label}</span>
+                    <span className="console-chip-count">{compactNumber.format(opt.count)}</span>
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+
+              <ToggleGroup
+                type="single"
+                value={categoryFilter === "all" || moreSelected ? "" : categoryFilter}
+                onValueChange={(value) => {
+                  if (!value) {
+                    setCategoryFilter("all");
+                    return;
+                  }
+                  setCategoryFilter(value as CategoryFilter);
                   setMoreOpen(false);
                 }}
+                aria-label={t("connectionsPage.categoryAria")}
+                className="connections-chip-group"
               >
-                <ListFilter size={14} />
-                <span className="connections-tool-label">{t("connectionsPage.moreFilters")}</span>
-              </Button>
-              {filterMenuOpen ? (
-                <div className="connections-menu" role="menu">
-                  <div className="connections-menu-label">{t("connectionsPage.filtersAndTools")}</div>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className="connections-menu-item"
-                    onClick={() => {
-                      resetFilters();
-                      setFilterMenuOpen(false);
-                    }}
-                  >
-                    {t("connectionsPage.resetFilters")}
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className="connections-menu-item"
-                    onClick={() => {
-                      props.onRefresh();
-                      setFilterMenuOpen(false);
-                    }}
-                  >
-                    {t("connectionsPage.refresh")}
-                  </button>
-                  <div className="connections-menu-divider" />
-                  <Link
-                    to="/providers"
-                    role="menuitem"
-                    className="connections-menu-item"
-                    onClick={() => setFilterMenuOpen(false)}
-                  >
-                    {t("connectionsPage.providerCatalogAdvanced")}
-                  </Link>
-                </div>
-              ) : null}
-            </div>
-          </div>
-        </div>
+                {primaryCategoryIds.map((id) => {
+                  const count = categoryCounts.get(id) ?? 0;
+                  return (
+                    <ToggleGroupItem
+                      key={id}
+                      value={id}
+                      className="console-chip connections-chip"
+                      disabled={count === 0}
+                    >
+                      <span>{t(categoryLabelKey(id))}</span>
+                      <span className="console-chip-count">{compactNumber.format(count)}</span>
+                    </ToggleGroupItem>
+                  );
+                })}
+              </ToggleGroup>
 
-        <div className="connections-filter-bar" data-connections-status-filters data-connections-category-filters>
-          <div className="connections-filter-scroll">
-            <ToggleGroup
-              className="connections-chip-group"
-              type="single"
-              value={statusFilter}
-              onValueChange={(value) => (value ? setStatusFilter(value as StatusFilter) : undefined)}
-              aria-label={t("connectionsPage.statusAria")}
-            >
-              {statusCounts.map((opt) => (
-                <ToggleGroupItem
-                  key={opt.id}
-                  value={opt.id}
-                  className="console-chip connections-chip"
-                  disabled={opt.count === 0 && opt.id !== "all"}
+              <div className="connections-menu-anchor" ref={moreMenuRef}>
+                <button
+                  type="button"
+                  className={moreSelected ? "console-chip connections-chip is-active" : "console-chip connections-chip"}
+                  onClick={() => {
+                    setMoreOpen((v) => !v);
+                    setFilterMenuOpen(false);
+                  }}
+                  aria-expanded={moreOpen}
                 >
-                  <span>{opt.label}</span>
-                  <span className="console-chip-count">{compactNumber.format(opt.count)}</span>
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-
-            <ToggleGroup
-              type="single"
-              value={categoryFilter === "all" || moreSelected ? "" : categoryFilter}
-              onValueChange={(value) => {
-                if (!value) {
-                  setCategoryFilter("all");
-                  return;
-                }
-                setCategoryFilter(value as CategoryFilter);
-                setMoreOpen(false);
-              }}
-              aria-label={t("connectionsPage.categoryAria")}
-              className="connections-chip-group"
-            >
-              {primaryCategoryIds.map((id) => {
-                const count = categoryCounts.get(id) ?? 0;
-                return (
-                  <ToggleGroupItem
-                    key={id}
-                    value={id}
-                    className="console-chip connections-chip"
-                    disabled={count === 0}
-                  >
-                    <span>{t(categoryLabelKey(id))}</span>
-                    <span className="console-chip-count">{compactNumber.format(count)}</span>
-                  </ToggleGroupItem>
-                );
-              })}
-            </ToggleGroup>
-
-            <div className="connections-menu-anchor" ref={moreMenuRef}>
-              <button
-                type="button"
-                className={moreSelected ? "console-chip connections-chip is-active" : "console-chip connections-chip"}
-                onClick={() => {
-                  setMoreOpen((v) => !v);
-                  setFilterMenuOpen(false);
-                }}
-                aria-expanded={moreOpen}
-              >
-                <span>{moreLabel}</span>
-                {moreSelected ? (
-                  <span className="console-chip-count">
-                    {compactNumber.format(categoryCounts.get(categoryFilter) ?? 0)}
-                  </span>
+                  <span>{moreLabel}</span>
+                  {moreSelected ? (
+                    <span className="console-chip-count">
+                      {compactNumber.format(categoryCounts.get(categoryFilter) ?? 0)}
+                    </span>
+                  ) : null}
+                </button>
+                {moreOpen ? (
+                  <div className="connections-menu" role="menu">
+                    <div className="connections-menu-label">{t("connectionsPage.moreCategories")}</div>
+                    {moreCategoryIds.map((id) => {
+                      const count = categoryCounts.get(id) ?? 0;
+                      const active = categoryFilter === id;
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          role="menuitem"
+                          className={active ? "connections-menu-item is-active" : "connections-menu-item"}
+                          disabled={count === 0}
+                          onClick={() => {
+                            setCategoryFilter(id);
+                            setMoreOpen(false);
+                          }}
+                        >
+                          <span>{t(categoryLabelKey(id))}</span>
+                          <span className="connections-menu-count">{compactNumber.format(count)}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 ) : null}
-              </button>
-              {moreOpen ? (
-                <div className="connections-menu" role="menu">
-                  <div className="connections-menu-label">{t("connectionsPage.moreCategories")}</div>
-                  {moreCategoryIds.map((id) => {
-                    const count = categoryCounts.get(id) ?? 0;
-                    const active = categoryFilter === id;
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        role="menuitem"
-                        className={active ? "connections-menu-item is-active" : "connections-menu-item"}
-                        disabled={count === 0}
-                        onClick={() => {
-                          setCategoryFilter(id);
-                          setMoreOpen(false);
-                        }}
-                      >
-                        <span>{t(categoryLabelKey(id))}</span>
-                        <span className="connections-menu-count">{compactNumber.format(count)}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+              </div>
+
+              {filtersActive ? (
+                <button type="button" className="connections-reset" onClick={resetFilters}>
+                  <X size={13} />
+                  {t("connectionsPage.reset")}
+                </button>
               ) : null}
             </div>
 
-            {filtersActive ? (
-              <button type="button" className="connections-reset" onClick={resetFilters}>
-                <X size={13} />
-                {t("connectionsPage.reset")}
-              </button>
-            ) : null}
-          </div>
-
-          <div className="connections-result-meta" aria-live="polite">
-            {t("connectionsPage.showing", { shown: shownCount, total: totalCount })}
+            <div className="connections-result-meta" aria-live="polite">
+              {t("connectionsPage.showing", { shown: shownCount, total: totalCount })}
+            </div>
           </div>
         </div>
-      </div>
       </div>
 
       <div className="connections-scroll-body">
-      {visible.length === 0 ? (
-        <div className="console-card connections-list-card">
-          <div className="console-empty">
-            <div>
-              <p style={{ margin: 0 }}>{t("connectionsPage.empty")}</p>
-              {filtersActive ? (
-                <Button variant="outline" size="sm" type="button" onClick={resetFilters} style={{ marginTop: 12 }}>
-                  {t("connectionsPage.resetFilters")}
-                </Button>
-              ) : null}
+        {visible.length === 0 ? (
+          <div className="console-card connections-list-card">
+            <div className="console-empty">
+              <div>
+                <p style={{ margin: 0 }}>{t("connectionsPage.empty")}</p>
+                {filtersActive ? (
+                  <Button variant="outline" size="sm" type="button" onClick={resetFilters} style={{ marginTop: 12 }}>
+                    {t("connectionsPage.resetFilters")}
+                  </Button>
+                ) : null}
+              </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="console-card connections-list-card" data-connections-list>
-          {rendered.map((provider) => (
-            <AppConnectionRow
-              key={provider.service}
-              provider={provider}
-              status={statusByService.get(provider.service) ?? resolveProviderConnectionStatus(provider, [], [])}
-            />
-          ))}
-          {hasMore ? (
-            <div ref={loadMoreRef} className="connections-load-more">
-              <Button variant="outline" size="sm" type="button" onClick={loadMore}>
-                {t("connectionsPage.showMore")}
-              </Button>
-            </div>
-          ) : null}
-        </div>
-      )}
+        ) : (
+          <div className="console-card connections-list-card" data-connections-list>
+            {rendered.map((provider) => (
+              <AppConnectionRow
+                key={provider.service}
+                provider={provider}
+                status={statusByService.get(provider.service) ?? resolveProviderConnectionStatus(provider, [], [])}
+              />
+            ))}
+            {hasMore ? (
+              <div ref={loadMoreRef} className="connections-load-more">
+                <Button variant="outline" size="sm" type="button" onClick={loadMore}>
+                  {t("connectionsPage.showMore")}
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        )}
       </div>
     </section>
   );

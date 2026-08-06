@@ -11,7 +11,6 @@ import {
   resolveClientIp,
 } from "./audit/events.ts";
 import { runsToCsv, runsToJsonl, summarizeUsage } from "./audit/export.ts";
-import { ConnectionDisableStore } from "./connections/disable-store.ts";
 import { sendOtpEmail } from "./auth/mail.ts";
 import {
   CompanyAuthStore,
@@ -22,6 +21,7 @@ import {
   normalizeEmail,
 } from "./auth/store.ts";
 import { TokenMemberBindingStore } from "./auth/token-bindings.ts";
+import { ConnectionDisableStore } from "./connections/disable-store.ts";
 import {
   clearMemberCookie,
   jsonError,
