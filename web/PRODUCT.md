@@ -6,8 +6,8 @@ product
 
 ## Users
 
-- **org-admin / auditor**：内网企业管理员与审计角色（主路径）。  
-- **ops-admin**：运维配置连接密钥与底层调试（高级）。  
+- **org-admin / auditor**：内网企业管理员与审计角色（主路径）。
+- **ops-admin**：运维配置连接密钥与底层调试（高级）。
 - **开发者**：本地调试 Gateway / Action。
 
 ## Product Purpose
@@ -25,17 +25,24 @@ UI 叙事与信息架构应是 **企业管控**，不是通用「连接器开发
 
 ## Design Principles
 
-- 主路径优先：**概览 / 应用连接 / 团队**（单列表 + 状态：未激活 / 已启用 / 已停用；全公司为筛选）。  
-- 「更多」承载计量、Skills、运行、API Key、组织配置；操作从连接行深链。  
-- 策略编辑只走 Org 叙事（企业模式禁 Console 直写 runtime-policy）。  
-- 连接页默认 office catalog；强调组织共享、可直接使用（no_auth）、无 secret 回显。  
+- 主路径优先：**概览 / 应用连接 / 团队**（单列表 + 状态：未激活 / 已启用 / 已停用；全公司为筛选）。
+- 「更多」承载计量、Skills、运行、API Key、组织配置；操作从连接行深链。
+- 策略编辑只走 Org 叙事（企业模式禁 Console 直写 runtime-policy）。
+- 连接页默认 office catalog；强调组织共享、可直接使用（no_auth）、无 secret 回显。
 - 执行状态、拒绝原因（PolicyDecision）、fallback 尝试可理解。
 
 ## Accessibility & Inclusion
 
 Target WCAG AA contrast. Keyboard focus, readable fonts, reduced-motion, usable narrow layouts.
 
+## Design system
+
+- **Canonical:** repo-root [`DESIGN.md`](../DESIGN.md) (Cal.com-primary tokens from awesome-design-md, mapped to live CSS vars).
+- **Backend tokens:** `data/org/default/config/design/tokens.json`.
+- **Implementation:** `web/src/styles/theme.css`.
+- **Index:** `docs/design/README.md`.
+
 ## Related
 
-- Repo product docs: `docs/onmycompany/`  
-- Desktop companion: OnMyAgent  
+- Repo product docs: `docs/onmycompany/`
+- Desktop companion: OnMyAgent

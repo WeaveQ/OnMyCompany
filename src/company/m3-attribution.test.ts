@@ -1,11 +1,11 @@
+import { Hono } from "hono";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { Hono } from "hono";
-import { registerCompanyRoutes } from "./routes.ts";
 import { TokenMemberBindingStore } from "./auth/token-bindings.ts";
 import { orgPolicyToRuntimeRules } from "./policy/org-to-runtime.ts";
+import { registerCompanyRoutes } from "./routes.ts";
 
 const tempRoots: string[] = [];
 

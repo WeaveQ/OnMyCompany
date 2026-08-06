@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { CONNECTION_STATUS_LABELS } from "./connections-page";
+import { OVERVIEW_SECTION_IDS } from "./overview-page";
 import {
   ALL_TEAMS_ID,
   accountStatusLabelZh,
@@ -16,8 +18,6 @@ import {
   teamNavTarget,
   teamTableColumnLabels,
 } from "./team-ui";
-import { CONNECTION_STATUS_LABELS } from "./connections-page";
-import { OVERVIEW_SECTION_IDS } from "./overview-page";
 import { getMoreNavPaths, getPrimaryNavPaths } from "./ui";
 
 describe("team name validation (create modal)", () => {
@@ -129,12 +129,7 @@ describe("console IA paths", () => {
 
 describe("overview + connections structural markers", () => {
   it("overview sections include capability and usage", () => {
-    expect([...OVERVIEW_SECTION_IDS]).toEqual([
-      "observability",
-      "capability",
-      "team-usage",
-      "personal-usage",
-    ]);
+    expect([...OVERVIEW_SECTION_IDS]).toEqual(["observability", "capability", "team-usage", "personal-usage"]);
   });
 
   it("connections status chips match product labels", () => {

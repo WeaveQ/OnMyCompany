@@ -30,10 +30,10 @@ Out of scope (unless they are regressions in this repo):
 
 ## Operator guidance
 
-- Set `OMC_ENCRYPTION_KEY` for at-rest credential encryption  
-- Set `OMC_ADMIN_TOKEN` for admin API / console  
-- Prefer `OMC_ALLOWED_ACTIONS` / `OMC_BLOCKED_ACTIONS` (and proxy lists) to reduce surface  
-- Keep Node.js on a supported release  
-- Do not expose the admin console or unauthenticated runtime to the public internet  
+- Set `OMC_ENCRYPTION_KEY` for at-rest credential encryption
+- Set `OMC_ADMIN_TOKEN` for admin API / console
+- Prefer `OMC_ALLOWED_ACTIONS` / `OMC_BLOCKED_ACTIONS` (and proxy lists) to reduce surface
+- Keep Node.js on a supported release
+- Do not expose the admin console or unauthenticated runtime to the public internet
 
 Thank you for helping keep OnMyCompany and its operators secure.

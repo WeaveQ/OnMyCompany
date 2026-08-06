@@ -110,11 +110,7 @@ export const COMPANY_PRODUCT_PUBLIC_PREFIXES = [
   "/api/teams",
 ] as const;
 
-export const COMPANY_PRODUCT_PUBLIC_EXACT = [
-  "/api/company/health",
-  "/api/me",
-  "/api/policy/effective",
-] as const;
+export const COMPANY_PRODUCT_PUBLIC_EXACT = ["/api/company/health", "/api/me", "/api/policy/effective"] as const;
 
 function isPublicPath(path: string, method: string): boolean {
   return (
@@ -126,9 +122,7 @@ function isPublicPath(path: string, method: string): boolean {
     (method === "GET" && path.startsWith("/api/files/")) ||
     // Company product APIs enforce member session inside handlers.
     COMPANY_PRODUCT_PUBLIC_EXACT.includes(path as (typeof COMPANY_PRODUCT_PUBLIC_EXACT)[number]) ||
-    COMPANY_PRODUCT_PUBLIC_PREFIXES.some(
-      (prefix) => path === prefix.replace(/\/$/, "") || path.startsWith(prefix),
-    ) ||
+    COMPANY_PRODUCT_PUBLIC_PREFIXES.some((prefix) => path === prefix.replace(/\/$/, "") || path.startsWith(prefix)) ||
     isConsoleShellRequest(path, method)
   );
 }
@@ -160,10 +154,7 @@ export async function readLocalAuthSession(context: Context, options: LocalAuthO
  * - No ADMIN_TOKEN configured → open local console (same as session.authenticated).
  * - ADMIN_TOKEN set → valid admin bearer or session cookie required.
  */
-export async function isLocalAdminAuthenticated(
-  context: Context,
-  adminToken: string | undefined,
-): Promise<boolean> {
+export async function isLocalAdminAuthenticated(context: Context, adminToken: string | undefined): Promise<boolean> {
   const token = normalizeToken(adminToken);
   if (!token) {
     return true;

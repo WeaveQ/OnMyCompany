@@ -1,4 +1,6 @@
+import type { MemberRecord } from "./auth/store.ts";
 import type { Context } from "hono";
+
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import {
   CompanyAuthError,
@@ -6,7 +8,6 @@ import {
   accountStatusLabelZh,
   memberIsOrgAdmin,
   memberStatus,
-  type MemberRecord,
 } from "./auth/store.ts";
 import { OrgConfigError } from "./org-config/store.ts";
 import { SkillsError } from "./skills/store.ts";

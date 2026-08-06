@@ -65,12 +65,7 @@ interface ModelRouterHealth {
 }
 
 /** Structural markers for tests / screenshot QA. */
-export const OVERVIEW_SECTION_IDS = [
-  "observability",
-  "capability",
-  "team-usage",
-  "personal-usage",
-] as const;
+export const OVERVIEW_SECTION_IDS = ["observability", "capability", "team-usage", "personal-usage"] as const;
 
 export function OverviewPage(props: OverviewPageProps): ReactNode {
   const t = useTranslate();
@@ -79,9 +74,7 @@ export function OverviewPage(props: OverviewPageProps): ReactNode {
   const [usage, setUsage] = useState<UsageSummary | null>(null);
   const [llmUsage, setLlmUsage] = useState<LlmUsageSummary | null>(null);
   const [modelRouter, setModelRouter] = useState<ModelRouterHealth | null>(null);
-  const [teamId, setTeamId] = useState<string | undefined>(
-    () => props.activeTeamId || getActiveTeamId(),
-  );
+  const [teamId, setTeamId] = useState<string | undefined>(() => props.activeTeamId || getActiveTeamId());
   const token = getMemberToken();
 
   useEffect(() => {
@@ -121,8 +114,7 @@ export function OverviewPage(props: OverviewPageProps): ReactNode {
   const executable = summary.locallyExecutableActionCount;
   const routerOk = modelRouter?.ok === true;
   const routerDown = modelRouter?.enabled !== false && modelRouter?.ok === false;
-  const dashboardUrl =
-    llmUsage?.dashboardUrl || modelRouter?.dashboardUrl || "http://127.0.0.1:20128/dashboard";
+  const dashboardUrl = llmUsage?.dashboardUrl || modelRouter?.dashboardUrl || "http://127.0.0.1:20128/dashboard";
   const toolRuns = usage?.totalRuns ?? 0;
   const connPct = Math.round((connected / totalProviders) * 100);
 
@@ -142,9 +134,7 @@ export function OverviewPage(props: OverviewPageProps): ReactNode {
         <div className="overview-hero-text">
           <h1 className="page-hero-title">概览</h1>
           <p className="page-hero-lead">
-            {connected === 0
-              ? "先连一个办公应用，再看用量与审计。"
-              : "模型账看 token，工具账看外发。"}
+            {connected === 0 ? "先连一个办公应用，再看用量与审计。" : "模型账看 token，工具账看外发。"}
           </p>
         </div>
         <div className="overview-hero-org">
@@ -206,13 +196,7 @@ export function OverviewPage(props: OverviewPageProps): ReactNode {
           icon={Waypoints}
           label="模型边车"
           value={routerOk ? "在线" : routerDown ? "离线" : "—"}
-          hint={
-            llmUsage?.ok
-              ? `${formatNum(llmUsage.totalTokens)} tokens`
-              : routerOk
-                ? "OmniRoute 可达"
-                : "需启动边车"
-          }
+          hint={llmUsage?.ok ? `${formatNum(llmUsage.totalTokens)} tokens` : routerOk ? "OmniRoute 可达" : "需启动边车"}
           tone={routerOk ? "ok" : routerDown ? "warn" : "muted"}
           href={dashboardUrl}
           external

@@ -4,11 +4,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { ArrowUpDown, ChevronRight, ListFilter, Search, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
-import {
-  filterProviders,
-  resolveProviderConnectionStatus,
-  sortProviders,
-} from "./model";
+import { filterProviders, resolveProviderConnectionStatus, sortProviders } from "./model";
 import { isProviderLocallyAvailable } from "./providers-page";
 import { ProviderIcon } from "./shared-ui";
 import { Button } from "@/components/ui/button";
@@ -157,10 +153,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
     [searched, statusByService, statusFilter],
   );
 
-  const visible = useMemo(
-    () => byStatus.filter((p) => matchCategory(p, categoryFilter)),
-    [byStatus, categoryFilter],
-  );
+  const visible = useMemo(() => byStatus.filter((p) => matchCategory(p, categoryFilter)), [byStatus, categoryFilter]);
 
   const statusCounts = useMemo(
     () =>
@@ -184,16 +177,11 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
   }, [byStatus]);
 
   const resetKey = `${query}|${statusFilter}|${categoryFilter}|${sortMode}`;
-  const {
-    hasMore,
-    limit,
-    loadMore,
-  } = useProgressiveLimit(visible.length, resetKey);
+  const { hasMore, limit, loadMore } = useProgressiveLimit(visible.length, resetKey);
   const loadMoreRef = useIntersectionLoader(hasMore, loadMore);
   const rendered = visible.slice(0, limit);
 
-  const filtersActive =
-    query.trim().length > 0 || statusFilter !== "all" || categoryFilter !== "all";
+  const filtersActive = query.trim().length > 0 || statusFilter !== "all" || categoryFilter !== "all";
 
   function resetFilters(): void {
     setQuery("");
@@ -204,9 +192,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
   }
 
   const moreSelected = moreCategoryOptions.some((o) => o.id === categoryFilter);
-  const moreLabel = moreSelected
-    ? moreCategoryOptions.find((o) => o.id === categoryFilter)?.label ?? "更多"
-    : "更多";
+  const moreLabel = moreSelected ? (moreCategoryOptions.find((o) => o.id === categoryFilter)?.label ?? "更多") : "更多";
   const totalCount = searched.length;
   const shownCount = visible.length;
 
@@ -429,10 +415,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
             <AppConnectionRow
               key={provider.service}
               provider={provider}
-              status={
-                statusByService.get(provider.service) ??
-                resolveProviderConnectionStatus(provider, [], [])
-              }
+              status={statusByService.get(provider.service) ?? resolveProviderConnectionStatus(provider, [], [])}
             />
           ))}
           {hasMore ? (
@@ -448,10 +431,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
   );
 }
 
-function AppConnectionRow(props: {
-  provider: ProviderDefinition;
-  status: ProviderConnectionStatus;
-}): ReactNode {
+function AppConnectionRow(props: { provider: ProviderDefinition; status: ProviderConnectionStatus }): ReactNode {
   const to = `/providers/${encodeURIComponent(props.provider.service)}`;
   const locallyAvailable = isProviderLocallyAvailable(props.provider);
   const { status } = props;
@@ -483,9 +463,7 @@ function AppConnectionRow(props: {
         <ProviderIcon provider={props.provider} />
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <span className="console-row-title">
-              {props.provider.displayName || props.provider.service}
-            </span>
+            <span className="console-row-title">{props.provider.displayName || props.provider.service}</span>
             {badge ? (
               <span
                 className="team-pill"
@@ -588,10 +566,7 @@ function primaryCategoryLabel(provider: ProviderDefinition): string | undefined 
   return "其他";
 }
 
-function useProgressiveLimit(
-  total: number,
-  resetKey: string,
-): { hasMore: boolean; limit: number; loadMore(): void } {
+function useProgressiveLimit(total: number, resetKey: string): { hasMore: boolean; limit: number; loadMore(): void } {
   const [limit, setLimit] = useState(pageSize);
 
   useEffect(() => {

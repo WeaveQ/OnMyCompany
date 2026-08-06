@@ -36,8 +36,7 @@ export function ResourcesPage(): ReactNode {
       <header className="page-hero">
         <h1 className="page-hero-title">文档与接入</h1>
         <p className="page-hero-lead">
-          把任意 Agent（Grok / Cursor / 脚本）接到公司网关：复制 MCP 地址与配置，先在「API Key」页创建 runtime
-          token。
+          把任意 Agent（Grok / Cursor / 脚本）接到公司网关：复制 MCP 地址与配置，先在「API Key」页创建 runtime token。
         </p>
       </header>
 

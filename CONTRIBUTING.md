@@ -15,9 +15,9 @@ npm run ci             # 与 GitHub Actions 一致
 
 读完：
 
-1. [AGENTS.md](AGENTS.md)  
-2. [docs/onmycompany/README.md](docs/onmycompany/README.md)  
-3. [docs/onmycompany/RBAC.md](docs/onmycompany/RBAC.md) · [TEAM-ISOLATION.md](docs/onmycompany/TEAM-ISOLATION.md)  
+1. [AGENTS.md](AGENTS.md)
+2. [docs/onmycompany/README.md](docs/onmycompany/README.md)
+3. [docs/onmycompany/RBAC.md](docs/onmycompany/RBAC.md) · [TEAM-ISOLATION.md](docs/onmycompany/TEAM-ISOLATION.md)
 
 ## Before a merge request
 
@@ -36,13 +36,13 @@ npm run generate:catalog
 
 ## Where to put code
 
-| 改动类型 | 位置 |
-|----------|------|
-| 企业身份 / OrgConfig / 审计 | `src/company/` |
-| 挂载路由 | `src/server/` 薄改 |
-| Gateway 执行 / providers | 有理由再改 `src/core` / `src/providers` |
-| 管理台 | `web/` |
-| 产品文档 | `docs/onmycompany/` |
+| 改动类型                    | 位置                                    |
+| --------------------------- | --------------------------------------- |
+| 企业身份 / OrgConfig / 审计 | `src/company/`                          |
+| 挂载路由                    | `src/server/` 薄改                      |
+| Gateway 执行 / providers    | 有理由再改 `src/core` / `src/providers` |
+| 管理台                      | `web/`                                  |
+| 产品文档                    | `docs/onmycompany/`                     |
 
 ## Adding providers
 

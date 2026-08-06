@@ -21,8 +21,7 @@ export const provider: ProviderDefinition = {
           required: true,
           secret: false,
           placeholder: "https://fns.example.com",
-          description:
-            "The HTTP or HTTPS URL of your FNS server. Private targets require OMC_ALLOW_PRIVATE_NETWORK.",
+          description: "The HTTP or HTTPS URL of your FNS server. Private targets require OMC_ALLOW_PRIVATE_NETWORK.",
         },
       ],
     },

@@ -1,14 +1,15 @@
+import type { CatalogStore } from "../catalog-store.ts";
+import type { IProviderLoader } from "../providers/provider-loader.ts";
+import type { ITransitFileService } from "../server/files/transit-file-store.ts";
+import type { ISecretCodec } from "../server/secrets/secret-codec-core.ts";
+import type { RuntimeDatabase } from "../server/storage/runtime-database.ts";
+import type { CompanyHealthBody } from "./routes.ts";
+
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { createConnectApp } from "../server/connect-app.ts";
-import type { CatalogStore } from "../catalog-store.ts";
-import type { IProviderLoader } from "../providers/provider-loader.ts";
-import type { ITransitFileService } from "../server/files/transit-file-store.ts";
-import type { RuntimeDatabase } from "../server/storage/runtime-database.ts";
-import type { ISecretCodec } from "../server/secrets/secret-codec-core.ts";
-import type { CompanyHealthBody } from "./routes.ts";
 
 /**
  * Integration: company routes mounted through the real createConnectApp entry.

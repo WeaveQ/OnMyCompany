@@ -68,9 +68,7 @@ export function findSkillMarkdown(entries: ZipEntry[]): { skillMd: string; packa
   if (!skill) {
     throw new ZipError("validation_error", "zip must contain SKILL.md");
   }
-  const packageHint = skill.path.includes("/")
-    ? skill.path.split("/")[0]
-    : undefined;
+  const packageHint = skill.path.includes("/") ? skill.path.split("/")[0] : undefined;
   return { skillMd: skill.data.toString("utf8"), packageHint };
 }
 

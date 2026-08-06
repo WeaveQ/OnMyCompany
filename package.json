@@ -1,8 +1,9 @@
 {
   "name": "@weaveq/onmycompany",
   "version": "0.1.0-m0",
-  "description": "OnMyCompany — enterprise agent control plane and outbound gateway",
   "private": true,
+  "description": "OnMyCompany — enterprise agent control plane and outbound gateway",
+  "license": "SEE LICENSE IN LICENSE",
   "workspaces": [
     "web"
   ],
@@ -81,6 +82,5 @@
     "esbuild@0.28.1": true,
     "sharp@0.34.5": true,
     "workerd@1.20260630.1": true
-  },
-  "license": "SEE LICENSE IN LICENSE"
+  }
 }

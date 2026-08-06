@@ -31,19 +31,20 @@ describe("normalizeOmnirouteUsagePayload", () => {
 
 describe("fetchOmnirouteLlmUsage", () => {
   it("returns ok summary when history is reachable", async () => {
-    const fetchImpl = vi.fn(async () =>
-      new Response(
-        JSON.stringify({
-          totalRequests: 1,
-          totalPromptTokens: 84,
-          totalCompletionTokens: 110,
-          totalCost: 0,
-          byProvider: { opencode: { requests: 1, promptTokens: 84, completionTokens: 110, cost: 0 } },
-          byModel: {},
-          byAccount: {},
-        }),
-        { status: 200 },
-      ),
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            totalRequests: 1,
+            totalPromptTokens: 84,
+            totalCompletionTokens: 110,
+            totalCost: 0,
+            byProvider: { opencode: { requests: 1, promptTokens: 84, completionTokens: 110, cost: 0 } },
+            byModel: {},
+            byAccount: {},
+          }),
+          { status: 200 },
+        ),
     );
     const summary = await fetchOmnirouteLlmUsage({ fetchImpl: fetchImpl as typeof fetch });
     expect(summary.ok).toBe(true);

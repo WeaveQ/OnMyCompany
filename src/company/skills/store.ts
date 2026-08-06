@@ -352,10 +352,7 @@ export class SkillsStore {
 
   private async resolvePackageDir(packageId: string): Promise<string | undefined> {
     const safe = safeDirName(packageId);
-    const candidates = [
-      join(this.skillsRoot, "registry", "public", safe),
-      join(this.skillsRoot, "installed", safe),
-    ];
+    const candidates = [join(this.skillsRoot, "registry", "public", safe), join(this.skillsRoot, "installed", safe)];
     // personal registries
     const personalRoot = join(this.skillsRoot, "registry", "personal");
     if (await exists(personalRoot)) {
@@ -387,9 +384,7 @@ export class SkillsError extends Error {
 }
 
 function filterAndMark(items: SkillPackageMeta[], enabled: Set<string>, q?: string): SkillPackageListItem[] {
-  return items
-    .filter((m) => !q || matchesQuery(m, q))
-    .map((m) => ({ ...m, added: enabled.has(m.packageId) }));
+  return items.filter((m) => !q || matchesQuery(m, q)).map((m) => ({ ...m, added: enabled.has(m.packageId) }));
 }
 
 function matchesQuery(meta: SkillPackageMeta, q: string): boolean {

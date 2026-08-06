@@ -1,10 +1,12 @@
+import type { CompanyHealthBody } from "./routes.ts";
+
+import { Hono } from "hono";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Hono } from "hono";
 import { afterEach, describe, expect, it } from "vitest";
 import { defaultOrgConfigRoot } from "./org-config/layout.ts";
-import { registerCompanyRoutes, type CompanyHealthBody } from "./routes.ts";
+import { registerCompanyRoutes } from "./routes.ts";
 
 const tempRoots: string[] = [];
 

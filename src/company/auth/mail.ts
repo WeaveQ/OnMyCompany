@@ -9,11 +9,7 @@ export interface OtpMailResult {
   detail?: string;
 }
 
-export async function sendOtpEmail(input: {
-  to: string;
-  code: string;
-  orgId?: string;
-}): Promise<OtpMailResult> {
+export async function sendOtpEmail(input: { to: string; code: string; orgId?: string }): Promise<OtpMailResult> {
   const smtpUrl = process.env.OMC_SMTP_URL?.trim();
   const from = process.env.OMC_SMTP_FROM?.trim() || "noreply@onmycompany.local";
   if (!smtpUrl) {

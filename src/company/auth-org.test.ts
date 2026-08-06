@@ -1,7 +1,7 @@
+import { Hono } from "hono";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Hono } from "hono";
 import { afterEach, describe, expect, it } from "vitest";
 import { registerCompanyRoutes } from "./routes.ts";
 

@@ -112,9 +112,7 @@ serve(
     logger.info({ url: `http://${hostname}:${info.port}` }, "connect server listening");
     logger.info({ dataDir }, "runtime data directory");
     if (!adminToken) {
-      logger.warn(
-        `local admin authentication is disabled; set ${omcEnvName("ADMIN_TOKEN")} to require bearer tokens`,
-      );
+      logger.warn(`local admin authentication is disabled; set ${omcEnvName("ADMIN_TOKEN")} to require bearer tokens`);
     }
     if (!runtimeAuthConfigured) {
       logger.warn(

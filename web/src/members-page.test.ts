@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { describe, expect, it } from "vitest";
 
 /**
  * People IA (Phase 1):
@@ -30,8 +30,8 @@ describe("people IA (accounts vs team vs directory)", () => {
     expect(teamSrc).toContain("加入本队");
     expect(teamSrc).toContain("team-add-from-pool");
     // Org account lifecycle must not live on the team page
-    expect(teamSrc).not.toContain('apiPut(`/api/org/members/');
-    expect(teamSrc).not.toContain('apiDelete(`/api/org/members/');
+    expect(teamSrc).not.toContain("apiPut(`/api/org/members/");
+    expect(teamSrc).not.toContain("apiDelete(`/api/org/members/");
     expect(teamSrc).not.toContain("person-edit-org-role");
     expect(teamSrc).not.toContain("已停用账号（会话与 runtime token 已吊销）");
   });

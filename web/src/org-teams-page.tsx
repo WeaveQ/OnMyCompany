@@ -1,20 +1,16 @@
+import type { TeamRecord } from "./team-ui";
 import type { ReactNode } from "react";
 
+import { Plus, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { Plus, Users } from "lucide-react";
 import { ApiError, apiGet, apiPost } from "./api";
 import { MemberLoginCard } from "./member-login-card";
-import {
-  ensureMemberSessionForConsole,
-  hasMemberSession,
-  memberAuthHeaders,
-  setMemberToken,
-} from "./member-session";
-import { formatTeamIdSnippet, type TeamRecord } from "./team-ui";
-import { CreateTeamModal, TeamAvatar } from "./team-manage-page";
-import { Button } from "@/components/ui/button";
+import { ensureMemberSessionForConsole, hasMemberSession, memberAuthHeaders, setMemberToken } from "./member-session";
 import { InlineError } from "./shared-ui";
+import { CreateTeamModal, TeamAvatar } from "./team-manage-page";
+import { formatTeamIdSnippet } from "./team-ui";
+import { Button } from "@/components/ui/button";
 
 /**
  * 团队列表（企业侧）：有哪些队、创建、进入本队成员页。
@@ -117,8 +113,8 @@ export function OrgTeamsPage(): ReactNode {
         <div>
           <h1 className="page-hero-title">团队</h1>
           <p className="page-hero-lead">
-            企业下的小团队。点进某队管理<strong>队内成员</strong>；公司花名册见{" "}
-            <Link to="/members">企业账号</Link>。侧栏只保留「团队」一项，本页是全部团队视图。
+            企业下的小团队。点进某队管理<strong>队内成员</strong>；公司花名册见 <Link to="/members">企业账号</Link>
+            。侧栏只保留「团队」一项，本页是全部团队视图。
           </p>
         </div>
         <div className="page-hero-actions">

@@ -52,10 +52,7 @@ export function RunsPage(props: RunsPageProps): ReactNode {
   const allRuns = useMemo(() => [...props.initialRuns, ...runs], [props.initialRuns, runs]);
   const serviceOptions = useMemo(() => runServiceOptions(allRuns), [allRuns]);
   const actionOptions = useMemo(() => runActionOptions(allRuns), [allRuns]);
-  const callerOptions = useMemo(
-    () => [...new Set(allRuns.map((run) => run.caller))],
-    [allRuns],
-  );
+  const callerOptions = useMemo(() => [...new Set(allRuns.map((run) => run.caller))], [allRuns]);
   const memberOptions = useMemo(() => runMemberOptions(allRuns), [allRuns]);
   const hasFilters = Boolean(
     filters.service || filters.actionId || filters.caller || filters.ok !== null || filters.memberId,
@@ -302,9 +299,7 @@ export function RunsPage(props: RunsPageProps): ReactNode {
                               {t("runs.runtimeToken")}: {run.runtimeTokenId}
                             </div>
                           ) : null}
-                          {run.memberId ? (
-                            <div className="run-secondary mono">member: {run.memberId}</div>
-                          ) : null}
+                          {run.memberId ? <div className="run-secondary mono">member: {run.memberId}</div> : null}
                         </TableCell>
                         <TableCell className="mono run-summary run-col-summary">
                           {compactJson(run.inputSummary)}
@@ -356,8 +351,7 @@ export function RunsPage(props: RunsPageProps): ReactNode {
         </section>
         <div className="list-page-footer runs-page-footer" data-testid="runs-page-footer">
           <span className="console-row-meta tabular-nums">
-            已显示 {runs.length} 条
-            {nextCursor ? " · 还有更多" : runs.length > 0 ? " · 已到末尾" : ""}
+            已显示 {runs.length} 条{nextCursor ? " · 还有更多" : runs.length > 0 ? " · 已到末尾" : ""}
           </span>
           {runsError ? <InlineError message={runsError} /> : null}
           {nextCursor ? (
@@ -442,9 +436,7 @@ export function runMemberOptions(runs: RunLog[]): RunMemberOption[] {
 
 export function formatMemberOptionLabel(option: RunMemberOption): string {
   const short =
-    option.memberId.length > 12
-      ? `${option.memberId.slice(0, 8)}…${option.memberId.slice(-4)}`
-      : option.memberId;
+    option.memberId.length > 12 ? `${option.memberId.slice(0, 8)}…${option.memberId.slice(-4)}` : option.memberId;
   return `${short} (${option.count})`;
 }
 

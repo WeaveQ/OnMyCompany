@@ -8,6 +8,7 @@ import type {
   RuntimePolicyState,
   RuntimeTokenSummary,
 } from "./model";
+import type { TeamRecord } from "./team-ui";
 import type { ThemeMode } from "./theme";
 import type { FormEvent, ReactNode } from "react";
 
@@ -16,7 +17,6 @@ import {
   Activity,
   BookOpen,
   Cable,
-  ChevronDown,
   Gauge,
   Home,
   KeyRound,
@@ -44,29 +44,28 @@ import { AccessPage } from "./access-page";
 import { ActionsPage } from "./actions-page";
 import { ApiError, apiGet, apiPost } from "./api";
 import oomolConnectLogoUrl from "./assets/oomol-connect-logo.png";
-import { persistLang, supportedLangs } from "./i18n";
-import { emptyData } from "./model";
-import { MembersPage } from "./members-page";
-import { OrgConfigPage } from "./org-config-page";
-import { OrgTeamsPage } from "./org-teams-page";
-import { OverviewPage } from "./overview-page";
-import { ProvidersPage } from "./providers-page";
-import { ResourcesPage } from "./resources-page";
-import { RunsPage } from "./runs-page";
-import { SkillsPage } from "./skills-page";
-import { ConnectionsPage } from "./connections-page";
-import { MeteringPage } from "./metering-page";
 import { AuditEventsPage } from "./audit-events-page";
-import { CreateTeamModal, TeamManagePage, TeamSwitcher } from "./team-manage-page";
-import type { TeamRecord } from "./team-ui";
-import { ALL_TEAMS_ID, isAllTeamsView, resolveActiveTeamId, teamNavTarget } from "./team-ui";
+import { ConnectionsPage } from "./connections-page";
+import { persistLang, supportedLangs } from "./i18n";
 import {
   ensureMemberSessionForConsole,
   getActiveTeamId,
   memberAuthHeaders,
   setActiveTeamId as persistActiveTeamId,
 } from "./member-session";
+import { MembersPage } from "./members-page";
+import { MeteringPage } from "./metering-page";
+import { emptyData } from "./model";
+import { OrgConfigPage } from "./org-config-page";
+import { OrgTeamsPage } from "./org-teams-page";
+import { OverviewPage } from "./overview-page";
+import { ProvidersPage } from "./providers-page";
+import { ResourcesPage } from "./resources-page";
+import { RunsPage } from "./runs-page";
 import { InlineError } from "./shared-ui";
+import { SkillsPage } from "./skills-page";
+import { CreateTeamModal, TeamManagePage, TeamSwitcher } from "./team-manage-page";
+import { ALL_TEAMS_ID, resolveActiveTeamId, teamNavTarget } from "./team-ui";
 import { useThemeMode } from "./theme";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -515,14 +514,11 @@ function AppShell(props: {
           {navGroups.map((group, groupIndex) => (
             <div key={group.labelKey ?? `nav-group-${groupIndex}`} className="sidebar-nav-group">
               {groupIndex > 0 ? <div className="sidebar-nav-divider" aria-hidden /> : null}
-              {group.labelKey ? (
-                <div className="sidebar-nav-label">{t(group.labelKey)}</div>
-              ) : null}
+              {group.labelKey ? <div className="sidebar-nav-label">{t(group.labelKey)}</div> : null}
               {group.items.map((item) => {
                 const Icon = item.icon;
                 // 「团队」must never open with ALL_TEAMS_ID as the resource id.
-                const to =
-                  item.path === "/team" ? teamNavTarget(activeTeamId, teams) : item.path;
+                const to = item.path === "/team" ? teamNavTarget(activeTeamId, teams) : item.path;
                 return (
                   <NavLink
                     key={item.path}
@@ -616,9 +612,7 @@ function AppShell(props: {
             <Route index element={<Navigate to="/overview" replace />} />
             <Route
               path="/overview"
-              element={
-                <OverviewPage data={props.data} onRefresh={props.onRefresh} activeTeamId={activeTeamId} />
-              }
+              element={<OverviewPage data={props.data} onRefresh={props.onRefresh} activeTeamId={activeTeamId} />}
             />
             <Route path="/providers" element={<ProvidersPage data={props.data} onRefresh={props.onRefresh} />} />
             <Route
@@ -634,10 +628,7 @@ function AppShell(props: {
             <Route path="/org/teams" element={<OrgTeamsPage />} />
             <Route path="/team" element={<TeamManagePage />} />
             <Route path="/members" element={<MembersPage />} />
-            <Route
-              path="/connections"
-              element={<ConnectionsPage data={props.data} onRefresh={props.onRefresh} />}
-            />
+            <Route path="/connections" element={<ConnectionsPage data={props.data} onRefresh={props.onRefresh} />} />
             <Route
               path="/runs"
               element={<RunsPage initialRuns={props.data.runs} nextCursor={props.data.runsNextCursor} />}

@@ -1,13 +1,10 @@
+import type { LlmPriceRow, PricingCatalog } from "./catalog.ts";
+
 /**
  * B: Pull LLM reference prices from OmniRoute sidecar; tools stay local.
  * Failures fall back to static DEFAULT_PRICING_CATALOG / pricing.json.
  */
-import {
-  DEFAULT_PRICING_CATALOG,
-  mergePricingCatalog,
-  type LlmPriceRow,
-  type PricingCatalog,
-} from "./catalog.ts";
+import { DEFAULT_PRICING_CATALOG, mergePricingCatalog } from "./catalog.ts";
 
 export type PricingSource = "omniroute" | "static" | "mixed";
 
@@ -50,11 +47,7 @@ function omniPricingPath(): string {
 }
 
 function omniAdminKey(): string | undefined {
-  return (
-    process.env.OMC_OMNIROUTE_ADMIN_KEY?.trim() ||
-    process.env.OMC_OMNIROUTE_API_KEY?.trim() ||
-    undefined
-  );
+  return process.env.OMC_OMNIROUTE_ADMIN_KEY?.trim() || process.env.OMC_OMNIROUTE_API_KEY?.trim() || undefined;
 }
 
 function pricingDisabled(): boolean {
@@ -97,16 +90,7 @@ function extractCandidateArrays(payload: unknown): unknown[][] {
   if (Array.isArray(payload)) return [payload];
   if (typeof payload !== "object" || payload === null) return [];
   const obj = payload as Record<string, unknown>;
-  const keys = [
-    "data",
-    "models",
-    "pricing",
-    "items",
-    "results",
-    "prices",
-    "catalog",
-    "entries",
-  ];
+  const keys = ["data", "models", "pricing", "items", "results", "prices", "catalog", "entries"];
   const out: unknown[][] = [];
   for (const k of keys) {
     if (Array.isArray(obj[k])) out.push(obj[k] as unknown[]);
@@ -132,13 +116,7 @@ function extractCandidateArrays(payload: unknown): unknown[][] {
     for (const [modelId, price] of Object.entries(modelMap)) {
       if (typeof price !== "object" || price == null || Array.isArray(price)) continue;
       const p = price as Record<string, unknown>;
-      if (
-        "input" in p ||
-        "output" in p ||
-        "inputPrice" in p ||
-        "input_price" in p ||
-        "cached" in p
-      ) {
+      if ("input" in p || "output" in p || "inputPrice" in p || "input_price" in p || "cached" in p) {
         nestedMapRows.push({
           id: modelId,
           model: modelId,
@@ -162,11 +140,7 @@ function extractCandidateArrays(payload: unknown): unknown[][] {
   if (out.length === 0) {
     const values = Object.entries(obj)
       .filter(([k, v]) => k !== "object" && k !== "updatedAt" && typeof v === "object" && v != null)
-      .map(([id, v]) =>
-        typeof v === "object" && v != null && !Array.isArray(v)
-          ? { id, ...(v as object) }
-          : null,
-      )
+      .map(([id, v]) => (typeof v === "object" && v != null && !Array.isArray(v) ? { id, ...(v as object) } : null))
       .filter(Boolean);
     if (values.length > 0) out.push(values);
   }
@@ -177,25 +151,10 @@ function rowFromUnknown(item: unknown): LlmPriceRow | null {
   if (typeof item !== "object" || item == null || Array.isArray(item)) return null;
   const r = item as Record<string, unknown>;
 
-  const model = firstString(r, [
-    "model",
-    "id",
-    "modelId",
-    "model_id",
-    "name",
-    "slug",
-    "root",
-  ]);
+  const model = firstString(r, ["model", "id", "modelId", "model_id", "name", "slug", "root"]);
   if (!model) return null;
 
-  const channel = firstString(r, [
-    "channel",
-    "provider",
-    "owned_by",
-    "vendor",
-    "source",
-    "family",
-  ]) || "omniroute";
+  const channel = firstString(r, ["channel", "provider", "owned_by", "vendor", "source", "family"]) || "omniroute";
 
   const pricing =
     (typeof r.pricing === "object" && r.pricing != null ? (r.pricing as Record<string, unknown>) : null) ||
@@ -352,10 +311,7 @@ export async function resolvePricingCatalog(input: ResolvePricingInput): Promise
       ...local,
       source: "static",
       mode: mode === "static" ? "static" : "auto",
-      note:
-        mode === "static" || pricingDisabled()
-          ? `${local.note}（LLM 价目：本地静态；工具价始终本地）`
-          : local.note,
+      note: mode === "static" || pricingDisabled() ? `${local.note}（LLM 价目：本地静态；工具价始终本地）` : local.note,
       omniroute: {
         baseUrl: omniBaseUrl(),
         pricingPath: omniPricingPath(),

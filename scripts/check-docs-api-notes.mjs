@@ -47,16 +47,16 @@ for (const p of samplePaths) {
   if (!routes.some((r) => r.path === p || r.path.startsWith(p.split("?")[0]))) {
     // allow path templates that share prefix
     const base = p.split("?")[0];
-    if (!routes.some((r) => r.path === base || r.path.startsWith(base + "/") || base.startsWith(r.path.split(":")[0]))) {
+    if (
+      !routes.some((r) => r.path === base || r.path.startsWith(base + "/") || base.startsWith(r.path.split(":")[0]))
+    ) {
       failures.push(`routes.ts missing sample path used in docs: ${p}`);
     }
   }
 }
 
 // Every concrete (non-param) company path should be mentioned once
-const concrete = routes
-  .map((r) => r.path)
-  .filter((p) => !p.includes(":"));
+const concrete = routes.map((r) => r.path).filter((p) => !p.includes(":"));
 for (const p of concrete) {
   if (!apiNotes.includes(p)) {
     failures.push(`API-NOTES missing route from routes.ts: ${p}`);
@@ -114,7 +114,14 @@ for (const r of routes) {
   }
 }
 
-const publicTableHints = ["/api/company/", "/api/me", "/api/org/", "/api/catalog/", "/api/teams", "/api/policy/effective"];
+const publicTableHints = [
+  "/api/company/",
+  "/api/me",
+  "/api/org/",
+  "/api/catalog/",
+  "/api/teams",
+  "/api/policy/effective",
+];
 for (const hint of publicTableHints) {
   const covered =
     isBypassedByAuth(hint.replace(/\*$/, "x")) ||

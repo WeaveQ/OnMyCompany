@@ -1,7 +1,7 @@
+import { Hono } from "hono";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Hono } from "hono";
 import { afterEach, describe, expect, it } from "vitest";
 import { registerCompanyRoutes } from "../routes.ts";
 import { personalTeamName, TeamsStore } from "./store.ts";
@@ -225,4 +225,3 @@ describe("team member role + remove API", () => {
     expect(orgBody.items.some((m) => m.email === "newbie@acme.test")).toBe(true);
   });
 });
-

@@ -98,7 +98,9 @@ export function ActionsPage(props: ActionsPageProps): ReactNode {
     if (selectedService) next.set("service", selectedService);
     const q = next.toString();
     if (extra?.actionId) {
-      return q ? `/actions/${encodeURIComponent(extra.actionId)}?${q}` : `/actions/${encodeURIComponent(extra.actionId)}`;
+      return q
+        ? `/actions/${encodeURIComponent(extra.actionId)}?${q}`
+        : `/actions/${encodeURIComponent(extra.actionId)}`;
     }
     return q ? `/actions?${q}` : "/actions";
   }

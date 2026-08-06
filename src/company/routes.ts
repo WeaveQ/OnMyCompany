@@ -1,10 +1,10 @@
+import type { RunLog } from "../server/storage/runtime-store.ts";
+import type { MemberRole } from "./auth/store.ts";
+import type { TeamMemberRole } from "./teams/store.ts";
 import type { Context, Hono } from "hono";
 
-import type { RunLog } from "../server/storage/runtime-store.ts";
 import { CompanyAuditEventStore, eventsToJsonl } from "./audit/events.ts";
 import { runsToCsv, runsToJsonl, summarizeUsage } from "./audit/export.ts";
-import { loadLocalPricingCatalog, resolvePricingCatalog } from "./pricing/omniroute-pricing.ts";
-import { fetchOmnirouteLlmUsage } from "./pricing/omniroute-usage.ts";
 import { sendOtpEmail } from "./auth/mail.ts";
 import {
   CompanyAuthStore,
@@ -13,7 +13,6 @@ import {
   memberIsOrgAdmin,
   memberStatus,
   normalizeEmail,
-  type MemberRole,
 } from "./auth/store.ts";
 import { TokenMemberBindingStore } from "./auth/token-bindings.ts";
 import {
@@ -30,8 +29,10 @@ import {
 import { defaultOrgConfigRoot, ensureOrgConfigLayout } from "./org-config/layout.ts";
 import { OrgConfigStore } from "./org-config/store.ts";
 import { buildEffectivePolicy } from "./policy/effective.ts";
+import { loadLocalPricingCatalog, resolvePricingCatalog } from "./pricing/omniroute-pricing.ts";
+import { fetchOmnirouteLlmUsage } from "./pricing/omniroute-usage.ts";
 import { SkillsStore } from "./skills/store.ts";
-import { TeamsStore, type TeamMemberRole } from "./teams/store.ts";
+import { TeamsStore } from "./teams/store.ts";
 import { UserDataStore } from "./userdata/store.ts";
 
 export interface CompanyRouteOptions {
@@ -49,10 +50,7 @@ export interface CompanyRouteOptions {
    * Mint a runtime token for the member (M3b attribution).
    * Implemented by connect-app using RuntimeTokenService + binding store.
    */
-  createMemberRuntimeToken?: (input: {
-    name: string;
-    memberId: string;
-  }) => Promise<{ token: string; tokenId: string }>;
+  createMemberRuntimeToken?: (input: { name: string; memberId: string }) => Promise<{ token: string; tokenId: string }>;
   /**
    * P5: Revoke all runtime tokens bound to a member (logout / disable).
    * Returns number of tokens revoked.
@@ -106,9 +104,7 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
   const teamsStore = new TeamsStore(options.dataDir);
   const auditEvents = new CompanyAuditEventStore(options.dataDir);
   const devOtp = options.devOtp?.trim() || process.env.OMC_DEV_OTP?.trim() || "000000";
-  const bootstrapEmail = normalizeEmail(
-    options.bootstrapAdminEmail ?? process.env.OMC_BOOTSTRAP_ADMIN_EMAIL ?? "",
-  );
+  const bootstrapEmail = normalizeEmail(options.bootstrapAdminEmail ?? process.env.OMC_BOOTSTRAP_ADMIN_EMAIL ?? "");
 
   app.get("/api/company/health", async (context) => {
     const layout = await ensureOrgConfigLayout(orgConfigRoot);
@@ -142,9 +138,7 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         // Only expose code when SMTP not used (or explicitly OMC_EXPOSE_DEV_OTP=1)
         devCode: !mail.sent || process.env.OMC_EXPOSE_DEV_OTP === "1" ? code : undefined,
         mail,
-        message: mail.sent
-          ? "OTP sent via SMTP."
-          : "Use devCode as OTP (SMTP not configured or send failed).",
+        message: mail.sent ? "OTP sent via SMTP." : "Use devCode as OTP (SMTP not configured or send failed).",
       });
     } catch (error) {
       return mapError(context, error);
@@ -175,7 +169,11 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
       if (!member) {
         const members = await authStore.listMembers();
         if (members.length === 0) {
-          member = await authStore.createMember({ email, roles: ["admin"], displayName: String(body.displayName ?? openId) });
+          member = await authStore.createMember({
+            email,
+            roles: ["admin"],
+            displayName: String(body.displayName ?? openId),
+          });
         } else if (body.autoProvision === true) {
           member = await authStore.createMember({
             email,
@@ -230,12 +228,7 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
             );
           }
           if (email !== bootstrapEmail) {
-            return jsonError(
-              context,
-              403,
-              "forbidden",
-              `First login must use bootstrap email ${bootstrapEmail}`,
-            );
+            return jsonError(context, 403, "forbidden", `First login must use bootstrap email ${bootstrapEmail}`);
           }
           member = await authStore.createMember({
             email,
@@ -680,7 +673,10 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
       const roles = Array.isArray(body.visibleToRoles)
         ? body.visibleToRoles.map(String)
         : typeof body.visibleToRoles === "string"
-          ? body.visibleToRoles.split(",").map((s) => s.trim()).filter(Boolean)
+          ? body.visibleToRoles
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
           : [];
       if (!packageId) {
         return jsonError(context, 400, "validation_error", "packageId required");
@@ -968,8 +964,7 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         if (!m) continue;
         const account = memberStatus(m);
         // Prefer account lifecycle for UI (未激活/已启用/已停用); membership disabled is rare.
-        const statusLabel =
-          row.status !== "active" ? "已禁用" : accountStatusLabelZh(account);
+        const statusLabel = row.status !== "active" ? "已禁用" : accountStatusLabelZh(account);
         items.push({
           ...publicMember(m),
           teamRole: row.role,
@@ -1022,12 +1017,15 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         memberId: target.id,
         role: role === "creator" ? "admin" : role,
       });
-      return context.json({
-        ok: true,
-        member: publicMember(target),
-        membership,
-        createdOrgAccount,
-      }, 201 as 201);
+      return context.json(
+        {
+          ok: true,
+          member: publicMember(target),
+          membership,
+          createdOrgAccount,
+        },
+        201 as 201,
+      );
     } catch (error) {
       return mapError(context, error);
     }
@@ -1338,14 +1336,9 @@ function modelRouterUrls(): {
   dashboardUrl: string;
 } {
   const base =
-    process.env.OMC_OMNIROUTE_URL?.trim() ||
-    process.env.OMC_MODEL_ROUTER_URL?.trim() ||
-    "http://127.0.0.1:20128";
+    process.env.OMC_OMNIROUTE_URL?.trim() || process.env.OMC_MODEL_ROUTER_URL?.trim() || "http://127.0.0.1:20128";
   const normalized = base.replace(/\/+$/, "");
-  const v1 =
-    process.env.OMC_OMNIROUTE_V1?.trim() ||
-    process.env.OMC_MODEL_ROUTER_V1?.trim() ||
-    `${normalized}/v1`;
+  const v1 = process.env.OMC_OMNIROUTE_V1?.trim() || process.env.OMC_MODEL_ROUTER_V1?.trim() || `${normalized}/v1`;
   const dashboard =
     process.env.OMC_OMNIROUTE_DASHBOARD_URL?.trim() ||
     process.env.OMC_MODEL_ROUTER_DASHBOARD_URL?.trim() ||
@@ -1402,4 +1395,3 @@ async function probeModelRouter(): Promise<NonNullable<CompanyHealthBody["modelR
     clearTimeout(timer);
   }
 }
-

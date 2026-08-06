@@ -1,3 +1,4 @@
+import { Hono } from "hono";
 /**
  * modelRouter probe on GET /api/company/health (OmniRoute B+D sidecar).
  */
@@ -5,7 +6,6 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Hono } from "hono";
 import { registerCompanyRoutes } from "./routes.ts";
 
 const tempRoots: string[] = [];

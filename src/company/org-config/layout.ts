@@ -8,6 +8,7 @@ export const ORG_CONFIG_SECTION_DIRS = [
   "experts/installed",
   "experts/mine",
   "tools",
+  "design",
 ] as const;
 
 export interface OrgConfigLayoutResult {
@@ -75,8 +76,7 @@ export async function ensureOrgConfigLayout(configRoot: string): Promise<OrgConf
           modelRouter: {
             provider: "omniroute",
             baseUrl: process.env.OMC_OMNIROUTE_V1?.trim() || "http://127.0.0.1:20128/v1",
-            dashboardUrl:
-              process.env.OMC_OMNIROUTE_DASHBOARD_URL?.trim() || "http://127.0.0.1:20128/dashboard",
+            dashboardUrl: process.env.OMC_OMNIROUTE_DASHBOARD_URL?.trim() || "http://127.0.0.1:20128/dashboard",
           },
         },
         null,
