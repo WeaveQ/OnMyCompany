@@ -69,7 +69,7 @@ Clients
         ▼
 ┌──────────────────────────────────────────┐
 │  HTTP 单进程（Hono · Node）                 │
-│  PORT 默认 3000                             │
+│  PORT 默认 3100（本地 dev）                 │
 │                                            │
 │  /health · /api/company/health             │
 │  /api/company/auth/* · /api/me · teams     │  ← src/company（已落地）
@@ -237,7 +237,7 @@ org-admin/member   /api/company/auth → member session
 
 ```bash
 npm install
-npm run dev          # API :3000 + web :5180
+npm run dev          # API :3100 + web :5180
 npm run dev:api
 npm test
 npm run fix-check    # 改代码默认收尾

@@ -124,9 +124,10 @@ examples/
 ```bash
 npm install
 cp .env.example .env    # 可选
-npm run dev             # API :3000 + web :5180
+npm run dev             # API :3100 + web :5180（勿与 OnMyAgent 5173/8787 冲突）
 npm run dev:api
 npm test
+npm run test:affected   # 按 git diff 选 company|web|server 切片
 npm run fix-check
 npm run generate:catalog
 ```
@@ -134,8 +135,8 @@ npm run generate:catalog
 冒烟：
 
 ```bash
-curl -s http://localhost:3000/health
-curl -s -X POST http://localhost:3000/v1/actions/hackernews.get_top_stories \
+curl -s http://localhost:3100/health
+curl -s -X POST http://localhost:3100/v1/actions/hackernews.get_top_stories \
   -H 'content-type: application/json' -d '{"input":{}}'
 ```
 
@@ -143,18 +144,18 @@ curl -s -X POST http://localhost:3000/v1/actions/hackernews.get_top_stories \
 
 ## 6. 环境变量（最小）
 
-| 变量                           | 用途                               |
-| ------------------------------ | ---------------------------------- |
-| `PORT`                         | 默认 3000                          |
-| `OMC_DATA_DIR`                 | SQLite + org 树                    |
-| `OMC_ADMIN_TOKEN`              | ops-admin                          |
-| `OMC_ENCRYPTION_KEY`           | 凭据加密                           |
-| `OMC_ALLOWED_ACTIONS`          | 执行面 allowlist                   |
-| `OMC_BOOTSTRAP_ADMIN_EMAIL`    | 首个 org-admin                     |
-| `OMC_CATALOG_PROFILE`          | `office`（默认）/ `full`           |
-| `OMC_ALLOWED_SERVICES`         | 覆盖 profile 的 service 列表或 `*` |
-| `OMC_MAX_IN_FLIGHT`            | G0 全局并发帽（默认 100）          |
-| `OMC_MAX_IN_FLIGHT_PER_MEMBER` | G0 每 member 帽（默认 10）         |
+| 变量                           | 用途                                                  |
+| ------------------------------ | ----------------------------------------------------- |
+| `PORT`                         | 默认 **3100**（与 `.env.example` / `dev-local` 一致） |
+| `OMC_DATA_DIR`                 | SQLite + org 树                                       |
+| `OMC_ADMIN_TOKEN`              | ops-admin                                             |
+| `OMC_ENCRYPTION_KEY`           | 凭据加密                                              |
+| `OMC_ALLOWED_ACTIONS`          | 执行面 allowlist                                      |
+| `OMC_BOOTSTRAP_ADMIN_EMAIL`    | 首个 org-admin                                        |
+| `OMC_CATALOG_PROFILE`          | `office`（默认）/ `full`                              |
+| `OMC_ALLOWED_SERVICES`         | 覆盖 profile 的 service 列表或 `*`                    |
+| `OMC_MAX_IN_FLIGHT`            | G0 全局并发帽（默认 100）                             |
+| `OMC_MAX_IN_FLIGHT_PER_MEMBER` | G0 每 member 帽（默认 10）                            |
 
 **Canonical = `OMC_*`**。完整表见 [`ENV.md`](docs/onmycompany/ENV.md)。
 
@@ -167,6 +168,26 @@ curl -s -X POST http://localhost:3000/v1/actions/hackernews.get_top_stories \
 - `interface` 对象契约；oxfmt / oxlint；Web 只在 `web/`。
 - `/v1` 形状稳定；扩展 `memberId` 等须文档化。
 - 企业路由前缀见 `API-NOTES.md`。
+- **嵌套指令（按目录）：**
+  - [`src/providers/AGENTS.md`](src/providers/AGENTS.md) — 连接器目录边界
+  - [`src/company/AGENTS.md`](src/company/AGENTS.md) — 企业域
+  - [`src/server/AGENTS.md`](src/server/AGENTS.md) — Gateway HTTP / 执行
+  - [`web/AGENTS.md`](web/AGENTS.md) — 管理台前端
+
+### 验证命令（机械门禁）
+
+| 命令                       | 用途                                                              |
+| -------------------------- | ----------------------------------------------------------------- |
+| `npm run ci`               | lint + format + typecheck + test + design + i18n-cjk + pr-english |
+| `npm run check:boundaries` | company vs providers/core 导入边界                                |
+| `npm run check:design`     | theme.css ↔ tokens snapshot                                       |
+| `npm run test:affected`    | 按 `origin/main...HEAD` 路径选 company/web/server 切片            |
+
+### Harness / 会话证据（Grok）
+
+- Better Harness 审核本仓时使用 `--platform grok --workspace <本仓绝对路径>`。
+- 若 `eligibleSessions=0` / `missing-required-root`：会话根未匹配当前 workspace，**不能**据此声称「无人开发」；先确认 Grok 会话 cwd/workspace 绑定。
+- 产品代码变更验收以 **CI / `npm run ci`** 为准，不依赖 harness 会话人口。
 
 ---
 

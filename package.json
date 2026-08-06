@@ -38,13 +38,15 @@
     "test:server": "vitest run src/server",
     "check:type": "npm run typecheck",
     "check:docs": "node scripts/check-docs-api-notes.mjs",
-    "check": "npm run typecheck && npm run test && npm run check:design && npm run check:i18n:cjk && npm run check:pr-english",
+    "check": "npm run typecheck && npm run test && npm run check:design && npm run check:i18n:cjk && npm run check:pr-english && npm run check:boundaries",
     "ci": "npm run lint && npm run format && npm run check",
     "verify": "npm run ci",
     "check:design": "node scripts/design/check-tokens.mjs --strict",
     "check:i18n:cjk": "node scripts/checks/check-i18n-cjk.mjs",
     "check:pr-english": "node scripts/checks/pr-english.mjs --self-test",
-    "design:sync": "node scripts/design/sync-tokens.mjs"
+    "design:sync": "node scripts/design/sync-tokens.mjs",
+    "test:affected": "node scripts/test-affected.mjs",
+    "check:boundaries": "node scripts/checks/check-boundaries.mjs"
   },
   "dependencies": {
     "@cfworker/json-schema": "^4.1.1",
