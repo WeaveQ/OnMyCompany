@@ -274,7 +274,7 @@ export function OrgConfigPage(): ReactNode {
           <h1 className="org-config-title">企业设置</h1>
           <p className="org-config-lead">
             这里管的是<strong>公司下发给所有 Agent 的统一配置</strong>
-            ：能调哪些外部能力、企业模型目录、Skill/专家包摘要。 密钥不在这里（去「应用连接」）；加人去「团队」。
+            ：能调哪些外部能力、企业模型目录、Skill/专家包摘要。 密钥不在这里（去「连接器」）；加人去「团队」。
           </p>
         </div>
       </header>
@@ -525,7 +525,7 @@ export function OrgConfigPage(): ReactNode {
             <p className="console-row-meta" style={{ marginTop: 12 }}>
               People & access: <Link to="/team">Team · account status (Pending / Active / Deactivated)</Link>
               {" · "}
-              外部账号：<Link to="/connections">应用连接</Link>
+              外部账号：<Link to="/connections">连接器</Link>
             </p>
           </section>
         </>

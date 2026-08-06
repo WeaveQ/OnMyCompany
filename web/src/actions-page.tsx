@@ -75,7 +75,7 @@ export function ActionsPage(props: ActionsPageProps): ReactNode {
     ? (providerNames.get(selectedService) ?? selectedService)
     : t("actions.allProviders");
 
-  // Deep-link from 应用连接: /actions?service=airtable
+  // Deep-link from 连接器: /actions?service=airtable
   useEffect(() => {
     setSelectedService(serviceFromUrl);
   }, [serviceFromUrl]);

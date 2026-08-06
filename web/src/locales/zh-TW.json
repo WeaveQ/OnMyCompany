@@ -39,7 +39,7 @@
     "orgConfig": "企業設定",
     "orgTeams": "團隊列表",
     "skills": "Skills",
-    "connections": "應用連接",
+    "connections": "連接器",
     "team": "團隊",
     "members": "企業帳號",
     "more": "更多",
@@ -96,7 +96,7 @@
         "subtitle": "團隊 Skill 包 — 從公開或我的貨架關聯。"
       },
       "connections": {
-        "title": "應用連接",
+        "title": "連接器",
         "subtitle": "企業共用閘道連線池：依狀態與分類篩選；密鑰在公司側，非每隊私有庫。"
       },
       "team": {
@@ -172,10 +172,10 @@
     "noRecentCallsDescription": "執行一個動作以查看服務提供者的呼叫次數。"
   },
   "connectionsPage": {
-    "title": "應用連接",
+    "title": "連接器",
     "lead": "企業共用閘道連線池（GitHub、飛書等）。密鑰保存在公司側，不是每個團隊一套私有庫。Agent 透過 MCP /v1 呼叫。",
     "providers": "服務提供者",
-    "searchPlaceholder": "搜尋應用",
+    "searchPlaceholder": "搜尋連接器",
     "sortRecommended": "推薦",
     "sortByName": "依名稱",
     "sortRecommendedAria": "目前推薦排序，點擊改為依名稱",
@@ -203,7 +203,7 @@
     "moreCategories": "更多分類",
     "reset": "重設",
     "showing": "顯示 {{shown}}/{{total}}",
-    "empty": "沒有符合的應用連接",
+    "empty": "沒有符合的連接器",
     "showMore": "顯示更多",
     "actionConnect": "連接",
     "actionDetails": "詳情",

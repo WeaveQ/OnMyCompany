@@ -1,32 +1,34 @@
 # AGENTS.md — OnMyCompany
 
-**目标读者：AI Agent / 人类开发者。** 运行手册，不是营销页。
+**English** · [简体中文](AGENTS.zh-CN.md)
 
-| 字段         | 值                                                                                                                                     |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| **产品**     | OnMyCompany（企业管控面 + Gateway）                                                                                                    |
-| **许可**     | **非商用**（`LICENSE`）；商用须单独授权。OMA 为 Apache-2.0                                                                             |
-| **配套桌面** | `../onmyagent` / WeaveQ OnMyAgent（Phase 2；company 对接最小落地）                                                                     |
-| **当前阶段** | **试点 MVP + 企业/团队 IA Phase 1** — 见 [ROADMAP](docs/onmycompany/ROADMAP.md) · [TEAM-ISOLATION](docs/onmycompany/TEAM-ISOLATION.md) |
-| **验证**     | `npm run ci`（= Actions）；`test:company` / `test:web` / `test:server` 分层                                                            |
-| **架构 SoT** | [`docs/Architecture.md`](docs/Architecture.md)                                                                                         |
-| **配置 SoT** | [`docs/onmycompany/CONFIG-SCHEMA.md`](docs/onmycompany/CONFIG-SCHEMA.md)                                                               |
-| **API 路径** | [`docs/onmycompany/API-NOTES.md`](docs/onmycompany/API-NOTES.md)                                                                       |
-| **双端契约** | [`docs/onmycompany/DESKTOP-CONTRACT.md`](docs/onmycompany/DESKTOP-CONTRACT.md)                                                         |
+**Audience: AI agents / human developers.** Runbook, not a marketing page.
+
+| Field                 | Value                                                                                                                                   |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **Product**           | OnMyCompany (enterprise control plane + Gateway)                                                                                        |
+| **License**           | **Non-commercial** (`LICENSE`); commercial use needs a separate license. OMA is Apache-2.0                                              |
+| **Desktop companion** | `../onmyagent` / WeaveQ OnMyAgent (Phase 2; minimal company integration landed)                                                         |
+| **Current stage**     | **Pilot MVP + org/team IA Phase 1** — see [ROADMAP](docs/onmycompany/ROADMAP.md) · [TEAM-ISOLATION](docs/onmycompany/TEAM-ISOLATION.md) |
+| **Verification**      | `npm run ci` (= Actions); layered `test:company` / `test:web` / `test:server`                                                           |
+| **Architecture SoT**  | [`docs/Architecture.md`](docs/Architecture.md)                                                                                          |
+| **Config SoT**        | [`docs/onmycompany/CONFIG-SCHEMA.md`](docs/onmycompany/CONFIG-SCHEMA.md)                                                                |
+| **API paths**         | [`docs/onmycompany/API-NOTES.md`](docs/onmycompany/API-NOTES.md)                                                                        |
+| **Dual-end contract** | [`docs/onmycompany/DESKTOP-CONTRACT.md`](docs/onmycompany/DESKTOP-CONTRACT.md)                                                          |
 
 ---
 
-## 0. 开工前必读（按任务）
+## 0. Read before you start (by task)
 
-| 任务类型                  | 至少读                                    |
-| ------------------------- | ----------------------------------------- |
-| 任意改动                  | **本文铁律** + Architecture §1–2          |
-| 配置 / OrgConfig / policy | CONFIG-SCHEMA + Architecture §3           |
-| 鉴权 / 成员 / token       | BOOTSTRAP + RBAC + API-NOTES              |
-| 桌面对接 / mock           | DESKTOP-CONTRACT + OMA config-consistency |
-| Gateway / provider        | `docs/runtime-api.md` + coding 约定       |
+| Task type                   | Minimum reading                            |
+| --------------------------- | ------------------------------------------ |
+| Any change                  | **Iron rules below** + Architecture §1–2   |
+| Config / OrgConfig / policy | CONFIG-SCHEMA + Architecture §3            |
+| Auth / members / tokens     | BOOTSTRAP + RBAC + API-NOTES               |
+| Desktop integration / mocks | DESKTOP-CONTRACT + OMA config-consistency  |
+| Gateway / provider          | `docs/runtime-api.md` + coding conventions |
 
-桌面长文 **不要复制进本仓**；链接：
+Do **not** copy long desktop docs into this repo; link them:
 
 - `../onmyagent/docs/Architecture.md`
 - `../onmyagent/docs/design/2026-08-02-config-consistency.md`
@@ -35,104 +37,104 @@
 
 ---
 
-## 1. 铁律（违反即错）
+## 1. Iron rules (violations are bugs)
 
-### 产品与边界
+### Product and boundaries
 
-1. **Gateway 内核少动**：`src/core/`、provider 执行主路径、OAuth 刷新，非任务必需不改。
-2. **新企业逻辑进 `src/company/`**；禁止把 Org/成员写进 `providers/*`。
-3. **对外产品名只有 OnMyCompany**（+ 桌面 OnMyAgent）。
-4. **不做主路径**：企业审批队列、对话上云、工作区托管、公网多租户、CF/D1 默认部署。
+1. **Touch Gateway core sparingly**: `src/core/`, provider main execution path, OAuth refresh — only when the task requires it.
+2. **New company logic goes in `src/company/`**; never put Org/member logic into `providers/*`.
+3. **External product name is only OnMyCompany** (+ desktop OnMyAgent).
+4. **Not main-path**: enterprise approval queue, chat-to-cloud, hosted workspaces, public multi-tenant, CF/D1 as default deploy.
 
-### 配置同构（与 OMA 对齐）
+### Config isomorphism (aligned with OMA)
 
-5. **local / company 同一 schema**。切换指针，不换产品逻辑。
-6. **OrgConfig 是企业配置真相**；桌面 `profiles/company/config` 只是镜像。
-7. **策略单写**：只允许经 OrgConfig `policy` 写入并合成 runtime-policy。
-8. **config 永不含 secret**。
-9. **记忆正文 / 对话 / workspace 不进 OrgConfig**。
+5. **local / company share one schema**. Switch pointers; do not fork product logic.
+6. **OrgConfig is the company config source of truth**; desktop `profiles/company/config` is a mirror only.
+7. **Policy single-write**: only write via OrgConfig `policy` and synthesize runtime-policy.
+8. **config never contains secrets**.
+9. **Memory body / chat / workspace do not enter OrgConfig**.
 
-### 身份、执行、桌面
+### Identity, execution, desktop
 
-10. **ops-admin ≠ org-admin**。
-11. **执行可归因**：runtime-token 绑定 member；run 带 `memberId`；MVP 连接 = **组织共享**。
-12. **凭据不回传客户端**。
-13. **尊重 D1**：未登录桌面必须零企业流量。
-14. **Any Agent**：`/v1` · `/mcp` 须 curl/MCP 可调。
-15. **改完验证**：`npm test` / 相关 vitest；provider 定义变更则 `generate:catalog`。
+10. **ops-admin ≠ org-admin**.
+11. **Attributed execution**: runtime-token binds member; runs carry `memberId`; MVP connections = **org-shared**.
+12. **Credentials never return to the client**.
+13. **Respect D1**: unauthenticated desktop must produce zero company traffic.
+14. **Any Agent**: `/v1` · `/mcp` must work with curl/MCP clients.
+15. **Verify after changes**: `npm test` / relevant vitest; `generate:catalog` when provider definitions change.
 
 ---
 
-## 2. 分层一览
+## 2. Layering overview
 
 ```text
-OnMyAgent（桌面）                    OnMyCompany（本仓）
-  OpenCode 主轨 / Personal 辅轨        身份 / OrgConfig / 审计
-  profiles/local|company/config  ◄──  同构 ──►  data/org/default/config
-  本机 session · workspace             Gateway /v1 · MCP · connections
-  Mode A 未登录完整可用                 内网单进程 · SQLite
+OnMyAgent (desktop)                  OnMyCompany (this repo)
+  OpenCode main / Personal aux         identity / OrgConfig / audit
+  profiles/local|company/config  ◄──  isomorphic ──►  data/org/default/config
+  local session · workspace            Gateway /v1 · MCP · connections
+  Mode A fully usable when logged out  single process · SQLite (intranet)
 ```
 
-| 做（本仓）                                      | 不做                        |
-| ----------------------------------------------- | --------------------------- |
-| 企业登录、成员、团队、bootstrap                 | 桌面 OpenCode 主轨          |
-| OrgConfig CRUD · Skills catalog · export/import | 本机迁移 2a（在 OMA）       |
-| 策略合成、token↔member · logout 吊销            | 第二套 Electron 策略真相    |
-| 连接 secret、runs 审计 · 瘦计量 usage           | 员工对话上云 / 商业账单     |
-| 管理台（概览/连接/团队/计量/Skills…）           | 企业审批队列主路径          |
-| G0 并发帽 · G1a 连接主备 · office catalog       | 默认 LLM 全量反代（G1b）    |
-| 桌面 company API + 契约                         | 真飞书生产换票（stub 已有） |
+| Do (this repo)                                                        | Don't                                                |
+| --------------------------------------------------------------------- | ---------------------------------------------------- |
+| Org login, members, teams, bootstrap                                  | Desktop OpenCode main track                          |
+| OrgConfig CRUD · Skills catalog · export/import                       | Local migration 2a (lives in OMA)                    |
+| Policy synthesis, token↔member · logout revoke                        | Second Electron policy truth                         |
+| Connection secrets, runs audit · lean usage metering                  | Employee chat-to-cloud / billing                     |
+| Admin console (overview/connections/teams/usage/Skills…)              | Enterprise approval-queue main path                  |
+| G0 concurrency caps · G1a connection primary/standby · office catalog | Default full LLM reverse-proxy (G1b)                 |
+| Desktop company API + contract                                        | Real Feishu production ticket exchange (stub exists) |
 
-详图：[`docs/Architecture.md`](docs/Architecture.md)。路径表：[`docs/onmycompany/API-NOTES.md`](docs/onmycompany/API-NOTES.md)。
+Diagram: [`docs/Architecture.md`](docs/Architecture.md). Path table: [`docs/onmycompany/API-NOTES.md`](docs/onmycompany/API-NOTES.md).
 
 ---
 
-## 3. 仓库地图
+## 3. Repo map
 
 ```text
-src/server/          # 挂 company 路由 · 并发护栏 · action-runner
-src/core/            # 执行与策略 · office-catalog — 内核少动
-src/providers/       # 连接器；生产 allowlist 由 catalog profile 收窄
+src/server/          # mounts company routes · concurrency guards · action-runner
+src/core/            # execution & policy · office-catalog — touch sparingly
+src/providers/       # connectors; production allowlist narrowed by catalog profile
 src/company/         # ★ auth · teams · org-config · skills · audit · usage
-web/                 # 管理台（概览 · 应用连接 · 团队 · 计量 · 更多）
+web/                 # admin console (overview · app connections · teams · metering · more)
 migrations/
 docs/Architecture.md
-docs/onmycompany/    # 产品工程文档 · API-NOTES · ROADMAP · GATEWAY plan
+docs/onmycompany/    # product engineering docs · API-NOTES · ROADMAP · GATEWAY plan
 examples/
 ```
 
-挂载：`registerCompanyRoutes` → 与 `/health` 同进程；见 `src/server/connect-app.ts`。
+Mount: `registerCompanyRoutes` → same process as `/health`; see `src/server/connect-app.ts`.
 
 ---
 
-## 4. 配置与数据（速查）
+## 4. Config & data (quick reference)
 
-| 通道         | 路径/API                                      | 说明                           |
-| ------------ | --------------------------------------------- | ------------------------------ |
-| ① OrgConfig  | `data/org/default/config` · `/api/org/config` | 与 OMA profile config **同构** |
-| ② UserData   | `/api/me/userdata/*`                          | 后置；默认同机                 |
-| Secrets      | connections + encryption key                  | 仅服务端                       |
-| 桌面 local   | `~/.onmyagent/profiles/local/config`          | 2a 已落地                      |
-| 桌面 company | `profiles/company/config`                     | 登录后镜像                     |
+| Channel         | Path/API                                      | Notes                                  |
+| --------------- | --------------------------------------------- | -------------------------------------- |
+| ① OrgConfig     | `data/org/default/config` · `/api/org/config` | **Isomorphic** with OMA profile config |
+| ② UserData      | `/api/me/userdata/*`                          | Deferred; same-machine by default      |
+| Secrets         | connections + encryption key                  | Server-side only                       |
+| Desktop local   | `~/.onmyagent/profiles/local/config`          | 2a landed                              |
+| Desktop company | `profiles/company/config`                     | Mirror after login                     |
 
-硬规则：[`CONFIG-SCHEMA.md`](docs/onmycompany/CONFIG-SCHEMA.md)。
+Hard rules: [`CONFIG-SCHEMA.md`](docs/onmycompany/CONFIG-SCHEMA.md).
 
 ---
 
-## 5. 命令
+## 5. Commands
 
 ```bash
 npm install
-cp .env.example .env    # 可选
-npm run dev             # API :3100 + web :5180（勿与 OnMyAgent 5173/8787 冲突）
+cp .env.example .env    # optional
+npm run dev             # API :3100 + web :5180 (avoid clashing with OnMyAgent 5173/8787)
 npm run dev:api
 npm test
-npm run test:affected   # 按 git diff 选 company|web|server 切片
+npm run test:affected   # slice company|web|server from git diff
 npm run fix-check
 npm run generate:catalog
 ```
 
-冒烟：
+Smoke:
 
 ```bash
 curl -s http://localhost:3100/health
@@ -142,84 +144,84 @@ curl -s -X POST http://localhost:3100/v1/actions/hackernews.get_top_stories \
 
 ---
 
-## 6. 环境变量（最小）
+## 6. Environment variables (minimum)
 
-| 变量                           | 用途                                                  |
-| ------------------------------ | ----------------------------------------------------- |
-| `PORT`                         | 默认 **3100**（与 `.env.example` / `dev-local` 一致） |
-| `OMC_DATA_DIR`                 | SQLite + org 树                                       |
-| `OMC_ADMIN_TOKEN`              | ops-admin                                             |
-| `OMC_ENCRYPTION_KEY`           | 凭据加密                                              |
-| `OMC_ALLOWED_ACTIONS`          | 执行面 allowlist                                      |
-| `OMC_BOOTSTRAP_ADMIN_EMAIL`    | 首个 org-admin                                        |
-| `OMC_CATALOG_PROFILE`          | `office`（默认）/ `full`                              |
-| `OMC_ALLOWED_SERVICES`         | 覆盖 profile 的 service 列表或 `*`                    |
-| `OMC_MAX_IN_FLIGHT`            | G0 全局并发帽（默认 100）                             |
-| `OMC_MAX_IN_FLIGHT_PER_MEMBER` | G0 每 member 帽（默认 10）                            |
+| Variable                       | Purpose                                                 |
+| ------------------------------ | ------------------------------------------------------- |
+| `PORT`                         | Default **3100** (matches `.env.example` / `dev-local`) |
+| `OMC_DATA_DIR`                 | SQLite + org tree                                       |
+| `OMC_ADMIN_TOKEN`              | ops-admin                                               |
+| `OMC_ENCRYPTION_KEY`           | Credential encryption                                   |
+| `OMC_ALLOWED_ACTIONS`          | Execution-surface allowlist                             |
+| `OMC_BOOTSTRAP_ADMIN_EMAIL`    | First org-admin                                         |
+| `OMC_CATALOG_PROFILE`          | `office` (default) / `full`                             |
+| `OMC_ALLOWED_SERVICES`         | Override profile service list or `*`                    |
+| `OMC_MAX_IN_FLIGHT`            | G0 global concurrency cap (default 100)                 |
+| `OMC_MAX_IN_FLIGHT_PER_MEMBER` | G0 per-member cap (default 10)                          |
 
-**Canonical = `OMC_*`**。完整表见 [`ENV.md`](docs/onmycompany/ENV.md)。
+**Canonical = `OMC_*`**. Full table: [`ENV.md`](docs/onmycompany/ENV.md).
 
 ---
 
-## 7. 编码约定（摘要）
+## 7. Coding conventions (summary)
 
-- 一事实一处；provider 元数据不在 executor 重复。
-- 禁止 barrel `index.ts`；禁止 provider 用全局 `fetch`（走 guarded fetcher）。
-- `interface` 对象契约；oxfmt / oxlint；Web 只在 `web/`。
-- `/v1` 形状稳定；扩展 `memberId` 等须文档化。
-- 企业路由前缀见 `API-NOTES.md`。
-- **嵌套指令（按目录）：**
-  - [`src/providers/AGENTS.md`](src/providers/AGENTS.md) — 连接器目录边界
-  - [`src/company/AGENTS.md`](src/company/AGENTS.md) — 企业域
-  - [`src/server/AGENTS.md`](src/server/AGENTS.md) — Gateway HTTP / 执行
-  - [`web/AGENTS.md`](web/AGENTS.md) — 管理台前端
+- One fact, one place; do not duplicate provider metadata in executors.
+- No barrel `index.ts`; providers must not use global `fetch` (use guarded fetcher).
+- `interface` for object contracts; oxfmt / oxlint; web code only under `web/`.
+- `/v1` shape stays stable; extensions like `memberId` must be documented.
+- Company route prefixes: `API-NOTES.md`.
+- **Nested instructions (by directory):**
+  - [`src/providers/AGENTS.md`](src/providers/AGENTS.md) — connector directory boundaries
+  - [`src/company/AGENTS.md`](src/company/AGENTS.md) — company domain
+  - [`src/server/AGENTS.md`](src/server/AGENTS.md) — Gateway HTTP / execution
+  - [`web/AGENTS.md`](web/AGENTS.md) — admin console frontend
 
-### 验证命令（机械门禁）
+### Verification commands (mechanical gates)
 
-| 命令                       | 用途                                                              |
+| Command                    | Purpose                                                           |
 | -------------------------- | ----------------------------------------------------------------- |
 | `npm run ci`               | lint + format + typecheck + test + design + i18n-cjk + pr-english |
-| `npm run check:boundaries` | company vs providers/core 导入边界                                |
+| `npm run check:boundaries` | company vs providers/core import boundaries                       |
 | `npm run check:design`     | theme.css ↔ tokens snapshot                                       |
-| `npm run test:affected`    | 按 `origin/main...HEAD` 路径选 company/web/server 切片            |
+| `npm run test:affected`    | Slice company/web/server from `origin/main...HEAD` paths          |
 
-### Harness / 会话证据（Grok）
+### Harness / session evidence (Grok)
 
-- Better Harness 审核本仓时使用 `--platform grok --workspace <本仓绝对路径>`。
-- 若 `eligibleSessions=0` / `missing-required-root`：会话根未匹配当前 workspace，**不能**据此声称「无人开发」；先确认 Grok 会话 cwd/workspace 绑定。
-- 产品代码变更验收以 **CI / `npm run ci`** 为准，不依赖 harness 会话人口。
-
----
-
-## 8. 与 OMA Agent 的分工
-
-| 仓            | 负责                                                 | 禁止                               |
-| ------------- | ---------------------------------------------------- | ---------------------------------- |
-| **本仓**      | Company 服务端、Gateway、管理台、OrgConfig           | 改 OMA 桌面业务主路径              |
-| **onmyagent** | 2a 巩固、2b BaseUrl/登录/镜像 config、Gateway 客户端 | 在 Electron 做企业 DB/策略编辑真相 |
-
-契约变更：先改 `DESKTOP-CONTRACT` + `CONFIG-SCHEMA` + API-NOTES，再改两端代码。
+- When Better Harness audits this repo, use `--platform grok --workspace <absolute path to this repo>`.
+- If `eligibleSessions=0` / `missing-required-root`: session root does not match current workspace — **do not** claim “no one is developing” from that alone; first confirm Grok session cwd/workspace binding.
+- Product code acceptance is **CI / `npm run ci`**, not harness session counts.
 
 ---
 
-## 9. 阶段检查清单
+## 8. Division of labor with OMA agent
 
-- [ ] 读铁律 + Architecture §1
-- [ ] 配置相关？→ CONFIG-SCHEMA
-- [ ] 桌面相关？→ DESKTOP-CONTRACT；未登录零流量
-- [ ] policy？→ 仍单写入口
-- [ ] 连接？→ 仍组织共享
-- [ ] 收尾 `npm run fix-check`（或说明跳过原因）
+| Repo          | Owns                                                        | Forbidden                                      |
+| ------------- | ----------------------------------------------------------- | ---------------------------------------------- |
+| **This repo** | Company server, Gateway, admin console, OrgConfig           | Changing OMA desktop main business path        |
+| **onmyagent** | 2a solidify, 2b BaseUrl/login/mirror config, Gateway client | Enterprise DB/policy editing truth in Electron |
+
+Contract changes: update `DESKTOP-CONTRACT` + `CONFIG-SCHEMA` + API-NOTES first, then both codebases.
 
 ---
 
-## 10. 链接
+## 9. Stage checklist
 
-| 资源              | 路径                                                                   |
-| ----------------- | ---------------------------------------------------------------------- |
-| README            | [README.md](README.md)                                                 |
-| Architecture      | [docs/Architecture.md](docs/Architecture.md)                           |
-| 产品工程文档      | [docs/onmycompany/README.md](docs/onmycompany/README.md)               |
-| 路线图            | [docs/onmycompany/ROADMAP.md](docs/onmycompany/ROADMAP.md)             |
-| 运行时 API        | [docs/runtime-api.md](docs/runtime-api.md)                             |
-| 桌面 Architecture | [../onmyagent/docs/Architecture.md](../onmyagent/docs/Architecture.md) |
+- [ ] Read iron rules + Architecture §1
+- [ ] Config-related? → CONFIG-SCHEMA
+- [ ] Desktop-related? → DESKTOP-CONTRACT; zero traffic when logged out
+- [ ] policy? → still single-write entry
+- [ ] connections? → still org-shared
+- [ ] Finish with `npm run fix-check` (or document why skipped)
+
+---
+
+## 10. Links
+
+| Resource             | Path                                                                   |
+| -------------------- | ---------------------------------------------------------------------- |
+| README               | [README.md](README.md) · [中文](README.zh-CN.md)                       |
+| Architecture         | [docs/Architecture.md](docs/Architecture.md)                           |
+| Product engineering  | [docs/onmycompany/README.md](docs/onmycompany/README.md)               |
+| Roadmap              | [docs/onmycompany/ROADMAP.md](docs/onmycompany/ROADMAP.md)             |
+| Runtime API          | [docs/runtime-api.md](docs/runtime-api.md)                             |
+| Desktop Architecture | [../onmyagent/docs/Architecture.md](../onmyagent/docs/Architecture.md) |
