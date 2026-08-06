@@ -1,0 +1,4 @@
+This project uses the WeaveQ Source-Available Non-Commercial License.
+
+See the file named `LICENSE` in the repository root.
+Commercial use is not permitted without a separate WeaveQ license.

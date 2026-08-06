@@ -1,0 +1,17 @@
+{
+  "models": [
+    {
+      "id": "company-default-chat",
+      "displayName": "企业默认（OmniRoute）",
+      "baseUrl": "http://127.0.0.1:20128/v1",
+      "apiStyle": "openai",
+      "via": "omniroute-sidecar",
+      "note": "Chat → OmniRoute 边车；工具仍走 OMC Gateway（:3100 /mcp · /v1/actions）。密钥在 OmniRoute，不写 OrgConfig。"
+    }
+  ],
+  "modelRouter": {
+    "provider": "omniroute",
+    "baseUrl": "http://127.0.0.1:20128/v1",
+    "dashboardUrl": "http://127.0.0.1:20128/dashboard"
+  }
+}

@@ -1,0 +1,27 @@
+import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+describe("shared MemberLoginCard usage", () => {
+  const card = readFileSync(join(import.meta.dirname, "member-login-card.tsx"), "utf8");
+  const skills = readFileSync(join(import.meta.dirname, "skills-page.tsx"), "utf8");
+  const team = readFileSync(join(import.meta.dirname, "team-manage-page.tsx"), "utf8");
+  const org = readFileSync(join(import.meta.dirname, "org-config-page.tsx"), "utf8");
+
+  it("exports MemberLoginCard", () => {
+    expect(card).toContain("export function MemberLoginCard");
+    expect(card).toContain("member-login-card");
+  });
+
+  it("skills/team/org-config reuse MemberLoginCard", () => {
+    expect(skills).toContain("MemberLoginCard");
+    expect(team).toContain("MemberLoginCard");
+    expect(org).toContain("MemberLoginCard");
+  });
+
+  it("skills page uses page-hero and list classes not only inline layout dumps", () => {
+    expect(skills).toContain("page-hero-title");
+    expect(skills).toContain("skills-row");
+    expect(skills).toContain("skills-modal");
+  });
+});

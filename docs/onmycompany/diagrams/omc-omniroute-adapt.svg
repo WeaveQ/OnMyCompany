@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 780" width="1100" height="780">
+  <defs>
+    <marker id="arr-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-orange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#ea580c"/>
+    </marker>
+    <marker id="arr-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#059669"/>
+    </marker>
+    <marker id="arr-gray" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#6b7280"/>
+    </marker>
+    <filter id="shadow" x="-8%" y="-8%" width="116%" height="120%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.12"/>
+    </filter>
+    <style>
+      .title { font: 700 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #64748b; }
+      .h { font: 600 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0f172a; }
+      .t { font: 400 11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #334155; }
+      .s { font: 400 10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #64748b; }
+      .lbl { font: 600 10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1e293b; }
+      .zone { font: 700 11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+  </defs>
+  <rect width="100%" height="100%" fill="#f8fafc"/>
+
+  <text x="40" y="36" class="title">OnMyAgent + OmniRoute + OnMyCompany — 推荐适配架构</text>
+  <text x="40" y="56" class="subtitle">模型层与工具管控层分离 · 对齐「推理默认不进 OMC / 外发走 Gateway」</text>
+  <rect x="40" y="80" width="1020" height="100" rx="12" fill="#ffffff" stroke="#e2e8f0" filter="url(#shadow)"/>
+  <text x="56" y="102" class="zone" fill="#64748b">L0 · 客户端 / Agent 工作台</text>
+  <rect x="56" y="112" width="200" height="52" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="68" y="140" class="h">OnMyAgent</text>
+  <text x="68" y="160" class="s">桌面 · Mode A 本机 / Mode B 连公司</text>
+  <rect x="276" y="112" width="160" height="52" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="288" y="140" class="h">Cursor / Claude Code</text>
+  <text x="288" y="160" class="s">任意 Agent · IDE</text>
+  <rect x="456" y="112" width="160" height="52" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="468" y="140" class="h">OpenCode / Cline</text>
+  <text x="468" y="160" class="s">ACP · CLI</text>
+  <rect x="636" y="112" width="180" height="52" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="648" y="140" class="h">curl / MCP client</text>
+  <text x="648" y="160" class="s">脚本 · 自动化</text>
+  <rect x="836" y="112" width="200" height="52" rx="10" fill="#fef3c7" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="848" y="140" class="h">管理台 Console</text>
+  <text x="848" y="160" class="s">http://127.0.0.1:5180</text>
+  <text x="200" y="210" class="lbl" fill="#2563eb">① 模型推理 chat</text>
+  <text x="720" y="210" class="lbl" fill="#ea580c">② 工具外发 Action / MCP</text>
+  <path d="M 250 164 L 250 200 L 250 230" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <path d="M 850 164 L 850 200 L 850 230" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#arr-orange)"/>
+  <path d="M 360 164 C 360 200, 280 210, 250 230" fill="none" stroke="#2563eb" stroke-width="1.5" opacity="0.5"/>
+  <path d="M 530 164 C 530 200, 300 220, 250 230" fill="none" stroke="#2563eb" stroke-width="1.5" opacity="0.5"/>
+  <path d="M 720 164 C 720 200, 800 210, 850 230" fill="none" stroke="#ea580c" stroke-width="1.5" opacity="0.5"/>
+  <path d="M 930 164 L 930 200 L 850 230" fill="none" stroke="#ea580c" stroke-width="1.5" opacity="0.5"/>
+  <rect x="40" y="240" width="500" height="220" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="56" y="264" class="zone" fill="#1d4ed8">L1a · 模型层 · OmniRoute</text>
+  <text x="56" y="282" class="s">端口 :20128 · OpenAI 兼容 /v1 · 不进 OMC 默认主路径</text>
+  <rect x="56" y="300" width="220" height="72" rx="10" fill="#ffffff" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="68" y="328" class="h">OmniRoute Gateway</text>
+  <text x="68" y="348" class="s">baseURL localhost:20128/v1</text>
+  <text x="68" y="364" class="s">Combos · fallback · 压缩</text>
+  <text x="68" y="380" class="s">免费额度池 · 268 providers</text>
+  <rect x="296" y="300" width="220" height="72" rx="10" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="308" y="328" class="h">Dashboard / Key</text>
+  <text x="308" y="348" class="s">本地 SQLite · 密钥在本机</text>
+  <text x="308" y="364" class="s">策略: auto /cheap /coding</text>
+  <rect x="56" y="390" width="460" height="52" rx="8" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="72" y="412" class="h">上游 LLM 厂商 / 免费池</text>
+  <text x="72" y="430" class="s">Claude · GPT · Gemini · DeepSeek · Cerebras · Ollama · …</text>
+  <path d="M 166 372 L 166 390" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <path d="M 406 372 L 406 390" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr-gray)"/>
+  <rect x="560" y="240" width="500" height="220" rx="12" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+  <text x="576" y="264" class="zone" fill="#c2410c">L1b · 企业管控 + 工具 Gateway · OnMyCompany</text>
+  <text x="576" y="282" class="s">端口 API :3100 · 管理台 :5180 · 主菜 = 连接 / 策略 / 外发</text>
+  <rect x="576" y="300" width="200" height="72" rx="10" fill="#ffffff" stroke="#fb923c" stroke-width="1.5"/>
+  <text x="588" y="328" class="h">Company 管控面</text>
+  <text x="588" y="348" class="s">登录 · 成员 · 团队</text>
+  <text x="588" y="364" class="s">OrgConfig · Skills · 策略</text>
+  <rect x="796" y="300" width="240" height="72" rx="10" fill="#ffffff" stroke="#fb923c" stroke-width="1.5"/>
+  <text x="808" y="328" class="h">Connect Gateway</text>
+  <text x="808" y="348" class="s">/v1/actions · /mcp</text>
+  <text x="808" y="364" class="s">Connections · OAuth · runs</text>
+  <rect x="576" y="390" width="460" height="52" rx="8" fill="#ffedd5" stroke="#fdba74"/>
+  <text x="592" y="412" class="h">业务 SaaS / 内部系统（组织共享连接）</text>
+  <text x="592" y="430" class="s">飞书 · Gmail · GitHub · Notion · HN(no_auth) · … · secret 仅服务端</text>
+  <path d="M 676 372 L 676 390" fill="none" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arr-orange)"/>
+  <path d="M 916 372 L 916 390" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#arr-orange)"/>
+  <rect x="40" y="490" width="1020" height="120" rx="12" fill="#ffffff" stroke="#e2e8f0" filter="url(#shadow)"/>
+  <text x="56" y="514" class="zone" fill="#64748b">L2 · 配置与契约（如何适配，不双写密钥）</text>
+  <rect x="56" y="530" width="240" height="64" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="68" y="558" class="h">OrgConfig models.json</text>
+  <text x="68" y="578" class="s">企业「逻辑模型」指向</text>
+  <text x="68" y="594" class="s">OmniRoute baseUrl（目录声明）</text>
+  <rect x="316" y="530" width="240" height="64" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="328" y="558" class="h">profiles/company 镜像</text>
+  <text x="328" y="578" class="s">登录后下发 policy / skills</text>
+  <text x="328" y="594" class="s">无 secret · 无 LLM Key</text>
+  <rect x="576" y="530" width="220" height="64" rx="10" fill="#fef3c7" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="588" y="558" class="h">runtime token</text>
+  <text x="588" y="578" class="s">OMC 绑定 memberId</text>
+  <text x="588" y="594" class="s">只用于工具 /v1 · MCP</text>
+  <rect x="816" y="530" width="220" height="64" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="828" y="558" class="h">OmniRoute dashboard key</text>
+  <text x="828" y="578" class="s">只用于模型 /v1</text>
+  <text x="828" y="594" class="s">与 OMC token 分离</text>
+  <path d="M 176 530 L 176 460" fill="none" stroke="#059669" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-green)"/>
+  <text x="184" y="500" class="s" fill="#059669">声明模型出口</text>
+  <path d="M 686 530 L 686 460" fill="none" stroke="#059669" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-green)"/>
+  <text x="694" y="500" class="s" fill="#059669">策略 · Skills</text>
+  <rect x="40" y="630" width="1020" height="120" rx="12" fill="#0f172a"/>
+  <text x="56" y="656" class="h" fill="#f8fafc">适配原则（钉死）</text>
+  <text x="56" y="680" class="s" fill="#cbd5e1">1. 默认：Chat → OmniRoute；工具 → OMC。不把 268 模型路由塞进 OMC 进程（G1b 非默认）。</text>
+  <text x="56" y="698" class="s" fill="#cbd5e1">2. 密钥分离：模型 Key 在 OmniRoute；SaaS 连接 Key 在 OMC Connections。OrgConfig 永不存 secret。</text>
+  <text x="56" y="716" class="s" fill="#cbd5e1">3. 审计分离：LLM 用量看 OmniRoute dashboard；业务外发看 OMC runs / 审计事件 / memberId。</text>
+  <text x="56" y="734" class="s" fill="#cbd5e1">4. 端口：OMA 5173/8787 · OmniRoute 20128 · OMC API 3100 · Console 5180。可选：models 仅登记 OmniRoute 逻辑端点。</text>
+  <line x1="780" y1="656" x2="810" y2="656" stroke="#2563eb" stroke-width="2"/>
+  <text x="818" y="660" class="s" fill="#94a3b8">模型流</text>
+  <line x1="880" y1="656" x2="910" y2="656" stroke="#ea580c" stroke-width="2"/>
+  <text x="918" y="660" class="s" fill="#94a3b8">工具流</text>
+  <line x1="980" y1="656" x2="1010" y2="656" stroke="#059669" stroke-width="2" stroke-dasharray="4,2"/>
+  <text x="1018" y="660" class="s" fill="#94a3b8">配置</text>
+</svg>

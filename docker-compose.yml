@@ -1,0 +1,26 @@
+# OnMyCompany — MVP prefers building from this fork:
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml up --build
+# Default image below is upstream GHCR (no company module). Prefer build overlay for product work.
+services:
+  onmycompany:
+    image: ghcr.io/oomol-lab/open-connector:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - onmycompany-data:/app/data
+    environment:
+      OMC_DATA_DIR: /app/data
+      OMC_ORIGIN:
+      OMC_ENCRYPTION_KEY:
+      OMC_ADMIN_TOKEN:
+      OMC_RUNTIME_TOKEN:
+      OMC_JWKS_URI:
+      OMC_JWT_ISSUER:
+      OMC_JWT_AUDIENCE:
+      OMC_ALLOWED_ACTIONS:
+      OMC_BLOCKED_ACTIONS:
+      OMC_ALLOWED_PROXIES:
+      OMC_BLOCKED_PROXIES:
+
+volumes:
+  onmycompany-data:

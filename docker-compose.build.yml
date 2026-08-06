@@ -1,0 +1,12 @@
+# Build overlay for OnMyCompany local / intranet images.
+#
+# Builds from docker/Dockerfile and tags as the compose service image name.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml up --build
+services:
+  onmycompany:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: onmycompany:local

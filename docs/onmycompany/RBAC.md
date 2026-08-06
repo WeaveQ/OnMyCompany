@@ -1,0 +1,116 @@
+# RBAC 与角色说明（与代码对齐）
+
+> **UI 文案 / 代码角色对照**（管理台「企业账号」编辑弹窗）  
+> 实现：`web/src/team-ui.ts`（`orgRoleLabelZh`）· `src/company/auth/store.ts` · 路由鉴权见 `src/company/routes.ts`  
+> 导航与页面职责：[TEAM-ISOLATION.md](./TEAM-ISOLATION.md) · [ORG-TEAM-PLAN.md](./ORG-TEAM-PLAN.md)
+
+---
+
+## 1. 三层身份（先分清）
+
+| 层 | UI / 口语 | 代码 | 凭证 | 一句话 |
+|----|-----------|------|------|--------|
+| **平台** | 平台运维 | `ops-admin` | `OMC_ADMIN_TOKEN` | 装机、连密钥、开控制台；**不是**业务人事角色 |
+| **企业账号** | 企业管理员 / 企业审计 / 员工 | `admin` / `auditor` / `member` | 成员 OTP session | 公司花名册上的人；管「公司有谁、谁能管设置」 |
+| **团队 membership** | 团队所有者 / 团队管理员 / 团队成员 | `creator` / `admin` / `member` | 同上 session + 所属队 | 某个小团队里的人；管「本队有谁」 |
+
+同一人常见组合：**企业员工 + 某队管理员**。  
+**先有企业账号，再入队**；停企业账号 → 全队失效；移出某队 → 只出本队。
+
+---
+
+## 2. 企业账号角色（花名册下拉的三项）
+
+管理台路径：**企业账号** `/members` → 添加/编辑。
+
+| UI 名 | 代码 `roles[]` | 白话 | 典型能做 | 不能做 |
+|-------|----------------|------|----------|--------|
+| **员工** | `member` | 普通同事 | 登录、进被分配的队、自己执行与用量 | 管花名册、改企业设置、全公司审计导出 |
+| **企业管理员** | `admin` | 公司业务超管 | 企业账号 CRUD、建队、企业设置、Skills 关联、全公司视图、审计 | 一般不写连接 secret（那是 ops-admin） |
+| **企业审计** | `auditor` | **只看不改** 的监督席 | 审计事件/导出、用量与运行全量只读、切「全公司」 | **不能**改账号/策略/Skills；**不能**当管家人 |
+
+### 「企业审计」不是什么
+
+- **不是**财务审计、也不是队内「观察者」产品功能（队内 `auditor` 权能仍空，P2）。  
+- **是**合规/安全旁观：查「谁干了什么」，不能改系统。  
+- 侧栏 **审计事件** `/audit-events` 即主要消费面。
+
+### 安全规则（已实现）
+
+- **不可停用/删除最后一个 `admin`**（`Cannot deactivate/remove the last org-admin`）。  
+- 显式 `owner` 角色字段 **未引入**；首 bootstrap 邮箱成为首个 `admin`（见 [BOOTSTRAP.md](./BOOTSTRAP.md)）。
+
+---
+
+## 3. 团队层角色（本队成员表）
+
+管理台路径：**团队** `/team`（侧栏一项；列表见 `/org/teams` 不进侧栏）。
+
+| UI 名 | 代码 | 能力摘要 |
+|-------|------|----------|
+| **团队所有者** | `creator` | 建队人；不可降级/移出 |
+| **团队管理员** | team `admin` | 本队加人（优先企业账号池）、改队角色、改队名 |
+| **团队成员** | team `member` | 本队协作 |
+| 团队观察者 | team `auditor` | **未赋权**；UI 可不强调 |
+
+企业管理员可操作任意队；团队管理员仅本队。
+
+---
+
+## 4. 资源权限矩阵（MVP）
+
+| 资源 | ops-admin | 企业管理员 `admin` | 员工 `member` | 企业审计 `auditor` |
+|------|-----------|-------------------|---------------|-------------------|
+| 连接 secret 写 | ✓ | ✗* | ✗ | ✗ |
+| OAuth client 配置 | ✓ | ✗* | ✗ | ✗ |
+| 企业设置写（OrgConfig / policy） | ✗ | ✓ | ✗ | ✗ |
+| 企业账号 CRUD | ✗ | ✓ | ✗ | ✗ |
+| 建队 / 团队列表写 | ✗ | ✓ | 只读本队 | 列表只读（elevated） |
+| 本队成员（入队/改队角色/移出） | ✗ | ✓ | team-admin/creator | ✗ |
+| 自己的 runtime token | — | ✓ | ✓ | ✗ |
+| 执行 `/v1`（持 token） | 运维调试可选 | ✓ | ✓ | ✗ |
+| runs 列表 | 全员 | 全员 | **仅自己** | 全员只读 |
+| 审计事件 / 导出 | ✓ | ✓ | ✗ | ✓ |
+| 计量「全公司」视图 | — | ✓ | ✗ | ✓ |
+| 高级 Console / 调试 | ✓ | 有限 | ✗ | ✗ |
+
+\* 内网可约定同一人另持 ops-admin token；角色上仍是两种凭证。
+
+### 连接作用域
+
+- **MVP**：连接 **企业共享**（无 per-team ACL）。  
+- `connectionName`：同一 service 下命名别名（`default` / `work` / `prod`）。  
+- 队级授权表（`connection_team_grants`）= Phase 3，未做。
+
+---
+
+## 5. 管理台导航（已落地）
+
+```text
+工作台
+  概览 /overview
+  应用连接 /connections
+  企业账号 /members          ← 花名册 SoT
+  团队 /team                 ← 侧栏仅一项
+      · 具体队 → 本队成员
+      · 全公司 → /org/teams 全部团队（不进侧栏）
+      · 页内「全部团队」→ /org/teams
+配置
+  企业设置 /org-config
+```
+
+实现要点：`teamNavTarget` · `resolveMembershipTeamId`（永不把 `__all__` 当 team 资源 id）。
+
+---
+
+## 6. 相关代码
+
+| 区域 | 路径 |
+|------|------|
+| 角色标签 | `web/src/team-ui.ts` |
+| 企业账号页 | `web/src/members-page.tsx` |
+| 本队成员 | `web/src/team-manage-page.tsx` |
+| 全部团队 | `web/src/org-teams-page.tsx` |
+| 壳导航 | `web/src/ui.tsx` |
+| 成员存储 / last-admin | `src/company/auth/store.ts` |
+| HTTP 表 | [API-NOTES.md](./API-NOTES.md) |

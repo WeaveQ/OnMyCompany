@@ -1,0 +1,1171 @@
+import type { ReactNode } from "react";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router";
+import {
+  Check,
+  ChevronDown,
+  ChevronsUpDown,
+  Copy,
+  Pencil,
+  Plus,
+  Trash2,
+  Users,
+} from "lucide-react";
+import { ApiError, apiDelete, apiGet, apiPost, apiPut } from "./api";
+import { MemberLoginCard } from "./member-login-card";
+import {
+  ensureMemberSessionForConsole,
+  getActiveTeamId,
+  hasMemberSession,
+  memberAuthHeaders,
+  setActiveTeamId as persistActiveTeamId,
+  setMemberToken,
+  subscribeActiveTeamId,
+} from "./member-session";
+import {
+  ALL_TEAMS_ID,
+  accountStatusLabelZh,
+  accountStatusTone,
+  canSubmitCreateTeam,
+  formatTeamIdSnippet,
+  isAllTeamsView,
+  isValidTeamName,
+  resolveMembershipTeamId,
+  roleLabelZh,
+  TEAM_ASSIGNABLE_ROLES,
+  type AccountLifecycle,
+  type TeamRecord,
+} from "./team-ui";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ConsoleModal, InlineError } from "./shared-ui";
+
+export type { TeamRecord };
+
+interface TeamMemberRow {
+  id: string;
+  email: string;
+  displayName: string;
+  teamRole: string;
+  status: string;
+  accountStatus?: AccountLifecycle | string;
+  isCreator?: boolean;
+  roles?: string[];
+}
+
+interface OrgMemberRow {
+  id: string;
+  email: string;
+  displayName: string;
+  roles: string[];
+  status?: string;
+  statusLabel?: string;
+}
+
+/** Team membership row (current team only — org lifecycle lives on 企业账号). */
+interface PeopleRow {
+  id: string;
+  email: string;
+  displayName: string;
+  accountStatus: AccountLifecycle | string;
+  statusLabel: string;
+  teamRole?: string;
+  inTeam: boolean;
+  isCreator?: boolean;
+}
+
+/** Status chips for current-team members only (no company-wide filter). */
+type PeopleFilter = "all" | "pending" | "active" | "deactivated";
+
+function normalizeAccountStatus(raw?: string): AccountLifecycle | string {
+  if (raw === "pending" || raw === "未激活") return "pending";
+  if (raw === "deactivated" || raw === "已停用") return "deactivated";
+  if (raw === "active" || raw === "已启用" || raw === "正常") return "active";
+  if (raw === "已禁用") return "deactivated";
+  return "active";
+}
+
+export function TeamManagePage(): ReactNode {
+  const [params, setParams] = useSearchParams();
+  const teamId = params.get("team") || getActiveTeamId() || "";
+  const filterParam = ((): PeopleFilter => {
+    const f = params.get("filter");
+    if (f === "pending" || f === "active" || f === "deactivated") return f;
+    return "all";
+  })();
+  const [filter, setFilter] = useState<PeopleFilter>(filterParam);
+  const [team, setTeam] = useState<TeamRecord | null>(null);
+  const [teams, setTeams] = useState<TeamRecord[]>([]);
+  const [items, setItems] = useState<TeamMemberRow[]>([]);
+  const [orgMembers, setOrgMembers] = useState<OrgMemberRow[]>([]);
+  const [meRoles, setMeRoles] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [addDisplayName, setAddDisplayName] = useState("");
+  const [editName, setEditName] = useState("");
+  const [editAvatar, setEditAvatar] = useState("");
+  const [loginEmail, setLoginEmail] = useState("admin@company.internal");
+  const [code, setCode] = useState("000000");
+  const [authed, setAuthed] = useState(hasMemberSession());
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [copied, setCopied] = useState(false);
+  const [idTipOpen, setIdTipOpen] = useState(false);
+
+  const isOrgAdmin = meRoles.includes("admin");
+
+  useEffect(() => {
+    setFilter(filterParam);
+  }, [filterParam]);
+
+  // Sidebar TeamSwitcher: keep ?team= in sync when switched from outside this page.
+  // Never write ALL_TEAMS_ID into the membership URL (not a real team resource).
+  useEffect(
+    () =>
+      subscribeActiveTeamId((id) => {
+        if (!id || isAllTeamsView(id) || id === params.get("team")) return;
+        const next = new URLSearchParams(params);
+        next.set("team", id);
+        setParams(next, { replace: true });
+      }),
+    [params, setParams],
+  );
+
+  function switchFilter(next: PeopleFilter): void {
+    setFilter(next);
+    const nextParams = new URLSearchParams(params);
+    nextParams.delete("tab"); // drop legacy dual-tab param
+    if (next === "all") nextParams.delete("filter");
+    else nextParams.set("filter", next);
+    if (teamId) nextParams.set("team", teamId);
+    setParams(nextParams, { replace: true });
+  }
+
+  const refresh = useCallback(async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      if (!hasMemberSession()) {
+        await ensureMemberSessionForConsole();
+      }
+      const me = await apiGet<{
+        authenticated: boolean;
+        memberId?: string | null;
+        email?: string | null;
+        displayName?: string | null;
+        roles?: string[];
+        teams?: TeamRecord[];
+      }>("/api/me", memberAuthHeaders());
+      if (!me.authenticated) {
+        setAuthed(false);
+        setItems([]);
+        setOrgMembers([]);
+        setTeam(null);
+        setTeams([]);
+        setMeRoles([]);
+        return;
+      }
+      setAuthed(true);
+      setMeRoles(me.roles ?? []);
+
+      const orgList = await apiGet<{ items: OrgMemberRow[] }>("/api/org/members", memberAuthHeaders());
+      setOrgMembers(orgList.items ?? []);
+
+      const list = await apiGet<{ items: TeamRecord[] }>("/api/teams", memberAuthHeaders());
+      const teamList = list.items.length ? list.items : me.teams ?? [];
+      setTeams(teamList);
+      // Membership page must never call GET /api/teams/__all__/members.
+      const preferred = teamId || getActiveTeamId();
+      const activeId = resolveMembershipTeamId(teamList, preferred);
+
+      if (!activeId) {
+        const personalName = (me.displayName || me.email?.split("@")[0] || "personal").replace(
+          /[^a-zA-Z0-9._-]+/g,
+          "_",
+        );
+        setTeam({
+          id: "personal",
+          name: personalName.length >= 2 ? personalName : "personal_team",
+          createdBy: me.memberId || undefined,
+        });
+        setItems(
+          me.memberId
+            ? [
+                {
+                  id: me.memberId,
+                  email: me.email || "",
+                  displayName: me.displayName || me.email || "",
+                  teamRole: "creator",
+                  status: "已启用",
+                  isCreator: true,
+                },
+              ]
+            : [],
+        );
+        return;
+      }
+
+      // Keep 全公司 in the switcher if selected; only rewrite a non-sentinel active id.
+      if (!isAllTeamsView(getActiveTeamId()) && getActiveTeamId() !== activeId) {
+        persistActiveTeamId(activeId);
+      }
+      // Membership URL must never carry __all__ as ?team=.
+      if (activeId !== teamId || isAllTeamsView(teamId)) {
+        const nextParams = new URLSearchParams(params);
+        nextParams.set("team", activeId);
+        nextParams.delete("tab");
+        setParams(nextParams, { replace: true });
+      }
+
+      const detail = await apiGet<{ team: TeamRecord; items: TeamMemberRow[] }>(
+        `/api/teams/${encodeURIComponent(activeId)}/members`,
+        memberAuthHeaders(),
+      );
+      setTeam(detail.team);
+      if (detail.items.length === 0 && me.memberId) {
+        setItems([
+          {
+            id: me.memberId,
+            email: me.email || "",
+            displayName: me.displayName || me.email || "",
+            teamRole: "creator",
+            status: "已启用",
+            isCreator: true,
+          },
+        ]);
+      } else {
+        setItems(detail.items);
+      }
+      setEditName(detail.team.name);
+      setEditAvatar(detail.team.avatarUrl || "");
+      setSelected(new Set());
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Load failed");
+    } finally {
+      setLoading(false);
+    }
+  }, [teamId, setParams, params]);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  async function login(): Promise<void> {
+    setError(null);
+    try {
+      await apiPost("/api/company/auth/email/start", { email: loginEmail });
+      const verified = await apiPost<{
+        token: string;
+        defaultTeamId?: string;
+        teams?: TeamRecord[];
+      }>("/api/company/auth/email/verify", {
+        email: loginEmail,
+        code,
+      });
+      setMemberToken(verified.token);
+      const preferred = verified.defaultTeamId || verified.teams?.[0]?.id;
+      if (preferred) {
+        persistActiveTeamId(preferred);
+        setParams({ team: preferred }, { replace: true });
+      }
+      setAuthed(true);
+      await refresh();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Login failed");
+    }
+  }
+
+  async function addTeamMember(): Promise<void> {
+    if (!team || team.id === "personal") return;
+    setError(null);
+    setMessage(null);
+    try {
+      // Prefer existing company account email; API creates org account only if missing.
+      await apiPost(
+        `/api/teams/${team.id}/members`,
+        {
+          email: email.trim(),
+          role: "member",
+          displayName: addDisplayName.trim() || undefined,
+        },
+        memberAuthHeaders(),
+      );
+      setEmail("");
+      setAddDisplayName("");
+      setAddOpen(false);
+      setMessage("已加入本队。企业账号启停请到「企业账号」。");
+      await refresh();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "加入本队失败");
+    }
+  }
+
+  function buildPeopleRows(): PeopleRow[] {
+    return items.map((row) => {
+      const accountStatus = normalizeAccountStatus(row.accountStatus || row.status);
+      return {
+        id: row.id,
+        email: row.email,
+        displayName: row.displayName,
+        accountStatus,
+        statusLabel:
+          row.status === "已禁用"
+            ? "已禁用"
+            : row.status === "未激活" || row.status === "已启用" || row.status === "已停用"
+              ? row.status
+              : accountStatusLabelZh(accountStatus),
+        teamRole: row.teamRole,
+        inTeam: true,
+        isCreator: row.isCreator || row.teamRole === "creator",
+      };
+    });
+  }
+
+  function applyStatusFilter(rows: PeopleRow[]): PeopleRow[] {
+    if (filter === "pending") return rows.filter((r) => r.accountStatus === "pending");
+    if (filter === "active") return rows.filter((r) => r.accountStatus === "active");
+    if (filter === "deactivated") return rows.filter((r) => r.accountStatus === "deactivated");
+    return rows;
+  }
+
+  async function saveTeam(): Promise<void> {
+    if (!team || team.id === "personal") return;
+    setError(null);
+    try {
+      await apiPut(`/api/teams/${team.id}`, { name: editName, avatarUrl: editAvatar }, memberAuthHeaders());
+      setEditOpen(false);
+      await refresh();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Update failed");
+    }
+  }
+
+  async function changeRole(memberId: string, role: string): Promise<void> {
+    if (!team || team.id === "personal") return;
+    setError(null);
+    try {
+      await apiPut(
+        `/api/teams/${team.id}/members/${encodeURIComponent(memberId)}`,
+        { role },
+        memberAuthHeaders(),
+      );
+      await refresh();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Update role failed");
+    }
+  }
+
+  async function removeMember(memberId: string): Promise<void> {
+    if (!team || team.id === "personal") return;
+    setError(null);
+    try {
+      await apiDelete(`/api/teams/${team.id}/members/${encodeURIComponent(memberId)}`, memberAuthHeaders());
+      await refresh();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Remove failed");
+    }
+  }
+
+  function selectTeam(id: string): void {
+    persistActiveTeamId(id);
+    const next = new URLSearchParams(params);
+    next.set("team", id);
+    setParams(next, { replace: true });
+  }
+
+  async function copyTeamId(): Promise<void> {
+    if (!team || team.id === "personal") return;
+    try {
+      await navigator.clipboard.writeText(team.id);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // ignore
+    }
+  }
+
+  function toggleSelect(id: string): void {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  if (!authed) {
+    return (
+      <div className="page-stack team-manage-page">
+        <header className="page-hero">
+          <h1 className="page-hero-title">团队</h1>
+          <p className="page-hero-lead">管理当前小团队的成员与队内角色。企业账号启停请到企业账号页。</p>
+        </header>
+        <MemberLoginCard
+          title="登录后管理团队"
+          description="登录企业成员后可管理本队成员。"
+          email={loginEmail}
+          code={code}
+          error={error}
+          onEmailChange={setLoginEmail}
+          onCodeChange={setCode}
+          onSubmit={() => void login()}
+        />
+      </div>
+    );
+  }
+
+  const locked = !team || team.id === "personal";
+  // Team page only: membership of current team (never org-wide company roster).
+  const peopleRows = applyStatusFilter(buildPeopleRows().filter((r) => r.inTeam));
+  const pendingCount = peopleRows.filter((r) => r.accountStatus === "pending").length;
+  const allSelected = peopleRows.length > 0 && selected.size === peopleRows.length;
+  const poolCandidates = orgMembers.filter((m) => !items.some((t) => t.id === m.id));
+
+  return (
+    <div className="page-stack team-manage-page" data-testid="team-people-page">
+      {error ? <InlineError message={error} /> : null}
+      {message ? <p className="page-toast">{message}</p> : null}
+
+      <div className="console-card team-manage-shell">
+        <div className="team-manage-header">
+          <div className="team-manage-identity">
+            <PageTeamSwitcher
+              teams={teams}
+              activeTeamId={team?.id}
+              onSelect={selectTeam}
+              onCreate={() => setCreateOpen(true)}
+            />
+            {team && team.id !== "personal" ? (
+              <span
+                className="team-id-chip-wrap"
+                onMouseEnter={() => setIdTipOpen(true)}
+                onMouseLeave={() => setIdTipOpen(false)}
+              >
+                <button type="button" className="team-id-chip" onClick={() => void copyTeamId()} title="点击复制完整 ID">
+                  {formatTeamIdSnippet(team.id)}
+                </button>
+                {idTipOpen || copied ? (
+                  <span className="team-id-tooltip" role="tooltip">
+                    <Copy size={12} />
+                    {copied ? "已复制" : team.id}
+                  </span>
+                ) : null}
+              </span>
+            ) : null}
+            {team && team.id !== "personal" ? <span className="team-pill">创建者</span> : null}
+          </div>
+
+          <div className="team-manage-actions">
+            <Button variant="ghost" size="sm" type="button" className="team-manage-secondary-link" asChild>
+              <Link to="/org/teams" data-testid="team-open-directory">
+                全部团队
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" type="button" className="team-manage-secondary-link" asChild>
+              <Link to="/connections">应用连接</Link>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setEditOpen(true)} disabled={locked}>
+              <Pencil size={14} />
+              编辑团队
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setAddOpen(true)}
+              disabled={locked && !isOrgAdmin}
+              data-testid="team-add-member"
+            >
+              <Plus size={14} />
+              添加成员
+            </Button>
+          </div>
+        </div>
+
+        <div className="team-people-bar">
+          <div className="team-people-tabs" role="tablist" aria-label="人员筛选" data-testid="people-filters">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={filter === "all"}
+              className={filter === "all" ? "team-people-tab is-active" : "team-people-tab"}
+              data-testid="filter-all"
+              onClick={() => switchFilter("all")}
+            >
+              全部
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={filter === "pending"}
+              className={filter === "pending" ? "team-people-tab is-active" : "team-people-tab"}
+              data-testid="filter-pending"
+              onClick={() => switchFilter("pending")}
+            >
+              {pendingCount ? `未激活 ${pendingCount}` : "未激活"}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={filter === "active"}
+              className={filter === "active" ? "team-people-tab is-active" : "team-people-tab"}
+              data-testid="filter-active"
+              onClick={() => switchFilter("active")}
+            >
+              已启用
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={filter === "deactivated"}
+              className={filter === "deactivated" ? "team-people-tab is-active" : "team-people-tab"}
+              data-testid="filter-deactivated"
+              onClick={() => switchFilter("deactivated")}
+            >
+              已停用
+            </button>
+          </div>
+          <p className="team-people-hint">
+            本队成员与队内角色。开账号请到 <Link to="/members">企业账号</Link>
+            {" · 建队 / 换队见 "}
+            <Link to="/org/teams">全部团队</Link>
+          </p>
+        </div>
+
+        <div className="team-manage-selection">
+          <span>
+            {peopleRows.length ? `${peopleRows.length} 人` : "暂无成员"}
+            {selected.size > 0 ? (
+              <span className="team-manage-selection-meta"> · 已选 {selected.size}</span>
+            ) : null}
+          </span>
+        </div>
+
+        <div className="team-manage-table-wrap">
+          <table className="team-manage-table" data-testid="team-members-table">
+            <thead>
+              <tr>
+                <th className="team-col-check">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={() => {
+                      if (selected.size === peopleRows.length) setSelected(new Set());
+                      else setSelected(new Set(peopleRows.map((r) => r.id)));
+                    }}
+                    aria-label="全选"
+                    disabled={peopleRows.length === 0}
+                  />
+                </th>
+                <th>用户</th>
+                <th>团队角色</th>
+                <th>账号状态</th>
+                <th className="team-col-actions">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {peopleRows.map((row) => {
+                const isCreator = Boolean(row.isCreator);
+                const tone = accountStatusTone(String(row.accountStatus));
+                const toneClass =
+                  tone === "warn" ? "is-warn" : tone === "muted" ? "is-muted" : "is-ok";
+                return (
+                  <tr
+                    key={row.id}
+                    className={selected.has(row.id) ? "is-selected" : undefined}
+                    data-status={row.accountStatus}
+                  >
+                    <td className="team-col-check">
+                      <input
+                        type="checkbox"
+                        checked={selected.has(row.id)}
+                        onChange={() => toggleSelect(row.id)}
+                        aria-label={`选择 ${row.email}`}
+                      />
+                    </td>
+                    <td>
+                      <div className="team-user-cell">
+                        <TeamAvatar name={row.displayName || row.email} size={32} />
+                        <div className="team-user-text">
+                          <div className="console-row-title team-user-email">{row.email}</div>
+                          <div className="console-row-meta team-switcher-id">
+                            {row.displayName && row.displayName !== row.email
+                              ? row.displayName
+                              : formatTeamIdSnippet(row.id)}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      {isCreator ? (
+                        <span className="team-pill">{roleLabelZh(row.teamRole || "creator")}</span>
+                      ) : (
+                        <RoleMenu
+                          role={row.teamRole || "member"}
+                          disabled={locked}
+                          onChange={(role) => void changeRole(row.id, role)}
+                        />
+                      )}
+                    </td>
+                    <td>
+                      <span className={`team-status-pill ${toneClass}`}>{row.statusLabel}</span>
+                    </td>
+                    <td className="team-col-actions">
+                      <div className="team-row-actions">
+                        {!isCreator ? (
+                          <button
+                            type="button"
+                            className="team-icon-btn is-danger"
+                            title="移出本队"
+                            aria-label="移出本队"
+                            disabled={locked}
+                            data-testid={`team-remove-${row.id}`}
+                            onClick={() => void removeMember(row.id)}
+                          >
+                            <Trash2 size={15} />
+                            移出
+                          </button>
+                        ) : (
+                          <span className="team-action-locked">团队所有者</span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {peopleRows.length === 0 ? (
+            <div className="console-empty">
+              {loading
+                ? "加载中…"
+                : filter === "pending"
+                  ? "本队没有未激活成员"
+                  : filter === "deactivated"
+                    ? "本队没有已停用账号"
+                    : "本队暂无成员，从企业账号池添加"}
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      {addOpen ? (
+        <ConsoleModal
+          title="加入本队"
+          description="优先从企业账号池选择。若邮箱尚无账号，会创建为未激活企业账号并入队。"
+          onClose={() => setAddOpen(false)}
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setAddOpen(false)}>
+                取消
+              </Button>
+              <Button
+                onClick={() => void addTeamMember()}
+                disabled={!email.includes("@") || locked}
+                data-testid="team-add-submit"
+              >
+                加入本队
+              </Button>
+            </>
+          }
+        >
+          <p className="console-modal-note" data-testid="team-add-hint">
+            <strong>推荐：</strong>在「企业账号」先开账号，再回这里选邮箱入队。企业角色/启停不在本页。
+          </p>
+          {poolCandidates.length > 0 ? (
+            <Label className="field">
+              <span>从企业账号池选择</span>
+              <select
+                className="console-modal-select"
+                value=""
+                data-testid="team-add-from-pool"
+                onChange={(e) => {
+                  const id = e.target.value;
+                  const m = poolCandidates.find((x) => x.id === id);
+                  if (m) {
+                    setEmail(m.email);
+                    setAddDisplayName(m.displayName || "");
+                  }
+                }}
+              >
+                <option value="">选择未入本队的账号…</option>
+                {poolCandidates.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.email}
+                    {m.displayName ? ` · ${m.displayName}` : ""}
+                  </option>
+                ))}
+              </select>
+            </Label>
+          ) : (
+            <p className="console-row-meta">
+              池中暂无未入队账号。可去 <Link to="/members">企业账号</Link> 添加，或下方直接填邮箱。
+            </p>
+          )}
+          <Label className="field">
+            <span>邮箱</span>
+            <Input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="user@company.com"
+              data-testid="team-add-email"
+              autoFocus
+            />
+          </Label>
+          <Label className="field">
+            <span>显示名（新账号时可选）</span>
+            <Input value={addDisplayName} onChange={(e) => setAddDisplayName(e.target.value)} />
+          </Label>
+        </ConsoleModal>
+      ) : null}
+
+      {editOpen ? (
+        <ConsoleModal
+          title="编辑团队"
+          onClose={() => setEditOpen(false)}
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setEditOpen(false)}>
+                取消
+              </Button>
+              <Button onClick={() => void saveTeam()} disabled={!canSubmitCreateTeam(editName)}>
+                保存
+              </Button>
+            </>
+          }
+        >
+          <Label className="field">
+            <span>团队名称</span>
+            <Input value={editName} onChange={(e) => setEditName(e.target.value)} autoFocus />
+          </Label>
+          {!isValidTeamName(editName) && editName.trim() ? (
+            <p className="console-modal-hint">仅支持英文、数字、点、下划线和中划线（2–64）。</p>
+          ) : null}
+          <Label className="field">
+            <span>头像 URL</span>
+            <Input value={editAvatar} onChange={(e) => setEditAvatar(e.target.value)} placeholder="可选" />
+          </Label>
+        </ConsoleModal>
+      ) : null}
+
+      <CreateTeamModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreated={(created) => {
+          setTeams((prev) => [...prev, created]);
+          selectTeam(created.id);
+          setCreateOpen(false);
+        }}
+      />
+    </div>
+  );
+}
+
+function PageTeamSwitcher(props: {
+  teams: TeamRecord[];
+  activeTeamId?: string;
+  onSelect(teamId: string): void;
+  onCreate(): void;
+}): ReactNode {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const active = props.teams.find((t) => t.id === props.activeTeamId) || props.teams[0];
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: MouseEvent): void {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
+    }
+    function onKeyDown(event: KeyboardEvent): void {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className="page-team-switcher" ref={rootRef}>
+      <button
+        type="button"
+        className="page-team-switcher-trigger"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <TeamAvatar name={active?.name || "团队"} url={active?.avatarUrl} size={36} />
+        <span className="page-team-switcher-name">{active?.name || "选择团队"}</span>
+        <ChevronDown size={14} className={open ? "page-team-chevron open" : "page-team-chevron"} />
+      </button>
+      {open ? (
+        <div className="page-team-switcher-popover" role="menu">
+          <div className="team-switcher-label">团队</div>
+          {props.teams.length === 0 ? (
+            <div className="team-switcher-empty">暂无团队</div>
+          ) : (
+            props.teams.map((t) => {
+              const isActive = t.id === active?.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="menuitem"
+                  className={`page-team-item${isActive ? " is-active" : ""}`}
+                  onClick={() => {
+                    props.onSelect(t.id);
+                    setOpen(false);
+                  }}
+                >
+                  <TeamAvatar name={t.name} url={t.avatarUrl} size={32} />
+                  <div className="team-switcher-item-text">
+                    <div className="page-team-item-title">
+                      <span className="team-switcher-name">{t.name}</span>
+                      {isActive ? <span className="team-pill">{roleLabelZh("creator")}</span> : null}
+                    </div>
+                    <div className="console-row-meta team-switcher-id">
+                      {formatTeamIdSnippet(t.id)}
+                    </div>
+                  </div>
+                </button>
+              );
+            })
+          )}
+          <div className="team-switcher-divider" />
+          <button
+            type="button"
+            className="team-switcher-menu-btn"
+            onClick={() => {
+              setOpen(false);
+              props.onCreate();
+            }}
+          >
+            <Plus size={14} /> 创建团队
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function RoleMenu(props: {
+  role: string;
+  disabled?: boolean;
+  onChange(role: string): void;
+}): ReactNode {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: MouseEvent): void {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
+    }
+    function onKeyDown(event: KeyboardEvent): void {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className="team-role-menu" ref={rootRef}>
+      <button
+        type="button"
+        className="team-role-trigger"
+        disabled={props.disabled}
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        {roleLabelZh(props.role)}
+        <ChevronDown size={12} />
+      </button>
+      {open ? (
+        <div className="team-role-popover" role="menu">
+          {TEAM_ASSIGNABLE_ROLES.map((opt) => {
+            const active = props.role === opt.id;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                role="menuitem"
+                className={active ? "team-role-item is-active" : "team-role-item"}
+                onClick={() => {
+                  setOpen(false);
+                  if (!active) props.onChange(opt.id);
+                }}
+              >
+                <span>{opt.labelZh}</span>
+                {active ? <Check size={14} /> : null}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export function CreateTeamModal(props: {
+  open: boolean;
+  onClose(): void;
+  onCreated(team: TeamRecord): void;
+}): ReactNode {
+  const [name, setName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  if (!props.open) return null;
+
+  const canSubmit = canSubmitCreateTeam(name);
+
+  async function create(): Promise<void> {
+    if (!canSubmitCreateTeam(name)) return;
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await apiPost<{ team: TeamRecord }>(
+        "/api/teams",
+        { name: name.trim(), avatarUrl: avatarUrl || undefined },
+        memberAuthHeaders(),
+      );
+      props.onCreated(res.team);
+      setName("");
+      setAvatarUrl("");
+      props.onClose();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Create failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <ConsoleModal
+      title="创建团队"
+      description="创建后可邀请成员，并让成员使用团队中已授权的应用连接。"
+      onClose={props.onClose}
+      footer={
+        <>
+          <Button variant="outline" onClick={props.onClose}>
+            取消
+          </Button>
+          <Button disabled={loading || !canSubmit} onClick={() => void create()}>
+            创建
+          </Button>
+        </>
+      }
+    >
+      <Label className="field">
+        <span>团队名称</span>
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="my_team"
+          autoFocus
+          aria-invalid={name.trim().length > 0 && !isValidTeamName(name)}
+        />
+      </Label>
+      <p className="console-modal-hint">仅支持英文、数字、点、下划线和中划线。</p>
+      <Label className="field">
+        <span>头像 URL</span>
+        <Input value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} placeholder="可选" />
+      </Label>
+      {error ? <InlineError message={error} /> : null}
+    </ConsoleModal>
+  );
+}
+
+/**
+ * Team name trigger only — OOMOL: click name/↕ opens team list.
+ * Settings gear is a sibling in the parent footer (not part of this dropdown).
+ */
+export function TeamSwitcher(props: {
+  teams: TeamRecord[];
+  activeTeamId?: string;
+  /** Show「全公司」for org-admin / auditor. */
+  showAllTeams?: boolean;
+  onSelect(teamId: string): void;
+  onCreate(): void;
+  onManage(): void;
+}): ReactNode {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const isAll = props.activeTeamId === ALL_TEAMS_ID;
+  const active = isAll ? undefined : props.teams.find((t) => t.id === props.activeTeamId) || props.teams[0];
+  const triggerName = isAll ? "全公司" : active?.name || "选择团队";
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: MouseEvent): void {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
+    }
+    function onKeyDown(event: KeyboardEvent): void {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className="team-switcher" ref={rootRef}>
+      <button
+        type="button"
+        className={`team-switcher-trigger${open ? " is-open" : ""}`}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <TeamAvatar name={triggerName} url={active?.avatarUrl} size={28} />
+        <div className="team-switcher-label-block">
+          <div className="team-switcher-name">{triggerName}</div>
+        </div>
+        <ChevronsUpDown size={14} className="team-switcher-chevron" aria-hidden />
+      </button>
+
+      {open ? (
+        <div className="team-switcher-popover" role="menu">
+          <div className="team-switcher-label">团队</div>
+          {props.showAllTeams ? (
+            <button
+              type="button"
+              role="menuitem"
+              className={`team-switcher-item${isAll ? " is-active" : ""}`}
+              data-testid="team-switcher-all"
+              onClick={() => {
+                props.onSelect(ALL_TEAMS_ID);
+                setOpen(false);
+              }}
+            >
+              <TeamAvatar name="全公司" size={32} />
+              <div className="team-switcher-item-text">
+                <div className="page-team-item-title">
+                  <div className="team-switcher-name">全公司</div>
+                  {isAll ? <span className="team-pill">全部</span> : null}
+                </div>
+                <div className="console-row-meta">企业管理员 / 审计视角</div>
+              </div>
+            </button>
+          ) : null}
+          {props.teams.length === 0 ? (
+            <div className="team-switcher-empty">暂无团队，点下方创建</div>
+          ) : (
+            props.teams.map((t) => {
+              const isActive = !isAll && t.id === active?.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="menuitem"
+                  className={`team-switcher-item${isActive ? " is-active" : ""}`}
+                  onClick={() => {
+                    props.onSelect(t.id);
+                    setOpen(false);
+                  }}
+                >
+                  <TeamAvatar name={t.name} url={t.avatarUrl} size={32} />
+                  <div className="team-switcher-item-text">
+                    <div className="page-team-item-title">
+                      <div className="team-switcher-name">{t.name}</div>
+                      {isActive ? <span className="team-pill">{roleLabelZh("creator")}</span> : null}
+                    </div>
+                    <div className="console-row-meta team-switcher-id">{formatTeamIdSnippet(t.id)}</div>
+                  </div>
+                </button>
+              );
+            })
+          )}
+          <div className="team-switcher-divider" />
+          <div className="team-switcher-actions">
+            <button
+              type="button"
+              className="team-switcher-menu-btn"
+              onClick={() => {
+                setOpen(false);
+                props.onCreate();
+              }}
+            >
+              <Plus size={14} /> 创建团队
+            </button>
+            <button
+              type="button"
+              className="team-switcher-menu-btn"
+              onClick={() => {
+                setOpen(false);
+                props.onManage();
+              }}
+            >
+              <Users size={14} /> 管理团队
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export function TeamAvatar(props: { name: string; url?: string; size?: number }): ReactNode {
+  const size = props.size ?? 32;
+  if (props.url) {
+    return (
+      <img
+        src={props.url}
+        alt=""
+        width={size}
+        height={size}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: 999,
+          objectFit: "cover",
+          background: "var(--muted)",
+          flexShrink: 0,
+        }}
+      />
+    );
+  }
+  const hue = hashHue(props.name || "?");
+  return (
+    <div
+      aria-hidden
+      className="team-avatar-fallback"
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 999,
+        background: `color-mix(in oklab, hsl(${hue} 55% 52%) 55%, var(--muted))`,
+        display: "grid",
+        placeItems: "center",
+        fontSize: Math.max(11, size * 0.35),
+        fontWeight: 650,
+        color: "var(--foreground)",
+        flexShrink: 0,
+      }}
+    >
+      {(props.name || "?").slice(0, 1).toUpperCase()}
+    </div>
+  );
+}
+
+function hashHue(value: string): number {
+  let h = 0;
+  for (let i = 0; i < value.length; i += 1) h = (h * 31 + value.charCodeAt(i)) % 360;
+  return h;
+}
+
+

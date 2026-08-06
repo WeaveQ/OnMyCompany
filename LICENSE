@@ -1,0 +1,41 @@
+WeaveQ Source-Available Non-Commercial License
+Copyright 2026-present WeaveQ AI
+
+================================================================================
+IMPORTANT — NOT OPEN FOR COMMERCIAL USE
+================================================================================
+
+OnMyCompany is provided by WeaveQ AI for evaluation, research, education, and
+internal non-production pilot use only.
+
+You may:
+
+  • View and run the source for personal learning or internal evaluation
+  • Modify the source for non-commercial evaluation
+  • Share unmodified copies with attribution for non-commercial purposes
+
+You may NOT, without a separate written commercial license from WeaveQ AI:
+
+  • Use this software (or derivatives) for commercial purposes, including but
+    not limited to selling, SaaS hosting, paid consulting deliverables built on
+    this software, or production operation for paying customers
+  • Remove or obscure copyright, NOTICE, or license notices
+  • Represent this software as open-source under OSI-approved terms for
+    commercial redistribution
+
+Commercial licensing, OEM, and production deployment rights are available only
+under a separate agreement with WeaveQ AI.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Third-party components bundled or linked by this project remain under their
+own licenses (see NOTICE). Those licenses are independent of this grant.
+
+Related open-source product: OnMyAgent (Apache-2.0) — see the OnMyAgent
+repository. OnMyCompany is a separate product with different terms.
