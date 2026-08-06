@@ -1,14 +1,14 @@
 import type { ReactNode } from "react";
 
+import { Loader2, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router";
-import { Loader2, RefreshCw } from "lucide-react";
 import { ApiError, apiGet, apiPost } from "./api";
 import { MemberLoginCard } from "./member-login-card";
 import { hasMemberSession, memberAuthHeaders, setMemberToken } from "./member-session";
+import { InlineError } from "./shared-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { InlineError } from "./shared-ui";
 
 export interface AuditEventItem {
   id?: string;
@@ -65,13 +65,14 @@ export async function loadAuditEvents(options?: {
   return normalizeAuditPage(body);
 }
 
-function normalizeAuditPage(body: Partial<AuditEventsPageResult> | { items?: AuditEventItem[] }): AuditEventsPageResult {
+function normalizeAuditPage(
+  body: Partial<AuditEventsPageResult> | { items?: AuditEventItem[] },
+): AuditEventsPageResult {
   const items = body.items ?? [];
   const total = "total" in body && typeof body.total === "number" ? body.total : items.length;
   const limit = "limit" in body && typeof body.limit === "number" ? body.limit : items.length;
   const offset = "offset" in body && typeof body.offset === "number" ? body.offset : 0;
-  const hasMore =
-    "hasMore" in body && typeof body.hasMore === "boolean" ? body.hasMore : offset + items.length < total;
+  const hasMore = "hasMore" in body && typeof body.hasMore === "boolean" ? body.hasMore : offset + items.length < total;
   return { items, total, limit, offset, hasMore };
 }
 

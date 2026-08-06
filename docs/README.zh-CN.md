@@ -65,12 +65,12 @@ OnMyCompany 适合需要让 Agent 持续访问用户现有工具、但不想把 
 
 ## 开发者工具
 
-| 工具                                                        | 用途                                                                                                                                              |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 工具                                                        | 用途                                                                                                                                      |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | [Connector SDK](https://github.com/oomol-lab/connector-sdk) | 轻量 TypeScript HTTP client。自托管 runtime 使用 `OnMyCompany`，托管的个人连接和 SaaS 终端用户连接使用 `Connector` / `ProjectConnector`。 |
-| [oo CLI](https://github.com/oomol-lab/oo-cli)               | 本地 Agent 的 connector Action 中继线。`oo connector` 可以搜索、查看和运行 托管或自托管 Gateway runtime 中的 Action。                 |
-| MCP                                                         | 通过 `http://localhost:3000/mcp` 把应用 Action 暴露给支持 MCP 的 agent host。                                                                     |
-| HTTP / OpenAPI                                              | 直接调用 `/v1/actions/*`，或查看生成的 `/openapi.json` 文档。                                                                                     |
+| [oo CLI](https://github.com/oomol-lab/oo-cli)               | 本地 Agent 的 connector Action 中继线。`oo connector` 可以搜索、查看和运行 托管或自托管 Gateway runtime 中的 Action。                     |
+| MCP                                                         | 通过 `http://localhost:3000/mcp` 把应用 Action 暴露给支持 MCP 的 agent host。                                                             |
+| HTTP / OpenAPI                                              | 直接调用 `/v1/actions/*`，或查看生成的 `/openapi.json` 文档。                                                                             |
 
 Endpoint、response envelope、鉴权 header、MCP tools 和 Action guide 示例见
 [runtime-api.md](runtime-api.md)。
@@ -113,11 +113,11 @@ secret 保留在运行时边界内；Agent 拿到本次运行所需的 metadata�
 
 ## 使用路径
 
-| 路径                            | 适合谁                             | 提供什么                                                                                                                                                 |
-| ------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 开源自托管                      | 希望完全掌控基础设施的开发者和团队 | 本地 Docker 或 Node runtime、SQLite 存储、MCP、HTTP、OpenAPI 和 Web 控制台                                                                               |
-| Fly.io 自托管                   | 希望使用托管 Docker runtime 的团队 | Node Docker runtime、Fly volume 上的 SQLite 存储、TLS、健康检查、MCP、HTTP、OpenAPI 和 Web 控制台                                                        |
-| Cloudflare 兼容部署             | 希望快速获得轻量托管运行时的团队   | Workers runtime、D1 状态存储、R2 文件中转和控制台 Static Assets                                                                                          |
+| 路径                                  | 适合谁                             | 提供什么                                                                                                                                                 |
+| ------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 开源自托管                            | 希望完全掌控基础设施的开发者和团队 | 本地 Docker 或 Node runtime、SQLite 存储、MCP、HTTP、OpenAPI 和 Web 控制台                                                                               |
+| Fly.io 自托管                         | 希望使用托管 Docker runtime 的团队 | Node Docker runtime、Fly volume 上的 SQLite 存储、TLS、健康检查、MCP、HTTP、OpenAPI 和 Web 控制台                                                        |
+| Cloudflare 兼容部署                   | 希望快速获得轻量托管运行时的团队   | Workers runtime、D1 状态存储、R2 文件中转和控制台 Static Assets                                                                                          |
 | [OOMOL](https://example.invalid/apps) | 希望用户立即授权账号的团队         | OOMOL 为支持的 provider 提供 OAuth 应用、每月赠送的 Connect 点数和托管 runtime；继续使用同一套 provider 和 Action 契约，后续仍可迁移到私有化或自托管部署 |
 
 ## Cloudflare 快速启动视频

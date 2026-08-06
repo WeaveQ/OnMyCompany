@@ -36,7 +36,6 @@ import { renderActionMarkdown } from "./api/action-markdown.ts";
 import { clearLocalAuthCookie, createLocalAuthMiddleware, readLocalAuthSession, readRuntimeGrant } from "./api/auth.ts";
 import { getResponseCachePolicy } from "./api/cache-policy.ts";
 import { HttpRequestError, internalError, jsonError, notFound, readJsonBody } from "./api/http-utils.ts";
-import { getSharedConcurrencyGuard } from "./concurrency-guard.ts";
 import { renderOAuthCompletionPage } from "./api/oauth-completion-page.ts";
 import { createOpenApiDocument } from "./api/openapi.ts";
 import { policyRequestMaxBytes, readRuntimePolicyRules, readTokenPolicy } from "./api/policy-input.ts";
@@ -52,6 +51,7 @@ import {
   writeRuntimeFailure,
   writeRuntimeSuccess,
 } from "./api/runtime-api.ts";
+import { getSharedConcurrencyGuard } from "./concurrency-guard.ts";
 import { createTransitFileResponse, TransitFileError } from "./files/transit-file-store.ts";
 import { ProxyRunner } from "./proxy/proxy-runner.ts";
 import { decodeRunLogCursor } from "./storage/runtime-store.ts";
@@ -577,14 +577,7 @@ export class ConnectServer {
       return writeRuntimeActionHttpResult(context, claim.response);
     }
 
-    const result = await this.executeRuntimeAction(
-      actionId,
-      input,
-      connectionName,
-      policy,
-      runtimeGrant,
-      teamId,
-    );
+    const result = await this.executeRuntimeAction(actionId, input, connectionName, policy, runtimeGrant, teamId);
     const completed = await this.options.idempotency.complete({
       keyHash,
       requestHash,

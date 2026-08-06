@@ -3,15 +3,15 @@
 OnMyCompany 是 **内网企业管控面 + 外发 Gateway**：身份、组织配置、连接与 Action 执行、策略、审计。  
 本仓为 **OnMyCompany** 服务端（单进程：企业管控 + Gateway）。
 
-| | |
-| --- | --- |
-| **产品阶段** | **试点 MVP 已完成** → Gateway + 企业层 + 管理台 + G0/G1a/G2 + office catalog；见 [ROADMAP](./onmycompany/ROADMAP.md) |
-| **配套桌面** | [OnMyAgent](../../onmyagent)（本地优先；Phase 2） |
-| **桌面架构 SoT** | `onmyagent/docs/Architecture.md` |
-| **桌面配置 2a** | `onmyagent/docs/design/2026-08-02-config-consistency.md`（**已落地**） |
-| **桌面 Phase 2** | `onmyagent/docs/design/2026-08-02-phase-2-enterprise-prep.md` |
-| **本仓分期** | [onmycompany/ROADMAP.md](./onmycompany/ROADMAP.md) |
-| **配置同构** | [onmycompany/CONFIG-SCHEMA.md](./onmycompany/CONFIG-SCHEMA.md) |
+|                  |                                                                                                                      |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **产品阶段**     | **试点 MVP 已完成** → Gateway + 企业层 + 管理台 + G0/G1a/G2 + office catalog；见 [ROADMAP](./onmycompany/ROADMAP.md) |
+| **配套桌面**     | [OnMyAgent](../../onmyagent)（本地优先；Phase 2）                                                                    |
+| **桌面架构 SoT** | `onmyagent/docs/Architecture.md`                                                                                     |
+| **桌面配置 2a**  | `onmyagent/docs/design/2026-08-02-config-consistency.md`（**已落地**）                                               |
+| **桌面 Phase 2** | `onmyagent/docs/design/2026-08-02-phase-2-enterprise-prep.md`                                                        |
+| **本仓分期**     | [onmycompany/ROADMAP.md](./onmycompany/ROADMAP.md)                                                                   |
+| **配置同构**     | [onmycompany/CONFIG-SCHEMA.md](./onmycompany/CONFIG-SCHEMA.md)                                                       |
 
 ---
 
@@ -39,21 +39,21 @@ OnMyCompany 是 **内网企业管控面 + 外发 Gateway**：身份、组织配�
 └─────────────────────────────────────────────────────────────┘
 ```
 
-| 产品 | 形态 | 职责 | 明确不管 |
-|------|------|------|----------|
-| **OnMyAgent** | 桌面 | 本地办公 Agent 工作台；双运行时；本机审批 | 企业 DB、策略编辑后台、secret 存储 |
-| **OnMyCompany** | 内网服务 | 身份、OrgConfig、Gateway、策略、审计 | 员工对话、工作区 git 树、公网多租户 |
+| 产品            | 形态     | 职责                                      | 明确不管                            |
+| --------------- | -------- | ----------------------------------------- | ----------------------------------- |
+| **OnMyAgent**   | 桌面     | 本地办公 Agent 工作台；双运行时；本机审批 | 企业 DB、策略编辑后台、secret 存储  |
+| **OnMyCompany** | 内网服务 | 身份、OrgConfig、Gateway、策略、审计      | 员工对话、工作区 git 树、公网多租户 |
 
 ### 1.1 相对桌面 Architecture 的「不对称」
 
 桌面文档 Phase 2 早期写过「workspace isolation / approval」。**当前产品定稿**（与知识库 0803 一致）：
 
-| 主题 | 定稿 |
-|------|------|
-| 工作区 | **始终本机**（OMA `domains/workspace` + server）；Company **不托管**工作区结构 |
-| 企业审批队列 | **主路径不做**；桌面可保留本机 `ApprovalMode` |
-| 隔离 | 默认 **单 Org**；执行/审计按 **memberId** 归因；连接 **组织共享**（MVP） |
-| 配置 | `local` / `company` **同构**；company 镜像只读为主 |
+| 主题         | 定稿                                                                           |
+| ------------ | ------------------------------------------------------------------------------ |
+| 工作区       | **始终本机**（OMA `domains/workspace` + server）；Company **不托管**工作区结构 |
+| 企业审批队列 | **主路径不做**；桌面可保留本机 `ApprovalMode`                                  |
+| 隔离         | 默认 **单 Org**；执行/审计按 **memberId** 归因；连接 **组织共享**（MVP）       |
+| 配置         | `local` / `company` **同构**；company 镜像只读为主                             |
 
 桌面实现仍以 OMA 仓文档为准；本仓以本文 + `docs/onmycompany/*` 为准。冲突时：**配置同构与 D1/B1/C1 不可回退**。
 
@@ -142,12 +142,12 @@ $OMC_DATA_DIR/   # 默认 ./data
 
 ### 3.3 数据通道（两通道 + 桌面本机）
 
-| 通道 | 内容 | 同步 |
-|------|------|------|
+| 通道            | 内容                                          | 同步                                                   |
+| --------------- | --------------------------------------------- | ------------------------------------------------------ |
 | **① OrgConfig** | skills/experts/models/policy/tools/memory开关 | 登录后 `GET /api/org/config` → 桌面 `profiles/company` |
-| **② UserData** | 记忆正文、可选文件夹 | 默认同机；API 后置（M7） |
-| **本机 only** | 对话、session-archive、workspace 工程 | **永不**进 Company 主路径 |
-| **Secrets** | 连接密钥、ops token | 仅服务端；不进 config 导出 |
+| **② UserData**  | 记忆正文、可选文件夹                          | 默认同机；API 后置（M7）                               |
+| **本机 only**   | 对话、session-archive、workspace 工程         | **永不**进 Company 主路径                              |
+| **Secrets**     | 连接密钥、ops token                           | 仅服务端；不进 config 导出                             |
 
 详表：[CONFIG-SCHEMA.md](./onmycompany/CONFIG-SCHEMA.md)。
 
@@ -171,13 +171,13 @@ activeConfig  = profiles/{activeProfile}/config
 
 OMA 代码锚点：
 
-| 关注点 | 路径（onmyagent） |
-|--------|-------------------|
-| Profile 路径 / resolve | `apps/desktop/electron/config-profile-paths.mjs` |
-| 迁移 copy-not-delete | `apps/desktop/electron/ensure-local-config-migrated.mjs` |
-| Skills 根 | `desktop-paths` + `runtime.mjs` 物化 |
-| Experts | `expert-marketplace.mjs` |
-| 未来 company HTTP | `domains/cloud` 演化 / settings（2b） |
+| 关注点                 | 路径（onmyagent）                                        |
+| ---------------------- | -------------------------------------------------------- |
+| Profile 路径 / resolve | `apps/desktop/electron/config-profile-paths.mjs`         |
+| 迁移 copy-not-delete   | `apps/desktop/electron/ensure-local-config-migrated.mjs` |
+| Skills 根              | `desktop-paths` + `runtime.mjs` 物化                     |
+| Experts                | `expert-marketplace.mjs`                                 |
+| 未来 company HTTP      | `domains/cloud` 演化 / settings（2b）                    |
 
 ---
 
@@ -196,13 +196,13 @@ org-admin/member   /api/company/auth → member session
                    → run 写 memberId（M3）
 ```
 
-| 面 | 前缀 | 谁用 |
-|----|------|------|
-| 探活 | `/health` | 任意 |
-| 企业 | `/api/company/*` · `/api/me` · `/api/org/*` | 成员 / 管理台 |
-| 运维 | `/api/auth/session` · 写 connections | ops-admin |
-| Connect 目录 | `/api/actions*` · `/api/providers*` | 两端 |
-| 执行 | `/v1/*` · `/mcp` | Agent / 桌面 |
+| 面           | 前缀                                        | 谁用          |
+| ------------ | ------------------------------------------- | ------------- |
+| 探活         | `/health`                                   | 任意          |
+| 企业         | `/api/company/*` · `/api/me` · `/api/org/*` | 成员 / 管理台 |
+| 运维         | `/api/auth/session` · 写 connections        | ops-admin     |
+| Connect 目录 | `/api/actions*` · `/api/providers*`         | 两端          |
+| 执行         | `/v1/*` · `/mcp`                            | Agent / 桌面  |
 
 策略 **单写**：`PUT /api/org/config/policy` → 合成 `runtime-policy`；企业模式禁 Console 直写。
 
@@ -210,25 +210,25 @@ org-admin/member   /api/company/auth → member session
 
 ## 5. 与桌面域的对接图（实现指引）
 
-| OMA 域 / 模块 | Company 关系 |
-|---------------|--------------|
-| `domains/session` | 会话仍本地；注入的 skills/experts 随 `activeConfig` |
-| `domains/plugins` / expert-marketplace | company 模式列表源 = 企业配置镜像 |
-| `domains/connections` / settings providers | 个人 BYOK 仍本机；企业外发走 Gateway |
-| `domains/cloud` | 演化为「连接公司 / 登录」，非公有云 Den 叙事 |
-| `domains/workspace` | **不**改为远程 Company 工作区 |
-| `domains/local-agents` | Personal 辅轨；外发同样可走 token→Company（Any Agent） |
-| 本地 `apps/server` | **不是** OnMyCompany；继续服务本机 session/skill API |
+| OMA 域 / 模块                              | Company 关系                                           |
+| ------------------------------------------ | ------------------------------------------------------ |
+| `domains/session`                          | 会话仍本地；注入的 skills/experts 随 `activeConfig`    |
+| `domains/plugins` / expert-marketplace     | company 模式列表源 = 企业配置镜像                      |
+| `domains/connections` / settings providers | 个人 BYOK 仍本机；企业外发走 Gateway                   |
+| `domains/cloud`                            | 演化为「连接公司 / 登录」，非公有云 Den 叙事           |
+| `domains/workspace`                        | **不**改为远程 Company 工作区                          |
+| `domains/local-agents`                     | Personal 辅轨；外发同样可走 token→Company（Any Agent） |
+| 本地 `apps/server`                         | **不是** OnMyCompany；继续服务本机 session/skill API   |
 
 ---
 
 ## 6. 部署（MVP）
 
-| 项 | 选择 |
-|----|------|
-| 进程 | **一个** Node 服务（Connect + company） |
-| 存储 | SQLite + 磁盘 OrgConfig |
-| 交付 | Docker Compose 优先；`npm run dev` 本地 |
+| 项     | 选择                                     |
+| ------ | ---------------------------------------- |
+| 进程   | **一个** Node 服务（Connect + company）  |
+| 存储   | SQLite + 磁盘 OrgConfig                  |
+| 交付   | Docker Compose 优先；`npm run dev` 本地  |
 | 非 MVP | Cloudflare Workers / D1 / Fly 作产品默认 |
 
 ---
@@ -250,16 +250,16 @@ npm run generate:catalog
 
 ## 8. 文档地图（本仓）
 
-| 文档 | 角色 |
-|------|------|
-| **本文** | 系统架构 + 与 OMA 边界 |
-| [AGENTS.md](../AGENTS.md) | Agent 运行手册 |
-| [onmycompany/CONFIG-SCHEMA.md](./onmycompany/CONFIG-SCHEMA.md) | 配置同构细节 |
-| [onmycompany/DESKTOP-CONTRACT.md](./onmycompany/DESKTOP-CONTRACT.md) | 双端契约与验收 |
-| [onmycompany/ROADMAP.md](./onmycompany/ROADMAP.md) | M0–M7 |
-| [onmycompany/API-NOTES.md](./onmycompany/API-NOTES.md) | 路径约定 |
-| [runtime-api.md](./runtime-api.md) | Connect `/v1` 技术细节 |
-| [configuration.md](./configuration.md) | `OMC_*` 环境变量 |
+| 文档                                                                 | 角色                   |
+| -------------------------------------------------------------------- | ---------------------- |
+| **本文**                                                             | 系统架构 + 与 OMA 边界 |
+| [AGENTS.md](../AGENTS.md)                                            | Agent 运行手册         |
+| [onmycompany/CONFIG-SCHEMA.md](./onmycompany/CONFIG-SCHEMA.md)       | 配置同构细节           |
+| [onmycompany/DESKTOP-CONTRACT.md](./onmycompany/DESKTOP-CONTRACT.md) | 双端契约与验收         |
+| [onmycompany/ROADMAP.md](./onmycompany/ROADMAP.md)                   | M0–M7                  |
+| [onmycompany/API-NOTES.md](./onmycompany/API-NOTES.md)               | 路径约定               |
+| [runtime-api.md](./runtime-api.md)                                   | Connect `/v1` 技术细节 |
+| [configuration.md](./configuration.md)                               | `OMC_*` 环境变量       |
 
 桌面侧权威：**不要**在本仓复制 OMA monorepo 长文；链接到 `../onmyagent/docs/`。
 
@@ -267,7 +267,7 @@ npm run generate:catalog
 
 ## 9. 变更记录
 
-| 日期 | 说明 |
-|------|------|
+| 日期       | 说明                                                                            |
+| ---------- | ------------------------------------------------------------------------------- |
 | 2026-08-03 | 初版：对齐 OMA Architecture / config-consistency / Phase2；配置两通道；域对接表 |
-| 2026-08-04 | 同步试点完成态：G0/G1a/G2、office catalog、计量 API、管理台 IA |
+| 2026-08-04 | 同步试点完成态：G0/G1a/G2、office catalog、计量 API、管理台 IA                  |

@@ -45,10 +45,7 @@ export type OmcEnvSuffix = (typeof SUFFIXES)[number];
 const LEGACY_PREFIX = "OOMOL" + "_CONNECT_";
 
 export const OMC_ENV: Record<OmcEnvSuffix, EnvKeyPair> = Object.fromEntries(
-  SUFFIXES.map((suffix) => [
-    suffix,
-    { omc: `OMC_${suffix}`, legacy: `${LEGACY_PREFIX}${suffix}` },
-  ]),
+  SUFFIXES.map((suffix) => [suffix, { omc: `OMC_${suffix}`, legacy: `${LEGACY_PREFIX}${suffix}` }]),
 ) as Record<OmcEnvSuffix, EnvKeyPair>;
 
 /** Enterprise-only keys (no deprecated alias). */

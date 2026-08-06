@@ -143,10 +143,7 @@ export function resolveMembershipTeamId(
  * - 具体队 → 本队成员
  * Directory stays at `/org/teams` but is not a separate sidebar item.
  */
-export function teamNavTarget(
-  activeTeamId: string | undefined | null,
-  teams: ReadonlyArray<{ id: string }>,
-): string {
+export function teamNavTarget(activeTeamId: string | undefined | null, teams: ReadonlyArray<{ id: string }>): string {
   if (isAllTeamsView(activeTeamId)) {
     return "/org/teams";
   }

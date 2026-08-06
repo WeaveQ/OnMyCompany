@@ -1,17 +1,9 @@
+import type { AccountLifecycle, TeamRecord } from "./team-ui";
 import type { ReactNode } from "react";
 
+import { Check, ChevronsUpDown, Copy, Pencil, Plus, Trash2, Users } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import {
-  Check,
-  ChevronDown,
-  ChevronsUpDown,
-  Copy,
-  Pencil,
-  Plus,
-  Trash2,
-  Users,
-} from "lucide-react";
 import { ApiError, apiDelete, apiGet, apiPost, apiPut } from "./api";
 import { MemberLoginCard } from "./member-login-card";
 import {
@@ -23,6 +15,7 @@ import {
   setMemberToken,
   subscribeActiveTeamId,
 } from "./member-session";
+import { ConsoleModal, InlineError } from "./shared-ui";
 import {
   ALL_TEAMS_ID,
   accountStatusLabelZh,
@@ -34,13 +27,10 @@ import {
   resolveMembershipTeamId,
   roleLabelZh,
   TEAM_ASSIGNABLE_ROLES,
-  type AccountLifecycle,
-  type TeamRecord,
 } from "./team-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ConsoleModal, InlineError } from "./shared-ui";
 
 export type { TeamRecord };
 
@@ -178,7 +168,7 @@ export function TeamManagePage(): ReactNode {
       setOrgMembers(orgList.items ?? []);
 
       const list = await apiGet<{ items: TeamRecord[] }>("/api/teams", memberAuthHeaders());
-      const teamList = list.items.length ? list.items : me.teams ?? [];
+      const teamList = list.items.length ? list.items : (me.teams ?? []);
       setTeams(teamList);
       // Membership page must never call GET /api/teams/__all__/members.
       const preferred = teamId || getActiveTeamId();
@@ -350,11 +340,7 @@ export function TeamManagePage(): ReactNode {
     if (!team || team.id === "personal") return;
     setError(null);
     try {
-      await apiPut(
-        `/api/teams/${team.id}/members/${encodeURIComponent(memberId)}`,
-        { role },
-        memberAuthHeaders(),
-      );
+      await apiPut(`/api/teams/${team.id}/members/${encodeURIComponent(memberId)}`, { role }, memberAuthHeaders());
       await refresh();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Update role failed");
@@ -447,7 +433,12 @@ export function TeamManagePage(): ReactNode {
                 onMouseEnter={() => setIdTipOpen(true)}
                 onMouseLeave={() => setIdTipOpen(false)}
               >
-                <button type="button" className="team-id-chip" onClick={() => void copyTeamId()} title="点击复制完整 ID">
+                <button
+                  type="button"
+                  className="team-id-chip"
+                  onClick={() => void copyTeamId()}
+                  title="点击复制完整 ID"
+                >
                   {formatTeamIdSnippet(team.id)}
                 </button>
                 {idTipOpen || copied ? (
@@ -539,9 +530,7 @@ export function TeamManagePage(): ReactNode {
         <div className="team-manage-selection">
           <span>
             {peopleRows.length ? `${peopleRows.length} 人` : "暂无成员"}
-            {selected.size > 0 ? (
-              <span className="team-manage-selection-meta"> · 已选 {selected.size}</span>
-            ) : null}
+            {selected.size > 0 ? <span className="team-manage-selection-meta"> · 已选 {selected.size}</span> : null}
           </span>
         </div>
 
@@ -571,8 +560,7 @@ export function TeamManagePage(): ReactNode {
               {peopleRows.map((row) => {
                 const isCreator = Boolean(row.isCreator);
                 const tone = accountStatusTone(String(row.accountStatus));
-                const toneClass =
-                  tone === "warn" ? "is-warn" : tone === "muted" ? "is-muted" : "is-ok";
+                const toneClass = tone === "warn" ? "is-warn" : tone === "muted" ? "is-muted" : "is-ok";
                 return (
                   <tr
                     key={row.id}
@@ -829,9 +817,7 @@ function PageTeamSwitcher(props: {
                       <span className="team-switcher-name">{t.name}</span>
                       {isActive ? <span className="team-pill">{roleLabelZh("creator")}</span> : null}
                     </div>
-                    <div className="console-row-meta team-switcher-id">
-                      {formatTeamIdSnippet(t.id)}
-                    </div>
+                    <div className="console-row-meta team-switcher-id">{formatTeamIdSnippet(t.id)}</div>
                   </div>
                 </button>
               );
@@ -854,11 +840,7 @@ function PageTeamSwitcher(props: {
   );
 }
 
-function RoleMenu(props: {
-  role: string;
-  disabled?: boolean;
-  onChange(role: string): void;
-}): ReactNode {
+function RoleMenu(props: { role: string; disabled?: boolean; onChange(role: string): void }): ReactNode {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -1167,5 +1149,3 @@ function hashHue(value: string): number {
   for (let i = 0; i < value.length; i += 1) h = (h * 31 + value.charCodeAt(i)) % 360;
   return h;
 }
-
-

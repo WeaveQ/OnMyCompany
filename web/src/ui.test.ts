@@ -31,9 +31,7 @@ describe("primary nav IA", () => {
 
   it("lists secondary sidebar paths flat (no 更多 group); actions is deep-link only", () => {
     const more = getMoreNavPaths();
-    expect(more).toEqual(
-      expect.arrayContaining(["/skills", "/runs", "/access", "/org-config", "/metering"]),
-    );
+    expect(more).toEqual(expect.arrayContaining(["/skills", "/runs", "/access", "/org-config", "/metering"]));
     expect(more).not.toContain("/actions");
     expect(more).not.toContain("/built-in-tools");
   });

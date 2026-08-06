@@ -1,5 +1,7 @@
+import type { OmcEnvSuffix } from "../env.ts";
 import type { AssetsBinding, D1DatabaseBinding, KVNamespaceBinding, R2BucketBinding } from "./cloudflare-bindings.ts";
-import { type OmcEnvSuffix, readOmcEnvFrom, readPositiveIntegerFrom } from "../env.ts";
+
+import { readOmcEnvFrom, readPositiveIntegerFrom } from "../env.ts";
 
 export interface CloudflareEnv {
   DB: D1DatabaseBinding;

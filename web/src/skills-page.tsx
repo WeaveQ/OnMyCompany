@@ -5,9 +5,9 @@ import { Link } from "react-router";
 import { ApiError, apiGet, apiPost } from "./api";
 import { MemberLoginCard } from "./member-login-card";
 import { memberAuthHeaders, setMemberToken } from "./member-session";
+import { ConsoleModal, InlineError } from "./shared-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ConsoleModal, InlineError } from "./shared-ui";
 
 interface MeResponse {
   authenticated: boolean;
@@ -211,21 +211,13 @@ export function SkillsPage(): ReactNode {
       </section>
 
       {modalOpen ? (
-        <AddSkillModal
-          onClose={() => setModalOpen(false)}
-          onChanged={() => void refresh()}
-          isAdmin={isAdmin}
-        />
+        <AddSkillModal onClose={() => setModalOpen(false)} onChanged={() => void refresh()} isAdmin={isAdmin} />
       ) : null}
     </div>
   );
 }
 
-function AddSkillModal(props: {
-  onClose(): void;
-  onChanged(): void;
-  isAdmin: boolean;
-}): ReactNode {
+function AddSkillModal(props: { onClose(): void; onChanged(): void; isAdmin: boolean }): ReactNode {
   const [tab, setTab] = useState<"public" | "mine">("public");
   const [q, setQ] = useState("");
   const [items, setItems] = useState<SkillItem[]>([]);
@@ -242,10 +234,7 @@ function AddSkillModal(props: {
     try {
       const scope = tab === "public" ? "public" : "mine";
       const qs = q.trim() ? `&q=${encodeURIComponent(q.trim())}` : "";
-      const list = await apiGet<{ items: SkillItem[] }>(
-        `/api/catalog/skills?scope=${scope}${qs}`,
-        memberAuthHeaders(),
-      );
+      const list = await apiGet<{ items: SkillItem[] }>(`/api/catalog/skills?scope=${scope}${qs}`, memberAuthHeaders());
       setItems(list.items);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "加载目录失败");
@@ -401,11 +390,7 @@ function AddSkillModal(props: {
             onChange={(e) => setUploadId(e.target.value)}
             placeholder="packageId，如 my-skill@0.1.0"
           />
-          <Input
-            value={uploadName}
-            onChange={(e) => setUploadName(e.target.value)}
-            placeholder="显示名称"
-          />
+          <Input value={uploadName} onChange={(e) => setUploadName(e.target.value)} placeholder="显示名称" />
           <textarea
             className="org-config-json"
             value={uploadMd}
@@ -413,11 +398,7 @@ function AddSkillModal(props: {
             rows={5}
           />
           <label className="skills-upload-check">
-            <input
-              type="checkbox"
-              checked={linkToOrg}
-              onChange={(e) => setLinkToOrg(e.target.checked)}
-            />
+            <input type="checkbox" checked={linkToOrg} onChange={(e) => setLinkToOrg(e.target.checked)} />
             <span>同时关联到当前组织</span>
           </label>
           <Button size="sm" onClick={() => void upload()}>

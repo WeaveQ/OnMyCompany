@@ -25,11 +25,7 @@ export function runsToCsv(runs: RunLog[]): string {
   const lines = [headers.join(",")];
   for (const run of runs) {
     const row = serializeRun(run);
-    lines.push(
-      headers
-        .map((h) => csvCell(row[h as keyof typeof row]))
-        .join(","),
-    );
+    lines.push(headers.map((h) => csvCell(row[h as keyof typeof row])).join(","));
   }
   return `${lines.join("\n")}\n`;
 }
@@ -139,9 +135,7 @@ export function summarizeUsage(runs: RunLog[], filter: UsageFilter = {}): UsageS
     byMember: sortCount(byMember, "memberId") as Array<{ memberId: string; count: number }>,
     byService: sortCount(byService, "service") as Array<{ service: string; count: number }>,
     byAction: sortCount(byAction, "actionId") as Array<{ actionId: string; count: number }>,
-    byDay: [...byDay.entries()]
-      .map(([date, v]) => ({ date, ...v }))
-      .sort((a, b) => a.date.localeCompare(b.date)),
+    byDay: [...byDay.entries()].map(([date, v]) => ({ date, ...v })).sort((a, b) => a.date.localeCompare(b.date)),
     range: {
       from: filter.from,
       to: filter.to,

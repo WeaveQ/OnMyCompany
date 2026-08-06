@@ -122,8 +122,25 @@ describe("ActionRunner", () => {
     const { logger } = createTestLogger();
     let calls = 0;
     const store = new MemoryConnectionStore();
-    await store.set("example", "primary", { authType: "api_key", apiKey: "k1" });
-    await store.set("example", "spare", { authType: "api_key", apiKey: "k2" });
+    const testProfile = {
+      accountId: "acct",
+      displayName: "Example",
+      grantedScopes: [] as string[],
+    };
+    await store.set("example", "primary", {
+      authType: "api_key",
+      apiKey: "k1",
+      values: { apiKey: "k1" },
+      profile: testProfile,
+      metadata: {},
+    });
+    await store.set("example", "spare", {
+      authType: "api_key",
+      apiKey: "k2",
+      values: { apiKey: "k2" },
+      profile: testProfile,
+      metadata: {},
+    });
     const catalog = createCatalogStore(
       [
         {

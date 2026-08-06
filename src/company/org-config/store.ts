@@ -172,9 +172,7 @@ export class OrgConfigStore {
     }
     if (sections.memory !== undefined) {
       const settings =
-        typeof sections.memory === "object" &&
-        sections.memory !== null &&
-        "settings" in (sections.memory as object)
+        typeof sections.memory === "object" && sections.memory !== null && "settings" in (sections.memory as object)
           ? (sections.memory as { settings: unknown }).settings
           : sections.memory;
       await writeJsonFile(join(this.configRoot, "memory", "settings.json"), settings);

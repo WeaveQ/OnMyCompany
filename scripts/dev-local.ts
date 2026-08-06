@@ -43,12 +43,7 @@ function runChecked(command: string, args: string[]): void {
   }
 }
 
-function startProcess(
-  name: string,
-  command: string,
-  args: string[],
-  envExtra: Record<string, string>,
-): DevProcess {
+function startProcess(name: string, command: string, args: string[], envExtra: Record<string, string>): DevProcess {
   return {
     name,
     child: spawn(command, args, {

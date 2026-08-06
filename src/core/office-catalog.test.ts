@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  OFFICE_CATALOG_SERVICES,
-  filterProvidersByServices,
-  resolveAllowedCatalogServices,
-} from "./office-catalog.ts";
+import { OFFICE_CATALOG_SERVICES, filterProvidersByServices, resolveAllowedCatalogServices } from "./office-catalog.ts";
 
 describe("office catalog allowlist", () => {
   it("defaults to office profile with curated services", () => {
@@ -37,10 +33,7 @@ describe("office catalog allowlist", () => {
   it("filters provider list by service id", () => {
     const providers = [{ service: "gmail" }, { service: "exotic_crm" }, { service: "slack" }];
     const allowed = new Set(["gmail", "slack"]);
-    expect(filterProvidersByServices(providers, allowed).map((p) => p.service)).toEqual([
-      "gmail",
-      "slack",
-    ]);
+    expect(filterProvidersByServices(providers, allowed).map((p) => p.service)).toEqual(["gmail", "slack"]);
     expect(filterProvidersByServices(providers, null)).toHaveLength(3);
   });
 });

@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-  normalizeOmniroutePricingPayload,
-  resolvePricingCatalog,
-} from "./omniroute-pricing.ts";
 import { DEFAULT_PRICING_CATALOG } from "./catalog.ts";
+import { normalizeOmniroutePricingPayload, resolvePricingCatalog } from "./omniroute-pricing.ts";
 
 describe("normalizeOmniroutePricingPayload", () => {
   it("parses openai-style data[] with nested pricing", () => {
@@ -93,15 +90,14 @@ describe("resolvePricingCatalog", () => {
   });
 
   it("auto uses OmniRoute llm rows when fetch succeeds", async () => {
-    const fetchImpl = vi.fn(async () =>
-      new Response(
-        JSON.stringify({
-          data: [
-            { id: "auto/best-chat", owned_by: "combo", pricing: { input: 0.1, output: 0.2 } },
-          ],
-        }),
-        { status: 200, headers: { "content-type": "application/json" } },
-      ),
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            data: [{ id: "auto/best-chat", owned_by: "combo", pricing: { input: 0.1, output: 0.2 } }],
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        ),
     );
     const catalog = await resolvePricingCatalog({
       dataDir: "/tmp",

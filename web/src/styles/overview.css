@@ -180,19 +180,11 @@
 }
 
 .overview-ledger.is-model {
-  background: linear-gradient(
-    145deg,
-    color-mix(in oklab, #3b82f6 7%, var(--card)),
-    var(--card) 55%
-  );
+  background: linear-gradient(145deg, color-mix(in oklab, #3b82f6 7%, var(--card)), var(--card) 55%);
 }
 
 .overview-ledger.is-tools {
-  background: linear-gradient(
-    145deg,
-    color-mix(in oklab, #f59e0b 6%, var(--card)),
-    var(--card) 55%
-  );
+  background: linear-gradient(145deg, color-mix(in oklab, #f59e0b 6%, var(--card)), var(--card) 55%);
 }
 
 .overview-ledger.is-live {
@@ -450,7 +442,6 @@
     grid-template-columns: 1fr;
   }
 }
-
 
 .runtime-strip {
   display: flex;

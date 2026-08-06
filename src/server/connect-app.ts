@@ -11,12 +11,12 @@ import type { Hono } from "hono";
 import { TokenMemberBindingStore } from "../company/auth/token-bindings.ts";
 import { orgPolicyToRuntimeRules } from "../company/policy/org-to-runtime.ts";
 import { registerCompanyRoutes } from "../company/routes.ts";
-import { isLocalAdminAuthenticated } from "./api/auth.ts";
 import { ConnectionService } from "../connection-service.ts";
 import { OAuthClientConfigService } from "../oauth/oauth-client-config-service.ts";
 import { OAuthCredentialRefreshService } from "../oauth/oauth-credential-refresh-service.ts";
 import { OAuthFlowService } from "../oauth/oauth-flow-service.ts";
 import { ActionRunner } from "./actions/action-runner.ts";
+import { isLocalAdminAuthenticated } from "./api/auth.ts";
 import { ConnectServer } from "./connect-server.ts";
 import { RuntimeTokenService } from "./storage/runtime-token-service.ts";
 

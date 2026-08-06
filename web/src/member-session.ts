@@ -88,9 +88,7 @@ export function setActiveTeamId(teamId: string): void {
   }
   try {
     if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent("omc-active-team-changed", { detail: { teamId: teamId || undefined } }),
-      );
+      window.dispatchEvent(new CustomEvent("omc-active-team-changed", { detail: { teamId: teamId || undefined } }));
     }
   } catch {
     // ignore (SSR / tests)
@@ -142,9 +140,7 @@ export async function ensureMemberSessionForConsole(): Promise<boolean> {
 
       // Only auto-bootstrap when console considers us "in" (open local or admin cookie).
       try {
-        const shell = await apiGet<{ authenticated?: boolean; adminAuthConfigured?: boolean }>(
-          "/api/auth/session",
-        );
+        const shell = await apiGet<{ authenticated?: boolean; adminAuthConfigured?: boolean }>("/api/auth/session");
         if (shell.authenticated === false) return false;
       } catch {
         // session endpoint unavailable — still try dev OTP once

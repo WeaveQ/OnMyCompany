@@ -1,3 +1,4 @@
+import { Hono } from "hono";
 /**
  * Org member lifecycle: role update, deactivate, remove;
  * session + runtime-token invalidation.
@@ -6,10 +7,9 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { Hono } from "hono";
-import { registerCompanyRoutes } from "./routes.ts";
-import { TokenMemberBindingStore } from "./auth/token-bindings.ts";
 import { CompanyAuthStore } from "./auth/store.ts";
+import { TokenMemberBindingStore } from "./auth/token-bindings.ts";
+import { registerCompanyRoutes } from "./routes.ts";
 
 const tempRoots: string[] = [];
 
@@ -17,11 +17,7 @@ afterEach(async () => {
   await Promise.all(tempRoots.splice(0).map((root) => rm(root, { recursive: true, force: true })));
 });
 
-async function login(
-  app: Hono,
-  email: string,
-  code = "000000",
-): Promise<{ token: string; memberId: string }> {
+async function login(app: Hono, email: string, code = "000000"): Promise<{ token: string; memberId: string }> {
   await app.request("/api/company/auth/email/start", {
     method: "POST",
     headers: { "content-type": "application/json" },

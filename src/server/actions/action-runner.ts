@@ -5,6 +5,7 @@ import type { ExecutionContext, ExecutionResult, TransitFileWriter } from "../..
 import type { IProviderLoader } from "../../providers/provider-loader.ts";
 import type { Logger } from "../logger.ts";
 import type { IRunLogStore, RunLog, RunLogCaller, RunLogListInput, RunLogPage } from "../storage/runtime-store.ts";
+import type { FallbackPolicy } from "./connection-fallback.ts";
 
 import { ConnectionError } from "../../connection-service.ts";
 import { executeAction as executeProviderAction } from "../../core/execution.ts";
@@ -13,7 +14,6 @@ import {
   isRetriableExecutionError,
   markConnectionCooldown,
   orderConnectionCandidates,
-  type FallbackPolicy,
 } from "./connection-fallback.ts";
 import { safeRunLogError, summarizeForRunLog } from "./run-log-summary.ts";
 
@@ -80,11 +80,12 @@ export class ActionRunner {
 
     const startedAtMs = Date.now();
     const startedAt = new Date(startedAtMs).toISOString();
-    const policy: ActionPolicyDecision =
-      (input.policy ?? this.options.actionPolicy?.createSnapshot())?.evaluate(action) ?? {
-        allowed: true,
-        checks: [],
-      };
+    const policy: ActionPolicyDecision = (input.policy ?? this.options.actionPolicy?.createSnapshot())?.evaluate(
+      action,
+    ) ?? {
+      allowed: true,
+      checks: [],
+    };
 
     let connection: ExecutionConnection | undefined;
     let result: ExecutionResult;
@@ -221,10 +222,7 @@ export class ActionRunner {
       lastName = candidate.connectionName;
 
       try {
-        lastConnection = await this.options.connections.resolveForExecution(
-          input.service,
-          candidate.connectionName,
-        );
+        lastConnection = await this.options.connections.resolveForExecution(input.service, candidate.connectionName);
         lastResult = await executeProviderAction(
           input.action,
           executor,
@@ -275,10 +273,7 @@ export class ActionRunner {
     };
   }
 
-  private async resolveCandidates(
-    service: string,
-    pinnedName?: string,
-  ): Promise<Array<{ connectionName: string }>> {
+  private async resolveCandidates(service: string, pinnedName?: string): Promise<Array<{ connectionName: string }>> {
     if (pinnedName?.trim()) {
       return [{ connectionName: pinnedName.trim() }];
     }

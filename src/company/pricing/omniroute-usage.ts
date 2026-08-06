@@ -46,18 +46,11 @@ function omniUsagePath(): string {
 }
 
 function omniAdminKey(): string | undefined {
-  return (
-    process.env.OMC_OMNIROUTE_ADMIN_KEY?.trim() ||
-    process.env.OMC_OMNIROUTE_API_KEY?.trim() ||
-    undefined
-  );
+  return process.env.OMC_OMNIROUTE_ADMIN_KEY?.trim() || process.env.OMC_OMNIROUTE_API_KEY?.trim() || undefined;
 }
 
 function dashboardUrl(): string {
-  return (
-    process.env.OMC_OMNIROUTE_DASHBOARD_URL?.trim() ||
-    `${omniBaseUrl()}/dashboard`
-  );
+  return process.env.OMC_OMNIROUTE_DASHBOARD_URL?.trim() || `${omniBaseUrl()}/dashboard`;
 }
 
 function num(v: unknown): number {
@@ -91,10 +84,9 @@ function mapBreakdown(obj: unknown): LlmUsageByKey[] {
   return rows;
 }
 
-export function normalizeOmnirouteUsagePayload(payload: unknown): Omit<
-  LlmUsageSummary,
-  "source" | "ok" | "detail" | "fetchedAt" | "baseUrl" | "path" | "dashboardUrl"
-> {
+export function normalizeOmnirouteUsagePayload(
+  payload: unknown,
+): Omit<LlmUsageSummary, "source" | "ok" | "detail" | "fetchedAt" | "baseUrl" | "path" | "dashboardUrl"> {
   const empty = {
     totalRequests: 0,
     totalPromptTokens: 0,
@@ -109,9 +101,7 @@ export function normalizeOmnirouteUsagePayload(payload: unknown): Omit<
   if (!payload || typeof payload !== "object") return empty;
   const p = payload as Record<string, unknown>;
   const totalPromptTokens = num(p.totalPromptTokens ?? p.promptTokens ?? p.inputTokens);
-  const totalCompletionTokens = num(
-    p.totalCompletionTokens ?? p.completionTokens ?? p.outputTokens,
-  );
+  const totalCompletionTokens = num(p.totalCompletionTokens ?? p.completionTokens ?? p.outputTokens);
   return {
     totalRequests: num(p.totalRequests ?? p.requests ?? p.count),
     totalPromptTokens,

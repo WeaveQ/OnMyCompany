@@ -30,7 +30,7 @@ describe("OverviewPage (enterprise console IA)", () => {
   it("does not show recommended connections block", () => {
     const markup = renderOverview();
     expect(markup).not.toContain("推荐先连");
-    expect(markup).not.toContain("data-overview-section=\"recommended\"");
+    expect(markup).not.toContain('data-overview-section="recommended"');
   });
 
   it("does not resurrect legacy English activity panels", () => {
@@ -67,11 +67,7 @@ const overviewData: AppData = {
   connections: [{ service: "github", authType: "oauth2", metadata: {} }],
   oauthConfigs: [],
   runtimeTokens: [],
-  runs: [
-    run("failed", false),
-    run("success-1", true),
-    run("success-2", true),
-  ],
+  runs: [run("failed", false), run("success-1", true), run("success-2", true)],
 };
 
 function provider(

@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
 import { Hono } from "hono";
+import { describe, expect, it } from "vitest";
 import { CompanyAuthError } from "./auth/store.ts";
-import { TeamsError } from "./teams/store.ts";
 import { jsonError, mapError, publicMember, readJsonBody } from "./http.ts";
+import { TeamsError } from "./teams/store.ts";
 
 describe("company http helpers", () => {
   it("publicMember strips internal fields", () => {

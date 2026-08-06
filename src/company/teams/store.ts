@@ -1,6 +1,6 @@
+import { randomBytes } from "node:crypto";
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { randomBytes } from "node:crypto";
 
 export type TeamMemberRole = "admin" | "member" | "auditor" | "creator";
 
@@ -52,11 +52,7 @@ export class TeamsStore {
     return (await this.read()).teams.find((t) => t.id === teamId);
   }
 
-  async createTeam(input: {
-    name: string;
-    avatarUrl?: string;
-    createdBy: string;
-  }): Promise<TeamRecord> {
+  async createTeam(input: { name: string; avatarUrl?: string; createdBy: string }): Promise<TeamRecord> {
     const name = input.name.trim();
     if (!NAME_PATTERN.test(name)) {
       throw new TeamsError("validation_error", "Team name: English letters, digits, . _ - only (2–64)");
@@ -86,10 +82,7 @@ export class TeamsStore {
     return team;
   }
 
-  async updateTeam(
-    teamId: string,
-    patch: { name?: string; avatarUrl?: string },
-  ): Promise<TeamRecord> {
+  async updateTeam(teamId: string, patch: { name?: string; avatarUrl?: string }): Promise<TeamRecord> {
     const data = await this.read();
     const team = data.teams.find((t) => t.id === teamId);
     if (!team) throw new TeamsError("not_found", "Team not found");
@@ -119,18 +112,12 @@ export class TeamsStore {
     return (await this.read()).memberships.find((m) => m.teamId === teamId && m.memberId === memberId);
   }
 
-  async addMember(input: {
-    teamId: string;
-    memberId: string;
-    role?: TeamMemberRole;
-  }): Promise<TeamMembership> {
+  async addMember(input: { teamId: string; memberId: string; role?: TeamMemberRole }): Promise<TeamMembership> {
     const data = await this.read();
     if (!data.teams.some((t) => t.id === input.teamId)) {
       throw new TeamsError("not_found", "Team not found");
     }
-    const existing = data.memberships.find(
-      (m) => m.teamId === input.teamId && m.memberId === input.memberId,
-    );
+    const existing = data.memberships.find((m) => m.teamId === input.teamId && m.memberId === input.memberId);
     if (existing) {
       if (existing.status === "disabled") {
         existing.status = "active";
@@ -142,7 +129,7 @@ export class TeamsStore {
     const membership: TeamMembership = {
       teamId: input.teamId,
       memberId: input.memberId,
-      role: input.role === "creator" ? "admin" : input.role ?? "member",
+      role: input.role === "creator" ? "admin" : (input.role ?? "member"),
       status: "active",
       joinedAt: new Date().toISOString(),
     };
@@ -152,15 +139,9 @@ export class TeamsStore {
   }
 
   /** Update role for an existing member (cannot demote/reassign creator). */
-  async updateMemberRole(input: {
-    teamId: string;
-    memberId: string;
-    role: TeamMemberRole;
-  }): Promise<TeamMembership> {
+  async updateMemberRole(input: { teamId: string; memberId: string; role: TeamMemberRole }): Promise<TeamMembership> {
     const data = await this.read();
-    const membership = data.memberships.find(
-      (m) => m.teamId === input.teamId && m.memberId === input.memberId,
-    );
+    const membership = data.memberships.find((m) => m.teamId === input.teamId && m.memberId === input.memberId);
     if (!membership) {
       throw new TeamsError("not_found", "Membership not found");
     }
@@ -178,9 +159,7 @@ export class TeamsStore {
   /** Remove a member from the team (creator cannot be removed). */
   async removeMember(input: { teamId: string; memberId: string }): Promise<void> {
     const data = await this.read();
-    const idx = data.memberships.findIndex(
-      (m) => m.teamId === input.teamId && m.memberId === input.memberId,
-    );
+    const idx = data.memberships.findIndex((m) => m.teamId === input.teamId && m.memberId === input.memberId);
     if (idx < 0) {
       throw new TeamsError("not_found", "Membership not found");
     }
@@ -201,10 +180,7 @@ export class TeamsStore {
    * Product rule: first login always lands in their own team (like OOMOL),
    * never join someone else's first team by default.
    */
-  async ensureDefaultTeam(input: {
-    name: string;
-    createdBy: string;
-  }): Promise<TeamRecord> {
+  async ensureDefaultTeam(input: { name: string; createdBy: string }): Promise<TeamRecord> {
     const mine = await this.listTeamsForMember(input.createdBy);
     if (mine.length > 0) {
       return mine[0]!;

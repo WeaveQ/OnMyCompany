@@ -76,9 +76,7 @@ describe("runFiltersFromSearchParams", () => {
   it("reads structured filters from the URL query", () => {
     expect(
       runFiltersFromSearchParams(
-        new URLSearchParams(
-          "service=hackernews&actionId=hackernews.get_item&caller=mcp&ok=false&memberId=mem-xyz",
-        ),
+        new URLSearchParams("service=hackernews&actionId=hackernews.get_item&caller=mcp&ok=false&memberId=mem-xyz"),
       ),
     ).toEqual({
       service: "hackernews",

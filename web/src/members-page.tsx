@@ -1,8 +1,9 @@
+import type { AccountLifecycle } from "./team-ui";
 import type { ReactNode } from "react";
 
+import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
-import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { ApiError, apiDelete, apiGet, apiPost, apiPut } from "./api";
 import { MemberLoginCard } from "./member-login-card";
 import {
@@ -13,6 +14,8 @@ import {
   memberAuthHeaders,
   setMemberToken,
 } from "./member-session";
+import { ConsoleModal, InlineError } from "./shared-ui";
+import { TeamAvatar } from "./team-manage-page";
 import {
   accountStatusLabelZh,
   accountStatusTone,
@@ -20,13 +23,10 @@ import {
   orgRoleHelpZh,
   orgRoleLabelZh,
   orgRolesLabelZh,
-  type AccountLifecycle,
 } from "./team-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TeamAvatar } from "./team-manage-page";
-import { ConsoleModal, InlineError } from "./shared-ui";
 
 interface OrgMemberRow {
   id: string;
@@ -270,8 +270,7 @@ export function MembersPage(): ReactNode {
         <div>
           <h1 className="page-hero-title">企业账号</h1>
           <p className="page-hero-lead">
-            公司花名册与企业角色（企业管理员 / 企业审计 / 员工）。入队与建队见{" "}
-            <Link to="/team">团队</Link>。
+            公司花名册与企业角色（企业管理员 / 企业审计 / 员工）。入队与建队见 <Link to="/team">团队</Link>。
           </p>
         </div>
         <div className="page-hero-actions">
@@ -344,7 +343,9 @@ export function MembersPage(): ReactNode {
                     <span className="team-pill">{orgRolesLabelZh(row.roles)}</span>
                   </td>
                   <td>
-                    <span className={`team-status-pill is-${tone === "ok" ? "ok" : tone === "warn" ? "warn" : "muted"}`}>
+                    <span
+                      className={`team-status-pill is-${tone === "ok" ? "ok" : tone === "warn" ? "warn" : "muted"}`}
+                    >
                       {row.statusLabel || accountStatusLabelZh(String(st))}
                     </span>
                   </td>
@@ -397,14 +398,12 @@ export function MembersPage(): ReactNode {
             })}
           </tbody>
         </table>
-        {filtered.length === 0 ? (
-          <div className="console-empty">{loading ? "加载中…" : "暂无成员"}</div>
-        ) : null}
+        {filtered.length === 0 ? <div className="console-empty">{loading ? "加载中…" : "暂无成员"}</div> : null}
       </div>
 
       <p className="console-row-meta">
-        <Users size={14} style={{ verticalAlign: "middle" }} /> 共 {filtered.length} / {items.length}{" "}
-        人 · 入队 / 建队请到 <Link to="/team">团队</Link>
+        <Users size={14} style={{ verticalAlign: "middle" }} /> 共 {filtered.length} / {items.length} 人 · 入队 /
+        建队请到 <Link to="/team">团队</Link>
       </p>
 
       {addOpen ? (
@@ -466,7 +465,11 @@ export function MembersPage(): ReactNode {
               >
                 取消
               </Button>
-              <Button onClick={() => void saveEdit()} disabled={saving || !editName.trim()} data-testid="members-edit-save">
+              <Button
+                onClick={() => void saveEdit()}
+                disabled={saving || !editName.trim()}
+                data-testid="members-edit-save"
+              >
                 保存
               </Button>
             </>

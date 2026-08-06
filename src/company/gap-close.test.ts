@@ -1,3 +1,11 @@
+import type { CatalogStore } from "../catalog-store.ts";
+import type { IProviderLoader } from "../providers/provider-loader.ts";
+import type { ISecretCodec } from "../server/secrets/secret-codec-core.ts";
+import type { RuntimeDatabase } from "../server/storage/runtime-database.ts";
+import type { IRuntimePolicyStore, RuntimePolicyRecord } from "../server/storage/runtime-policy-store.ts";
+import type { IRuntimeTokenStore, RuntimeTokenRecord } from "../server/storage/runtime-token-service.ts";
+
+import { Hono } from "hono";
 /**
  * Gap-close suite: P7 policy write gate, P5 logout token revoke,
  * A2/C8 audit events, C5 config export/import.
@@ -7,19 +15,12 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { Hono } from "hono";
-import { registerCompanyRoutes } from "./routes.ts";
-import { TokenMemberBindingStore } from "./auth/token-bindings.ts";
-import { CompanyAuditEventStore } from "./audit/events.ts";
-import { OrgConfigStore } from "./org-config/store.ts";
-import { defaultOrgConfigRoot } from "./org-config/layout.ts";
 import { createConnectApp } from "../server/connect-app.ts";
-import type { CatalogStore } from "../catalog-store.ts";
-import type { RuntimeDatabase } from "../server/storage/runtime-database.ts";
-import type { IRuntimeTokenStore, RuntimeTokenRecord } from "../server/storage/runtime-token-service.ts";
-import type { IRuntimePolicyStore, RuntimePolicyRecord } from "../server/storage/runtime-policy-store.ts";
-import type { ISecretCodec } from "../server/secrets/secret-codec-core.ts";
-import type { IProviderLoader } from "../providers/provider-loader.ts";
+import { CompanyAuditEventStore } from "./audit/events.ts";
+import { TokenMemberBindingStore } from "./auth/token-bindings.ts";
+import { defaultOrgConfigRoot } from "./org-config/layout.ts";
+import { OrgConfigStore } from "./org-config/store.ts";
+import { registerCompanyRoutes } from "./routes.ts";
 
 const tempRoots: string[] = [];
 
@@ -108,9 +109,7 @@ describe("A2/C8 audit events + C5 export/import", () => {
     const types = eventsBody.items.map((e) => e.type);
     expect(types).toContain("login");
     expect(types).toContain("config.write");
-    expect(eventsBody.items.some((e) => e.type === "config.write" && e.details?.section === "policy")).toBe(
-      true,
-    );
+    expect(eventsBody.items.some((e) => e.type === "config.write" && e.details?.section === "policy")).toBe(true);
 
     const exportRes = await app.request("/api/org/config/export", { headers: auth });
     expect(exportRes.status).toBe(200);
@@ -237,7 +236,7 @@ describe("P7 companyPolicyWriteOnly + Org policy sync via createConnectApp", () 
     };
 
     let policy: RuntimePolicyRecord = {
-      rules: { allowedActions: [], blockedActions: [], allowedProxies: [] },
+      rules: { allowedActions: [], blockedActions: [], allowedProxies: [], blockedProxies: [] },
       updatedAt: new Date(0).toISOString(),
     };
     const policyStore: IRuntimePolicyStore = {
@@ -348,13 +347,16 @@ describe("P7 companyPolicyWriteOnly + Org policy sync via createConnectApp", () 
       providerLoader,
       runtimeDatabase,
       transitFiles: {
+        maxBytes: 1024,
         async create() {
           throw new Error("unused");
         },
-        async get() {
-          return undefined;
+        async read() {
+          throw new Error("unused");
         },
-        async delete() {},
+        async delete() {
+          return true;
+        },
         async cleanupExpired() {},
       },
       publicOrigin: "http://localhost:3000",
@@ -403,8 +405,8 @@ describe("P7 companyPolicyWriteOnly + Org policy sync via createConnectApp", () 
     expect(put.status).toBe(200);
 
     const snap = await policyStore.get();
-    expect(snap.rules.allowedActions).toEqual(["hackernews.*"]);
-    expect(snap.rules.blockedActions).toEqual(["admin.*"]);
+    expect(snap?.rules.allowedActions).toEqual(["hackernews.*"]);
+    expect(snap?.rules.blockedActions).toEqual(["admin.*"]);
 
     const minted = await app.request("/api/company/runtime-tokens", {
       method: "POST",
@@ -496,7 +498,7 @@ describe("P5 shared store via createConnectApp: warm resolve → bind → logout
     };
 
     let policy: RuntimePolicyRecord = {
-      rules: { allowedActions: [], blockedActions: [], allowedProxies: [] },
+      rules: { allowedActions: [], blockedActions: [], allowedProxies: [], blockedProxies: [] },
       updatedAt: new Date(0).toISOString(),
     };
     const policyStore: IRuntimePolicyStore = {
@@ -607,13 +609,16 @@ describe("P5 shared store via createConnectApp: warm resolve → bind → logout
       providerLoader,
       runtimeDatabase,
       transitFiles: {
+        maxBytes: 1024,
         async create() {
           throw new Error("unused");
         },
-        async get() {
-          return undefined;
+        async read() {
+          throw new Error("unused");
         },
-        async delete() {},
+        async delete() {
+          return true;
+        },
         async cleanupExpired() {},
       },
       publicOrigin: "http://localhost:3000",

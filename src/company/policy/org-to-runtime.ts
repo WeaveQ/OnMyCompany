@@ -1,4 +1,5 @@
 import type { PolicyRules } from "../../core/action-policy.ts";
+
 import { emptyPolicyRules } from "../../core/action-policy.ts";
 
 /**

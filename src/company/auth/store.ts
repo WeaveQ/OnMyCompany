@@ -1,6 +1,6 @@
+import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 
 export type MemberRole = "admin" | "member" | "auditor";
 /**
@@ -85,8 +85,7 @@ export class CompanyAuthStore {
     if (data.members.some((m) => m.email === email)) {
       throw new CompanyAuthError("conflict", "Member already exists");
     }
-    const status: MemberStatus =
-      input.status === "active" || input.status === "deactivated" ? input.status : "pending";
+    const status: MemberStatus = input.status === "active" || input.status === "deactivated" ? input.status : "pending";
     const now = new Date().toISOString();
     const member: MemberRecord = {
       id: randomBytes(12).toString("hex"),
@@ -125,10 +124,7 @@ export class CompanyAuthStore {
   }
 
   /** Update profile fields (displayName). Email is immutable. */
-  async updateMemberProfile(
-    memberId: string,
-    input: { displayName?: string },
-  ): Promise<MemberRecord> {
+  async updateMemberProfile(memberId: string, input: { displayName?: string }): Promise<MemberRecord> {
     const data = await this.read();
     const member = data.members.find((m) => m.id === memberId);
     if (!member) {
@@ -374,7 +370,9 @@ export function accountStatusLabelZh(status: MemberStatus): string {
   return "已启用";
 }
 
-function normalizeMemberRecord(raw: MemberRecord | (Omit<MemberRecord, "status"> & { status?: MemberStatus })): MemberRecord {
+function normalizeMemberRecord(
+  raw: MemberRecord | (Omit<MemberRecord, "status"> & { status?: MemberStatus }),
+): MemberRecord {
   let status: MemberStatus = "active";
   if (raw.status === "deactivated") status = "deactivated";
   else if (raw.status === "pending") status = "pending";

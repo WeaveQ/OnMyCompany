@@ -1,18 +1,13 @@
 import type { ReactNode } from "react";
 
+import { ExternalLink, RefreshCw, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
-import { ExternalLink, RefreshCw, Search } from "lucide-react";
 import { ApiError, apiGet } from "./api";
-import {
-  getActiveTeamId,
-  hasMemberSession,
-  memberAuthHeaders,
-  subscribeActiveTeamId,
-} from "./member-session";
+import { getActiveTeamId, hasMemberSession, memberAuthHeaders, subscribeActiveTeamId } from "./member-session";
+import { InlineError } from "./shared-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { InlineError } from "./shared-ui";
 
 type MeterTab = "usage" | "logs" | "pricing";
 type PriceSubTab = "llm" | "tools";
@@ -123,9 +118,7 @@ export function MeteringPage(props: MeteringPageProps = {}): ReactNode {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [needMemberLogin, setNeedMemberLogin] = useState(false);
-  const [teamId, setTeamId] = useState<string | undefined>(
-    () => props.activeTeamId || getActiveTeamId(),
-  );
+  const [teamId, setTeamId] = useState<string | undefined>(() => props.activeTeamId || getActiveTeamId());
 
   useEffect(() => {
     setTeamId(props.activeTeamId || getActiveTeamId());
@@ -156,10 +149,7 @@ export function MeteringPage(props: MeteringPageProps = {}): ReactNode {
       // LLM plane from OmniRoute sidecar (does not fail the whole page if offline)
       try {
         const llmQ = new URLSearchParams({ from, to });
-        const llm = await apiGet<LlmUsageSummary>(
-          `/api/company/usage/llm?${llmQ}`,
-          memberAuthHeaders(),
-        );
+        const llm = await apiGet<LlmUsageSummary>(`/api/company/usage/llm?${llmQ}`, memberAuthHeaders());
         setLlmUsage(llm);
       } catch {
         setLlmUsage(null);
@@ -197,10 +187,7 @@ export function MeteringPage(props: MeteringPageProps = {}): ReactNode {
     setNeedMemberLogin(false);
     setLoading(true);
     try {
-      const data = await apiGet<PricingCatalog>(
-        "/api/company/pricing?source=auto",
-        memberAuthHeaders(),
-      );
+      const data = await apiGet<PricingCatalog>("/api/company/pricing?source=auto", memberAuthHeaders());
       setPricing(data);
     } catch (err) {
       handleAuthError(err, "加载价格失败");
@@ -215,10 +202,7 @@ export function MeteringPage(props: MeteringPageProps = {}): ReactNode {
     else void loadPricing();
   }, [tab, loadUsage, loadRuns, loadPricing]);
 
-  const dayMax = useMemo(
-    () => Math.max(1, ...(usage?.byDay.map((d) => d.total) ?? [1])),
-    [usage?.byDay],
-  );
+  const dayMax = useMemo(() => Math.max(1, ...(usage?.byDay.map((d) => d.total) ?? [1])), [usage?.byDay]);
 
   const metaLine = useMemo(() => {
     if (tab === "usage" && usage) {
@@ -247,9 +231,7 @@ export function MeteringPage(props: MeteringPageProps = {}): ReactNode {
           <strong className="console-row-title">需要成员登录</strong>
           <p className="console-card-subtitle">
             计量计费走企业成员会话（与团队同一套登录），不是 ops-admin 控制台 token。
-            {hasMemberSession()
-              ? " 当前 token 可能已失效，请重新登录。"
-              : " 请先在团队页完成邮箱 OTP 登录。"}
+            {hasMemberSession() ? " 当前 token 可能已失效，请重新登录。" : " 请先在团队页完成邮箱 OTP 登录。"}
           </p>
           {error ? <InlineError message={error} /> : null}
           <div>
@@ -327,13 +309,7 @@ export function MeteringPage(props: MeteringPageProps = {}): ReactNode {
               查询
             </Button>
             {tab === "logs" ? (
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                onClick={() => void loadRuns()}
-                disabled={loading}
-              >
+              <Button variant="outline" size="sm" type="button" onClick={() => void loadRuns()} disabled={loading}>
                 <RefreshCw size={14} className={loading ? "spin" : undefined} />
                 刷新
               </Button>
@@ -404,11 +380,7 @@ export function MeteringPage(props: MeteringPageProps = {}): ReactNode {
             <div className="metering-kpi-grid">
               <Kpi label="事件数" value={usage?.totalRuns ?? 0} />
               <Kpi label="成功" value={usage?.okRuns ?? 0} tone="ok" />
-              <Kpi
-                label="失败"
-                value={usage?.failedRuns ?? 0}
-                tone={usage?.failedRuns ? "bad" : undefined}
-              />
+              <Kpi label="失败" value={usage?.failedRuns ?? 0} tone={usage?.failedRuns ? "bad" : undefined} />
               <Kpi label="Fallback" value={usage?.fallbackRuns ?? 0} />
               <Kpi label="活跃成员" value={usage?.activeMembers ?? 0} />
               <Kpi label="活跃服务" value={usage?.activeServices ?? 0} />
@@ -532,13 +504,7 @@ export function MeteringPage(props: MeteringPageProps = {}): ReactNode {
                 工具
               </button>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              type="button"
-              onClick={() => void loadPricing()}
-              disabled={loading}
-            >
+            <Button variant="ghost" size="sm" type="button" onClick={() => void loadPricing()} disabled={loading}>
               <RefreshCw size={14} className={loading ? "spin" : undefined} />
               刷新
             </Button>

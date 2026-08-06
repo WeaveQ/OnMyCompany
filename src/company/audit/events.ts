@@ -1,14 +1,8 @@
+import { randomBytes } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { randomBytes } from "node:crypto";
 
-export type CompanyAuditEventType =
-  | "login"
-  | "logout"
-  | "config.write"
-  | "member.create"
-  | "policy.deny"
-  | string;
+export type CompanyAuditEventType = "login" | "logout" | "config.write" | "member.create" | "policy.deny" | string;
 
 export interface CompanyAuditEvent {
   id: string;

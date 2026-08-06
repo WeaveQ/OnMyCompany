@@ -1,4 +1,6 @@
+import type { MemberRecord } from "./auth/store.ts";
 import type { Context } from "hono";
+
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import {
   CompanyAuthError,
@@ -6,15 +8,14 @@ import {
   accountStatusLabelZh,
   memberIsOrgAdmin,
   memberStatus,
-  type MemberRecord,
 } from "./auth/store.ts";
 import { OrgConfigError } from "./org-config/store.ts";
 import { SkillsError } from "./skills/store.ts";
 import { ZipError } from "./skills/zip.ts";
 import { TeamsError } from "./teams/store.ts";
 
-export const MEMBER_COOKIE = "omc_member_session";
-export const COOKIE_MAX_AGE = 7 * 24 * 60 * 60;
+export const MEMBER_COOKIE: string = "omc_member_session";
+export const COOKIE_MAX_AGE: number = 7 * 24 * 60 * 60;
 
 export async function requireMember(context: Context, authStore: CompanyAuthStore): Promise<MemberRecord> {
   const member = await authStore.resolveSession(readMemberToken(context));
@@ -82,18 +83,30 @@ export function clearMemberCookie(context: Context): void {
   });
 }
 
-export function publicMember(member: MemberRecord) {
+export type PublicMemberView = {
+  id: string;
+  email: string;
+  displayName: string;
+  roles: string[];
+  status: string;
+  statusLabel: string;
+  activatedAt?: string;
+  deactivatedAt?: string;
+};
+
+export function publicMember(member: MemberRecord): PublicMemberView {
   const status = memberStatus(member);
-  return {
+  const view: PublicMemberView = {
     id: member.id,
     email: member.email,
     displayName: member.displayName,
-    roles: member.roles,
+    roles: [...member.roles],
     status,
     statusLabel: accountStatusLabelZh(status),
-    ...(member.activatedAt ? { activatedAt: member.activatedAt } : {}),
-    ...(member.deactivatedAt ? { deactivatedAt: member.deactivatedAt } : {}),
   };
+  if (member.activatedAt) view.activatedAt = member.activatedAt;
+  if (member.deactivatedAt) view.deactivatedAt = member.deactivatedAt;
+  return view;
 }
 
 export async function readJsonBody(context: Context): Promise<Record<string, unknown>> {
@@ -108,11 +121,11 @@ export async function readJsonBody(context: Context): Promise<Record<string, unk
   }
 }
 
-export function jsonError(context: Context, status: number, code: string, message: string) {
+export function jsonError(context: Context, status: number, code: string, message: string): Response {
   return context.json({ error: { code, message } }, status as 400);
 }
 
-export function mapError(context: Context, error: unknown) {
+export function mapError(context: Context, error: unknown): Response {
   if (error instanceof CompanyAuthError) {
     const status =
       error.code === "unauthenticated"

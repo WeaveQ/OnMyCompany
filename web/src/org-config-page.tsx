@@ -11,10 +11,10 @@ import {
   memberAuthHeaders,
   setMemberToken,
 } from "./member-session";
+import { InlineError } from "./shared-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { InlineError } from "./shared-ui";
 
 interface MeResponse {
   authenticated: boolean;
@@ -273,8 +273,8 @@ export function OrgConfigPage(): ReactNode {
         <div>
           <h1 className="org-config-title">企业设置</h1>
           <p className="org-config-lead">
-            这里管的是<strong>公司下发给所有 Agent 的统一配置</strong>：能调哪些外部能力、企业模型目录、Skill/专家包摘要。
-            密钥不在这里（去「应用连接」）；加人去「团队」。
+            这里管的是<strong>公司下发给所有 Agent 的统一配置</strong>
+            ：能调哪些外部能力、企业模型目录、Skill/专家包摘要。 密钥不在这里（去「应用连接」）；加人去「团队」。
           </p>
         </div>
       </header>
@@ -325,9 +325,7 @@ export function OrgConfigPage(): ReactNode {
             <div className="console-card org-config-stat">
               <div className="org-config-stat-label">配置版本</div>
               <div className="org-config-stat-value mono">{snapshot.version}</div>
-              <div className="console-row-meta">
-                更新于 {formatTime(snapshot.updatedAt)}
-              </div>
+              <div className="console-row-meta">更新于 {formatTime(snapshot.updatedAt)}</div>
             </div>
             <div className="console-card org-config-stat">
               <div className="org-config-stat-label">企业模型</div>
@@ -336,9 +334,7 @@ export function OrgConfigPage(): ReactNode {
             </div>
             <div className="console-card org-config-stat">
               <div className="org-config-stat-label">Skill / 专家包</div>
-              <div className="org-config-stat-value">
-                {skillNames.installed.length + expertNames.installed.length}
-              </div>
+              <div className="org-config-stat-value">{skillNames.installed.length + expertNames.installed.length}</div>
               <div className="console-row-meta">
                 <Link to="/skills">去 Skills 管理 →</Link>
               </div>
@@ -360,8 +356,8 @@ export function OrgConfigPage(): ReactNode {
               <div>
                 <h2 className="org-config-card-title">外发策略</h2>
                 <p className="org-config-card-desc">
-                  控制 Agent 通过公司网关<strong>允许 / 禁止</strong>调用哪些 Action（如{" "}
-                  <code>hackernews.*</code>、<code>github.*</code>）。保存后会同步到运行时策略，控制台不能另写一套。
+                  控制 Agent 通过公司网关<strong>允许 / 禁止</strong>调用哪些 Action（如 <code>hackernews.*</code>、
+                  <code>github.*</code>）。保存后会同步到运行时策略，控制台不能另写一套。
                 </p>
               </div>
               <Button size="sm" disabled={loading || !isAdmin} onClick={() => void savePolicyFromForm()}>

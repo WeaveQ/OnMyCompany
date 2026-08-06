@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <title>OnMyCompany DESIGN.md — Light Preview</title>
+    <meta
+      name="description"
+      content="Visual catalog rendering OnMyCompany DESIGN.md tokens (OMA-style preview). Preview only — does not change app styles."
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="./preview.css" />
+  </head>
+  <body>
+    <header class="pv-header">
+      <div class="pv-header-inner">
+        <div>
+          <h1>OnMyCompany — Visual Contract Preview</h1>
+          <p>
+            对齐 OMA <code>docs/design/preview.html</code> 结构。渲染仓库根 <code>DESIGN.md</code> 与
+            <code>theme.css</code> 语义 token。 <strong>仅预览</strong>，不改管理台页面样式。
+          </p>
+        </div>
+        <nav class="pv-nav">
+          <a href="./preview.html" class="pv-nav-active">Light</a>
+          <a href="./preview-dark.html">Dark</a>
+          <a href="../../DESIGN.md">DESIGN.md</a>
+          <a href="./tokens-snapshot.json">tokens.json</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="pv-main">
+      <section class="pv-section">
+        <h2>0 · Reference ranking</h2>
+        <p class="pv-desc">
+          对照 <a href="https://github.com/VoltAgent/awesome-design-md">awesome-design-md</a> + OMA 预览体例。主选
+          <strong>Cal.com</strong>（白底 + 近黑 CTA + 8px 控件）；辅选 Vercel 灰阶、Linear 暗色阶梯与强调色克制。
+        </p>
+        <div class="pv-grid-3">
+          <span class="pv-status-pill is-ok">1 · Cal.com</span>
+          <span class="pv-status-pill is-muted">2 · Vercel</span>
+          <span class="pv-status-pill is-muted">3 · Linear</span>
+        </div>
+      </section>
+
+      <section class="pv-section">
+        <h2>1 · Color Palette</h2>
+        <p class="pv-desc">
+          语义色来自 <code>web/src/styles/theme.css</code> <code>:root</code>。主按钮是 ink，不是 brand 蓝。
+        </p>
+        <div class="pv-swatch-grid">
+          <div class="pv-swatch">
+            <div class="pv-chip" style="background: #ffffff"></div>
+            <div class="pv-swatch-label"><strong>canvas / background</strong><span>#ffffff</span></div>
+          </div>
+          <div class="pv-swatch">
+            <div class="pv-chip" style="background: #292929"></div>
+            <div class="pv-swatch-label"><strong>ink / primary CTA</strong><span>#292929</span></div>
+          </div>
+          <div class="pv-swatch">
+            <div class="pv-chip" style="background: #f4f4f4; border: 1px solid #e9e9e9"></div>
+            <div class="pv-swatch-label"><strong>muted</strong><span>#f4f4f4</span></div>
+          </div>
+          <div class="pv-swatch">
+            <div class="pv-chip" style="background: #f8f8f8; border: 1px solid #e9e9e9"></div>
+            <div class="pv-swatch-label"><strong>sidebar</strong><span>#f8f8f8</span></div>
+          </div>
+          <div class="pv-swatch">
+            <div class="pv-chip" style="background: #e9e9e9"></div>
+            <div class="pv-swatch-label"><strong>border / hairline</strong><span>#e9e9e9</span></div>
+          </div>
+          <div class="pv-swatch">
+            <div class="pv-chip" style="background: #7c9dff"></div>
+            <div class="pv-swatch-label"><strong>brand / ring</strong><span>#7c9dff · focus only</span></div>
+          </div>
+          <div class="pv-swatch">
+            <div class="pv-chip" style="background: #3b63fb"></div>
+            <div class="pv-swatch-label"><strong>info</strong><span>#3b63fb</span></div>
+          </div>
+          <div class="pv-swatch">
+            <div class="pv-chip" style="background: #05834e"></div>
+            <div class="pv-swatch-label"><strong>success</strong><span>#05834e · 已启用</span></div>
+          </div>
+          <div class="pv-swatch">
+            <div class="pv-chip" style="background: #fc7d00"></div>
+            <div class="pv-swatch-label"><strong>warning</strong><span>#fc7d00 · 未激活</span></div>
+          </div>
+          <div class="pv-swatch">
+            <div class="pv-chip" style="background: #d73220"></div>
+            <div class="pv-swatch-label"><strong>destructive</strong><span>#d73220</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="pv-section">
+        <h2>2 · Typography</h2>
+        <p class="pv-desc">管控台密度（非营销 display）。字体栈 SF Pro / 系统；中文见 <code>html[lang=zh-*]</code>。</p>
+        <div class="pv-type-list">
+          <div class="pv-type">
+            <span class="pv-type-tag">caption · 12</span
+            ><span style="font-size: 12px">Meta · team id · table hints</span>
+          </div>
+          <div class="pv-type">
+            <span class="pv-type-tag">button · 13</span
+            ><span style="font-size: 13px; font-weight: 520">Button labels · filter chips</span>
+          </div>
+          <div class="pv-type">
+            <span class="pv-type-tag">body-sm · 13</span
+            ><span style="font-size: 13px">Dense table body · card lead</span>
+          </div>
+          <div class="pv-type">
+            <span class="pv-type-tag">body · 14</span><span style="font-size: 14px">Default UI text · nav items</span>
+          </div>
+          <div class="pv-type">
+            <span class="pv-type-tag">section · 15</span
+            ><span style="font-size: 15px; font-weight: 600">Section titles</span>
+          </div>
+          <div class="pv-type">
+            <span class="pv-type-tag">page · 20</span
+            ><span style="font-size: 20px; font-weight: 650">Page hero title</span>
+          </div>
+          <div class="pv-type">
+            <span class="pv-type-tag">mono · 12</span
+            ><span style="font-size: 12px; font-family: ui-monospace, Menlo, monospace">a1b2c3d4…team-id</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="pv-section">
+        <h2>3 · Radii</h2>
+        <p class="pv-desc"><code>--radius: 0.5rem</code>（8px）为控件基准。Pill 仅用于状态 chip。</p>
+        <div class="pv-radii">
+          <div class="pv-radius">
+            <div class="pv-radius-box" style="border-radius: 5px"></div>
+            <span>sm · ~5</span>
+          </div>
+          <div class="pv-radius">
+            <div class="pv-radius-box" style="border-radius: 6px"></div>
+            <span>md · ~6</span>
+          </div>
+          <div class="pv-radius">
+            <div class="pv-radius-box" style="border-radius: 8px"></div>
+            <span>lg · 8 · btn/input</span>
+          </div>
+          <div class="pv-radius">
+            <div class="pv-radius-box" style="border-radius: 11px"></div>
+            <span>xl · ~11 · card</span>
+          </div>
+          <div class="pv-radius">
+            <div class="pv-radius-box" style="border-radius: 999px"></div>
+            <span>pill · status</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="pv-section">
+        <h2>4 · Buttons</h2>
+        <p class="pv-desc">
+          Primary = near-black（light）/ near-white（dark）。<strong>不要</strong>把 brand 蓝当默认 CTA。
+        </p>
+        <div class="pv-btn-family">
+          <div class="pv-eyebrow">Primary family · rounded 8px</div>
+          <div class="pv-row">
+            <button type="button" class="pv-btn pv-btn-primary pv-btn-sm">添加成员</button>
+            <button type="button" class="pv-btn pv-btn-primary">保存</button>
+            <button type="button" class="pv-btn pv-btn-outline">编辑团队</button>
+            <button type="button" class="pv-btn pv-btn-ghost">应用连接</button>
+            <button type="button" class="pv-btn pv-btn-danger pv-btn-sm">删除</button>
+            <button type="button" class="pv-btn pv-btn-icon" aria-label="more">⋯</button>
+          </div>
+        </div>
+        <div class="pv-btn-family">
+          <div class="pv-eyebrow">Anti-pattern · brand fill as primary（不要）</div>
+          <div class="pv-row">
+            <button type="button" class="pv-btn pv-btn-brand" disabled title="示意：勿用作默认主按钮">
+              Brand as CTA ✗
+            </button>
+            <span class="pv-status-pill is-warn">brand 仅 ring / chart</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="pv-section">
+        <h2>5 · Filters &amp; status</h2>
+        <p class="pv-desc">人员页：状态筛选替代「本团队 / 组织全员」双 Tab。生命周期：未激活 / 已启用 / 已停用。</p>
+        <div class="pv-filter-track" role="tablist" aria-label="人员筛选">
+          <button type="button" class="pv-filter-chip is-active">全部</button>
+          <button type="button" class="pv-filter-chip">未激活 1</button>
+          <button type="button" class="pv-filter-chip">已启用</button>
+          <button type="button" class="pv-filter-chip">已停用</button>
+          <button type="button" class="pv-filter-chip">全公司</button>
+        </div>
+        <div class="pv-row" style="margin-top: 14px">
+          <span class="pv-status-pill is-warn">未激活</span>
+          <span class="pv-status-pill is-ok">已启用</span>
+          <span class="pv-status-pill is-muted">已停用</span>
+          <span class="pv-status-pill is-danger">错误</span>
+        </div>
+      </section>
+
+      <section class="pv-section">
+        <h2>6 · Shell · table · card</h2>
+        <p class="pv-desc">左侧栏 + 主区表格是管控台主骨架（非 OMA 三栏聊天壳）。</p>
+        <div class="pv-shell">
+          <aside class="pv-shell-side">
+            <div class="pv-shell-brand">OnMyCompany</div>
+            <a class="pv-nav-item is-active" href="#">概览</a>
+            <a class="pv-nav-item" href="#">应用连接</a>
+            <a class="pv-nav-item" href="#">团队</a>
+            <a class="pv-nav-item" href="#">运行</a>
+            <a class="pv-nav-item" href="#">组织配置</a>
+          </aside>
+          <div class="pv-shell-main">
+            <div class="pv-card" style="padding: 0; overflow: hidden">
+              <div
+                style="
+                  padding: 12px 14px;
+                  border-bottom: 1px solid var(--pv-border);
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  gap: 12px;
+                  flex-wrap: wrap;
+                "
+              >
+                <div>
+                  <div class="pv-card-title">个人团队</div>
+                  <div class="pv-card-sub">3 人 · 状态筛选</div>
+                </div>
+                <button type="button" class="pv-btn pv-btn-primary pv-btn-sm">添加成员</button>
+              </div>
+              <table class="pv-table">
+                <thead>
+                  <tr>
+                    <th>用户</th>
+                    <th>角色</th>
+                    <th>状态</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="pv-user-email">admin@company.internal</div>
+                      <div class="pv-user-meta">creator · a1b2…c3d4</div>
+                    </td>
+                    <td>创建者</td>
+                    <td><span class="pv-status-pill is-ok">已启用</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="pv-user-email">test@company.internal</div>
+                      <div class="pv-user-meta">member</div>
+                    </td>
+                    <td>成员</td>
+                    <td><span class="pv-status-pill is-ok">已启用</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="pv-user-email">new@company.internal</div>
+                      <div class="pv-user-meta">invited</div>
+                    </td>
+                    <td>成员</td>
+                    <td><span class="pv-status-pill is-warn">未激活</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="pv-section">
+        <h2>7 · Inputs &amp; modal footer pattern</h2>
+        <div class="pv-grid-2">
+          <div class="pv-card">
+            <div class="pv-eyebrow">Form fields</div>
+            <label class="pv-field">
+              <span class="pv-field-label">邮箱</span>
+              <input class="pv-input" value="user@company.com" />
+            </label>
+            <label class="pv-field">
+              <span class="pv-field-label">显示名（可选）</span>
+              <input class="pv-input" placeholder="可选" />
+            </label>
+            <div class="pv-row" style="justify-content: flex-end; margin-top: 14px">
+              <button type="button" class="pv-btn pv-btn-outline">取消</button>
+              <button type="button" class="pv-btn pv-btn-primary">添加</button>
+            </div>
+          </div>
+          <div class="pv-card">
+            <div class="pv-eyebrow">Focus ring = brand</div>
+            <p class="pv-card-body">
+              输入 focus 使用 <code>#7c9dff</code> ring，按钮 primary 仍为 ink。这是 Linear 式「强调色克制」+ Cal 式「黑
+              CTA」的组合。
+            </p>
+            <label class="pv-field">
+              <span class="pv-field-label">Tab 到此看 ring</span>
+              <input class="pv-input" value="focus me" />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="pv-section">
+        <h2>8 · Do’s &amp; Don’ts</h2>
+        <div class="pv-compare">
+          <div class="pv-card">
+            <div class="pv-eyebrow pv-eyebrow-good">Do</div>
+            <ul class="pv-list">
+              <li>用 <code>var(--primary)</code> 等语义变量，不写死灰阶。</li>
+              <li>主 CTA = ink；brand 仅 focus / chart。</li>
+              <li>人员用状态 pill + 筛选，不双 Tab 两套名单。</li>
+              <li>管控台密度：14px 正文、8px 控件圆角、轻阴影。</li>
+              <li>中英文字体栈按 <code>lang</code> 切换。</li>
+            </ul>
+          </div>
+          <div class="pv-card">
+            <div class="pv-eyebrow pv-eyebrow-bad">Don’t</div>
+            <ul class="pv-list">
+              <li>不要 mesh 渐变 / 营销 hero（见 PRODUCT.md）。</li>
+              <li>不要把 OMA 三栏聊天壳硬搬到企业管控台。</li>
+              <li>不要用 brand 蓝当默认「添加 / 保存」。</li>
+              <li>不要普通 CTA 用 <code>rounded-full</code>。</li>
+              <li>不要为预览去改 <code>web/src/styles/*</code> 产品样式。</li>
+            </ul>
+          </div>
+        </div>
+        <p class="pv-note">
+          打开方式：本地直接打开本文件，或 <code>open docs/design/preview.html</code>。 对照
+          OMA：<code>onmyagent/docs/design/preview.html</code>。 实现 SoT 仍是
+          <code>web/src/styles/theme.css</code>；本预览独立 CSS，零耦合应用包。
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

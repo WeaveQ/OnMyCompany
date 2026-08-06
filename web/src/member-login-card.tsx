@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 
+import { InlineError } from "./shared-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { InlineError } from "./shared-ui";
 
 export interface MemberLoginCardProps {
   title?: string;
@@ -26,8 +26,7 @@ export function MemberLoginCard(props: MemberLoginCardProps): ReactNode {
     <div className="console-card member-login-card" data-testid="member-login-card">
       <h2 className="member-login-title">{props.title ?? "登录企业成员"}</h2>
       <p className="member-login-desc">
-        {props.description ??
-          "使用组织邮箱登录。本地开发可用固定 OTP 000000（无需邮件服务）。"}
+        {props.description ?? "使用组织邮箱登录。本地开发可用固定 OTP 000000（无需邮件服务）。"}
       </p>
       <div className="member-login-fields">
         <Label className="field">
