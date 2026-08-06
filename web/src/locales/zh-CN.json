@@ -39,7 +39,7 @@
     "orgConfig": "企业设置",
     "orgTeams": "团队列表",
     "skills": "Skills",
-    "connections": "应用连接",
+    "connections": "连接器",
     "team": "团队",
     "members": "企业账号",
     "more": "更多",
@@ -96,7 +96,7 @@
         "subtitle": "团队 Skill 包 — 从公开或我的货架关联。"
       },
       "connections": {
-        "title": "应用连接",
+        "title": "连接器",
         "subtitle": "企业共享网关连接池：按状态与分类筛选；密钥在公司侧，非每队私有库。"
       },
       "team": {
@@ -172,10 +172,10 @@
     "noRecentCallsDescription": "运行一个操作后会显示提供商调用次数。"
   },
   "connectionsPage": {
-    "title": "应用连接",
+    "title": "连接器",
     "lead": "企业共享网关连接池（GitHub、飞书等）。密钥保存在公司侧，不是每个团队一套私有库。Agent 通过 MCP /v1 调用。",
     "providers": "提供商",
-    "searchPlaceholder": "搜索应用",
+    "searchPlaceholder": "搜索连接器",
     "sortRecommended": "推荐",
     "sortByName": "按名称",
     "sortRecommendedAria": "当前推荐排序，点击改为按名称",
@@ -203,7 +203,7 @@
     "moreCategories": "更多分类",
     "reset": "重置",
     "showing": "显示 {{shown}}/{{total}}",
-    "empty": "没有匹配的应用连接",
+    "empty": "没有匹配的连接器",
     "showMore": "显示更多",
     "actionConnect": "连接",
     "actionDetails": "详情",

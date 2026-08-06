@@ -125,7 +125,7 @@ export function OverviewPage(props: OverviewPageProps): ReactNode {
       : !token
         ? { label: "登录组织", to: "/members" as const }
         : toolRuns === 0
-          ? { label: "打开应用连接", to: "/connections" as const }
+          ? { label: "打开连接器", to: "/connections" as const }
           : null;
 
   return (
@@ -170,7 +170,7 @@ export function OverviewPage(props: OverviewPageProps): ReactNode {
       <section className="overview-stat-strip" data-overview-section="capability" aria-label="能力状态">
         <StatCell
           icon={Cable}
-          label="应用连接"
+          label="连接器"
           value={`${connected}/${totalProviders}`}
           hint={connected > 0 ? `${connPct}% 已连接` : "优先完成这一步"}
           tone={connected > 0 ? "ok" : "action"}
@@ -335,7 +335,7 @@ export function OverviewPage(props: OverviewPageProps): ReactNode {
               <p>连上应用后用 MCP 或 runtime token 跑一次。</p>
             </div>
             <Button asChild variant="outline" size="sm">
-              <Link to="/connections">应用连接</Link>
+              <Link to="/connections">连接器</Link>
             </Button>
           </div>
         ) : (

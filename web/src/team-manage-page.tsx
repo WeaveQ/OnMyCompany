@@ -461,7 +461,7 @@ export function TeamManagePage(): ReactNode {
               </Link>
             </Button>
             <Button variant="ghost" size="sm" type="button" className="team-manage-secondary-link" asChild>
-              <Link to="/connections">App connections</Link>
+              <Link to="/connections">Connectors</Link>
             </Button>
             <Button variant="outline" size="sm" onClick={() => setEditOpen(true)} disabled={locked}>
               <Pencil size={14} />

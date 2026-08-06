@@ -61,16 +61,19 @@ describe("primary nav IA", () => {
       connectionsPage: { title: string; lead: string };
     };
     const zh = JSON.parse(readFileSync(join(import.meta.dirname, "locales/zh-CN.json"), "utf8")) as {
+      nav: { connections: string };
       shell: { headings: { connections: { title: string; subtitle: string } } };
       connectionsPage: { title: string; lead: string };
     };
     // English is source of truth for product copy keys
-    expect(en.shell.headings.connections.title).toBe("App connections");
+    expect(en.shell.headings.connections.title).toBe("Connectors");
     expect(en.shell.headings.connections.title.toLowerCase()).not.toMatch(/^team app/);
     expect(en.shell.headings.connections.subtitle.toLowerCase()).toMatch(/enterprise-shared|company/);
     expect(en.connectionsPage.lead.toLowerCase()).toMatch(/enterprise-shared|company/);
     // zh locale is present and not the old team-vault framing
-    expect(zh.connectionsPage.title.length).toBeGreaterThan(0);
+    expect(zh.connectionsPage.title).toBe("连接器");
+    expect(zh.nav.connections).toBe("连接器");
+    expect(zh.shell.headings.connections.title).toBe("连接器");
     expect(zh.shell.headings.connections.subtitle).not.toMatch(/Team app connections/i);
 
     const pageSrc = readFileSync(join(import.meta.dirname, "connections-page.tsx"), "utf8");

@@ -39,7 +39,7 @@
     "orgConfig": "Enterprise settings",
     "orgTeams": "Team directory",
     "skills": "Skills",
-    "connections": "App connections",
+    "connections": "Connectors",
     "team": "Team",
     "members": "Accounts",
     "more": "More",
@@ -96,8 +96,8 @@
         "subtitle": "Team skill packages — add from public or personal catalog."
       },
       "connections": {
-        "title": "App connections",
-        "subtitle": "Enterprise-shared gateway connections. Credentials stay company-side — not a per-team private vault."
+        "title": "Connectors",
+        "subtitle": "Enterprise-shared gateway connectors. Credentials stay company-side — not a per-team private vault."
       },
       "team": {
         "title": "Team",
@@ -172,10 +172,10 @@
     "noRecentCallsDescription": "Run an action to see provider call counts."
   },
   "connectionsPage": {
-    "title": "App connections",
-    "lead": "Enterprise-shared gateway connections. Secrets stay company-side — not a per-team private vault. Agents call via MCP /v1.",
+    "title": "Connectors",
+    "lead": "Enterprise-shared gateway connectors. Secrets stay company-side — not a per-team private vault. Agents call via MCP /v1.",
     "providers": "Providers",
-    "searchPlaceholder": "Search providers",
+    "searchPlaceholder": "Search connectors",
     "sortRecommended": "Recommended",
     "sortByName": "By name",
     "sortRecommendedAria": "Recommended sort — click for name sort",
@@ -203,7 +203,7 @@
     "moreCategories": "More categories",
     "reset": "Reset",
     "showing": "Showing {{shown}}/{{total}}",
-    "empty": "No matching app connections",
+    "empty": "No matching connectors",
     "showMore": "Show more",
     "actionConnect": "Connect",
     "actionDetails": "Details",

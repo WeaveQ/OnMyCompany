@@ -21,7 +21,7 @@ describe("OverviewPage (enterprise console IA)", () => {
   it("shows capability tiles linking to connections and actions", () => {
     const markup = renderOverview();
     expect(markup).toContain("能力状态");
-    expect(markup).toContain("应用连接");
+    expect(markup).toContain("连接器");
     expect(markup).toContain("可执行操作");
     expect(markup).toMatch(/href="\/connections"/);
     expect(markup).toMatch(/href="\/connections"/);
