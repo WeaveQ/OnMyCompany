@@ -8,7 +8,7 @@ Runtime reads `OMC_*` first, then legacy `OOMOL_CONNECT_*` if unset (`src/server
 
 | Variable                       | Default                   | Purpose                                                                        |
 | ------------------------------ | ------------------------- | ------------------------------------------------------------------------------ |
-| `PORT`                         | `3000`                    | Local HTTP server port.                                                        |
+| `PORT`                         | `3100`                    | Local HTTP server port (dev-local default; avoid OnMyAgent port clashes).      |
 | `HOST`                         | `127.0.0.1`               | Bind address. Docker image sets `0.0.0.0`.                                     |
 | `OMC_ORIGIN`                   | `http://localhost:<PORT>` | Public origin used for OAuth redirect URLs.                                    |
 | `OMC_DATA_DIR`                 | `./data`                  | Directory containing `connect.sqlite`. Docker image sets `/app/data`.          |

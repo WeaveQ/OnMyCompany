@@ -14,3 +14,6 @@ src/providers/registry*.generated.ts
 *.log
 *.tsbuildinfo
 data/
+
+# Better Harness local evidence bundles / reports (do not commit)
+.grok/better-harness/

@@ -67,17 +67,57 @@
   flex-direction: column;
   gap: 0;
   min-height: 0;
+  height: 100%;
+  flex: 1;
+}
+
+/* Title + toolbar + chips stay put; list scrolls in .connections-scroll-body */
+.connections-sticky-top {
+  flex: 0 0 auto;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--background);
+  padding-bottom: 8px;
+}
+
+/* Shell top bar already shows「应用连接」— skip duplicate H1, one-line lead only */
+.connections-sticky-top .page-hero {
+  margin: 0;
+  gap: 0;
+}
+
+.connections-sticky-top .page-hero-title {
+  display: none;
+}
+
+.connections-sticky-top .page-hero-lead {
+  margin: 0;
+  max-width: 48rem;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--muted-foreground);
+}
+
+.connections-scroll-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: 24px;
 }
 
 /* Card-like chrome: title row + filter row share one surface */
 .connections-chrome {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 14px;
-  padding: 14px 16px 12px;
+  gap: 8px;
+  margin-bottom: 0;
+  padding: 10px 12px 10px;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--card);
   box-shadow: var(--console-shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.04));
 }
@@ -86,16 +126,16 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center; /* 标题与搜索/按钮垂直居中 */
-  gap: 12px 20px;
-  min-height: 36px;
+  gap: 8px 12px;
+  min-height: 32px;
 }
 
 .connections-title {
   margin: 0;
   min-width: 0;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 620;
-  line-height: 1.3;
+  line-height: 1.25;
   color: var(--foreground);
   letter-spacing: -0.01em;
   white-space: nowrap;
@@ -107,7 +147,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: nowrap;
   min-width: 0;
 }
@@ -131,7 +171,7 @@
 
 .connections-search-input,
 .connections-search-input[data-slot="input"] {
-  height: 34px !important;
+  height: 32px !important;
   width: 100%;
   min-width: 0;
   padding-left: 34px !important;
@@ -151,12 +191,12 @@
 
 .connections-tool-btn,
 .connections-tool-btn[data-slot="button"] {
-  height: 34px !important;
+  height: 32px !important;
   flex: 0 0 auto;
-  gap: 6px;
+  gap: 5px;
   border-radius: 999px !important;
-  padding-inline: 12px !important;
-  font-size: 13px !important;
+  padding-inline: 11px !important;
+  font-size: 12.5px !important;
   font-weight: 500 !important;
   background: color-mix(in oklab, var(--muted) 55%, var(--background)) !important;
   border-color: transparent !important;
@@ -174,10 +214,10 @@
   display: flex;
   align-items: center; /* chips + meta 垂直居中 */
   justify-content: space-between;
-  gap: 10px 16px;
+  gap: 8px 12px;
   min-width: 0;
-  min-height: 36px;
-  padding-top: 4px;
+  min-height: 30px;
+  padding-top: 2px;
   border-top: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
 }
 
@@ -217,16 +257,16 @@ button.connections-chip.console-chip,
   flex: 0 0 auto;
   align-items: center !important;
   justify-content: center !important;
-  gap: 6px;
-  height: 30px !important;
-  min-height: 30px !important;
+  gap: 5px;
+  height: 28px !important;
+  min-height: 28px !important;
   min-width: 0 !important;
-  padding: 0 12px !important;
+  padding: 0 10px !important;
   border-radius: 999px !important;
   border-color: transparent !important;
   background: color-mix(in oklab, var(--muted) 70%, var(--card)) !important;
   color: var(--foreground) !important;
-  font-size: 12.5px !important;
+  font-size: 12px !important;
   font-weight: 520 !important;
   line-height: 1 !important;
   white-space: nowrap;
@@ -355,11 +395,16 @@ button.connections-chip.console-chip,
 
 .connections-list-card {
   min-height: 0;
-  border-radius: 14px;
+  border-radius: 12px;
+}
+
+.connections-list-card .console-row {
+  min-height: 52px;
+  padding-block: 8px;
 }
 
 .connections-load-more {
-  padding: 12px;
+  padding: 10px;
   text-align: center;
 }
 
@@ -384,14 +429,23 @@ button.connections-chip.console-chip,
 }
 
 @media (max-width: 640px) {
+  .main.connections-main {
+    padding: 10px 12px 0;
+  }
+
+  .connections-sticky-top {
+    gap: 6px;
+    padding-bottom: 6px;
+  }
+
   .connections-chrome {
-    padding: 12px;
+    padding: 10px;
     border-radius: 12px;
   }
 
   .connections-toolbar {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 8px;
   }
 
   .connections-toolbar-actions {
@@ -825,25 +879,39 @@ button.connections-chip.console-chip,
   min-width: 0;
   align-items: center;
   gap: 10px;
-  min-height: 40px;
-  padding: 6px 4px 6px 6px;
+  min-height: 42px;
+  padding: 6px 8px 6px 6px;
   border: 0;
   border-radius: 10px;
   background: transparent;
   color: var(--sidebar-foreground);
   cursor: pointer;
   text-align: left;
-  transition: background 0.12s ease;
+  transition:
+    background 0.14s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.12s ease-out;
 }
 
 .team-switcher-trigger:hover,
 .team-switcher-trigger.is-open {
-  background: color-mix(in oklab, var(--sidebar-accent) 70%, transparent);
+  background: color-mix(in oklab, var(--sidebar-accent) 78%, transparent);
+}
+
+.team-switcher-trigger:active {
+  transform: scale(0.985);
+}
+
+.team-switcher-trigger:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--ring, var(--foreground)) 45%, transparent);
+  outline-offset: 1px;
 }
 
 .team-switcher-label-block {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .team-switcher-name {
@@ -851,14 +919,32 @@ button.connections-chip.console-chip,
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 13px;
-  font-weight: 520;
-  line-height: 1.3;
+  font-weight: 560;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.team-switcher-sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--muted-foreground);
+  font-weight: 450;
 }
 
 .team-switcher-chevron {
   flex: 0 0 auto;
   color: var(--muted-foreground);
-  opacity: 0.85;
+  opacity: 0.75;
+  transition:
+    transform 0.16s cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 0.12s ease;
+}
+
+.team-switcher-trigger.is-open .team-switcher-chevron {
+  opacity: 1;
 }
 
 /* Legacy aliases (unused in footer, keep for safety) */
@@ -870,20 +956,72 @@ button.connections-chip.console-chip,
 
 .team-switcher-popover {
   position: absolute;
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + 10px);
   left: 0;
-  right: 0;
-  z-index: 45;
-  max-height: 320px;
+  /* Slightly wider than the footer trigger so long team names breathe */
+  right: auto;
+  width: max(100%, 268px);
+  min-width: 240px;
+  max-width: min(320px, calc(100vw - 24px));
+  z-index: 60;
+  max-height: min(360px, 52vh);
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  transform-origin: bottom left;
+  animation: team-switcher-in 0.16s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes team-switcher-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-switcher-popover {
+    animation: none;
+  }
+  .team-switcher-trigger {
+    transition: background 0.12s ease;
+  }
+  .team-switcher-trigger:active {
+    transform: none;
+  }
+}
+
+.team-switcher-label {
+  padding: 8px 10px 6px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.team-switcher-list {
+  flex: 1;
+  min-height: 0;
   overflow: auto;
-  padding: 8px;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 2px 2px;
+  /* Soft fade at scroll edges without clipping focus rings too hard */
+  scrollbar-width: thin;
 }
 
 .team-switcher-empty {
-  padding: 10px 10px 12px;
+  padding: 14px 12px 16px;
   color: var(--muted-foreground);
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 12.5px;
+  line-height: 1.45;
 }
 
 .team-switcher-item {
@@ -893,32 +1031,70 @@ button.connections-chip.console-chip,
   gap: 10px;
   padding: 8px 10px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   background: transparent;
   color: var(--foreground);
   cursor: pointer;
   text-align: left;
+  transition:
+    background 0.12s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.12s ease;
 }
 
 .team-switcher-item-text {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .team-switcher-id {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.25;
+  color: var(--muted-foreground);
+  opacity: 0.88;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
 }
 
-.team-switcher-item:hover,
+.team-switcher-item .console-row-meta {
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--muted-foreground);
+}
+
+.team-switcher-check {
+  flex: 0 0 auto;
+  color: var(--foreground);
+  opacity: 0.72;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .team-switcher-item:hover {
+    background: color-mix(in oklab, var(--muted) 92%, var(--foreground));
+  }
+}
+
 .team-switcher-item.is-active {
-  background: var(--muted);
+  background: color-mix(in oklab, var(--muted) 82%, var(--foreground));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--border) 70%, transparent);
 }
 
-/* Create + Manage as a pair under the list (ref Image #2) */
+.team-switcher-item:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--ring, var(--foreground)) 40%, transparent);
+  outline-offset: -1px;
+}
+
+/* Create + Manage as a pair under the list */
 .team-switcher-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
+  padding: 2px 2px 2px;
 }
 
 .team-switcher-menu-btn {
@@ -927,23 +1103,28 @@ button.connections-chip.console-chip,
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 6px;
+  min-height: 34px;
+  padding: 7px 8px;
   border: 0;
+  border-radius: 8px;
   background: transparent;
   color: var(--foreground);
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 520;
   cursor: pointer;
   text-align: center;
   white-space: nowrap;
+  transition:
+    background 0.12s ease,
+    transform 0.1s ease-out;
 }
 
 .team-switcher-menu-btn:hover {
-  background: var(--muted);
+  background: color-mix(in oklab, var(--muted) 90%, var(--foreground));
 }
 
-.team-switcher-item.is-active {
-  background: color-mix(in oklab, var(--muted) 88%, var(--foreground));
+.team-switcher-menu-btn:active {
+  transform: scale(0.98);
 }
 
 .page-team-item-title {
@@ -956,6 +1137,11 @@ button.connections-chip.console-chip,
 .page-team-item-title .team-switcher-name {
   flex: 1;
   min-width: 0;
+}
+
+.team-avatar-fallback {
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--border) 55%, transparent);
+  user-select: none;
 }
 
 /* ── Team manage page (OOMOL-style header + table) ──────────────────── */
@@ -1063,12 +1249,17 @@ button.connections-chip.console-chip,
 
 .page-team-switcher-popover {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 8px);
   left: 0;
   z-index: 40;
   min-width: 280px;
   max-width: min(360px, 90vw);
-  padding: 8px;
+  max-height: min(380px, 60vh);
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  transform-origin: top left;
+  animation: team-switcher-in 0.16s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
 .page-team-item {

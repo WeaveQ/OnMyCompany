@@ -17,7 +17,8 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import { Scalar } from "@scalar/hono-api-reference";
 import { Hono } from "hono";
 import { compress } from "hono/compress";
-import { ConnectionError, defaultConnectionName } from "../connection-service.ts";
+import { resolveAuditClient, resolveClientIp } from "../company/audit/events.ts";
+import { ConnectionError, defaultConnectionName, runWithConnectionMutationAudit } from "../connection-service.ts";
 import { ActionPolicyService, emptyPolicyRules } from "../core/action-policy.ts";
 import { DEFAULT_ACTION_SEARCH_LIMIT, createActionSearchIndexProvider, searchActions } from "../core/action-search.ts";
 import { optionalRecord, optionalString, requiredString } from "../core/cast.ts";
@@ -789,7 +790,9 @@ export class ConnectServer {
       this.options.logger?.info(logContext, "connection started");
       return this.writeConnectionResult(
         context,
-        this.options.connections.connectWithoutAuth(service, { connectionName }),
+        this.withConnectionAudit(context, () =>
+          this.options.connections.connectWithoutAuth(service, { connectionName }),
+        ),
         logContext,
       );
     }
@@ -797,7 +800,9 @@ export class ConnectServer {
       this.options.logger?.info(logContext, "connection started");
       return this.writeConnectionResult(
         context,
-        this.options.connections.connectWithApiKey(service, { values, connectionName }),
+        this.withConnectionAudit(context, () =>
+          this.options.connections.connectWithApiKey(service, { values, connectionName }),
+        ),
         logContext,
       );
     }
@@ -805,7 +810,9 @@ export class ConnectServer {
       this.options.logger?.info(logContext, "connection started");
       return this.writeConnectionResult(
         context,
-        this.options.connections.connectWithCustomCredential(service, { values, connectionName }),
+        this.withConnectionAudit(context, () =>
+          this.options.connections.connectWithCustomCredential(service, { values, connectionName }),
+        ),
         logContext,
       );
     }
@@ -832,8 +839,29 @@ export class ConnectServer {
     this.options.logger?.info(logContext, "connection disconnect started");
     return this.writeConnectionResult(
       context,
-      this.options.connections.disconnect(service, connectionName),
+      this.withConnectionAudit(context, () => this.options.connections.disconnect(service, connectionName)),
       logContext,
+    );
+  }
+
+  /** Attach client/IP (and optional actor headers) for company connection audit. */
+  private withConnectionAudit<T>(context: Context, fn: () => Promise<T>): Promise<T> {
+    return runWithConnectionMutationAudit(
+      {
+        client: resolveAuditClient({
+          headerClient: context.req.header("x-omc-client") || context.req.header("x-client"),
+          userAgent: context.req.header("user-agent"),
+          pathHint: context.req.path,
+        }),
+        ip: resolveClientIp({
+          xForwardedFor: context.req.header("x-forwarded-for"),
+          xRealIp: context.req.header("x-real-ip"),
+          cfConnectingIp: context.req.header("cf-connecting-ip"),
+        }),
+        actorEmail: context.req.header("x-omc-actor-email") || undefined,
+        actorMemberId: context.req.header("x-omc-actor-member-id") || undefined,
+      },
+      fn,
     );
   }
 

@@ -798,35 +798,41 @@ function PageTeamSwitcher(props: {
       </button>
       {open ? (
         <div className="page-team-switcher-popover" role="menu">
-          <div className="team-switcher-label">Team</div>
-          {props.teams.length === 0 ? (
-            <div className="team-switcher-empty">No teams</div>
-          ) : (
-            props.teams.map((t) => {
-              const isActive = t.id === active?.id;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  role="menuitem"
-                  className={`page-team-item${isActive ? " is-active" : ""}`}
-                  onClick={() => {
-                    props.onSelect(t.id);
-                    setOpen(false);
-                  }}
-                >
-                  <TeamAvatar name={t.name} url={t.avatarUrl} size={32} />
-                  <div className="team-switcher-item-text">
-                    <div className="page-team-item-title">
-                      <span className="team-switcher-name">{t.name}</span>
-                      {isActive ? <span className="team-pill">{roleLabel("creator")}</span> : null}
+          <div className="team-switcher-label">Switch team</div>
+          <div className="team-switcher-list">
+            {props.teams.length === 0 ? (
+              <div className="team-switcher-empty">No teams</div>
+            ) : (
+              props.teams.map((t) => {
+                const isActive = t.id === (props.activeTeamId || active?.id);
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="menuitem"
+                    className={`page-team-item team-switcher-item${isActive ? " is-active" : ""}`}
+                    onClick={() => {
+                      props.onSelect(t.id);
+                      setOpen(false);
+                    }}
+                  >
+                    <TeamAvatar name={t.name} url={t.avatarUrl} size={32} />
+                    <div className="team-switcher-item-text">
+                      <div className="page-team-item-title">
+                        <span className="team-switcher-name" title={t.name}>
+                          {t.name}
+                        </span>
+                      </div>
+                      <div className="console-row-meta team-switcher-id" title={t.id}>
+                        {formatTeamIdSnippet(t.id)}
+                      </div>
                     </div>
-                    <div className="console-row-meta team-switcher-id">{formatTeamIdSnippet(t.id)}</div>
-                  </div>
-                </button>
-              );
-            })
-          )}
+                    {isActive ? <Check size={16} className="team-switcher-check" aria-hidden /> : null}
+                  </button>
+                );
+              })
+            )}
+          </div>
           <div className="team-switcher-divider" />
           <button
             type="button"
@@ -1017,65 +1023,72 @@ export function TeamSwitcher(props: {
         aria-haspopup="menu"
         onClick={() => setOpen((v) => !v)}
       >
-        <TeamAvatar name={triggerName} url={active?.avatarUrl} size={28} />
+        <TeamAvatar name={triggerName} url={isAll ? undefined : active?.avatarUrl} size={28} />
         <div className="team-switcher-label-block">
           <div className="team-switcher-name">{triggerName}</div>
+          {isAll ? <div className="team-switcher-sub">Org-wide view</div> : null}
         </div>
         <ChevronsUpDown size={14} className="team-switcher-chevron" aria-hidden />
       </button>
 
       {open ? (
         <div className="team-switcher-popover" role="menu">
-          <div className="team-switcher-label">Team</div>
-          {props.showAllTeams ? (
-            <button
-              type="button"
-              role="menuitem"
-              className={`team-switcher-item${isAll ? " is-active" : ""}`}
-              data-testid="team-switcher-all"
-              onClick={() => {
-                props.onSelect(ALL_TEAMS_ID);
-                setOpen(false);
-              }}
-            >
-              <TeamAvatar name="Company-wide" size={32} />
-              <div className="team-switcher-item-text">
-                <div className="page-team-item-title">
-                  <div className="team-switcher-name">Company-wide</div>
-                  {isAll ? <span className="team-pill">All</span> : null}
-                </div>
-                <div className="console-row-meta">Org admin / auditor view</div>
-              </div>
-            </button>
-          ) : null}
-          {props.teams.length === 0 ? (
-            <div className="team-switcher-empty">No teams yet — create one below</div>
-          ) : (
-            props.teams.map((t) => {
-              const isActive = !isAll && t.id === active?.id;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  role="menuitem"
-                  className={`team-switcher-item${isActive ? " is-active" : ""}`}
-                  onClick={() => {
-                    props.onSelect(t.id);
-                    setOpen(false);
-                  }}
-                >
-                  <TeamAvatar name={t.name} url={t.avatarUrl} size={32} />
-                  <div className="team-switcher-item-text">
-                    <div className="page-team-item-title">
-                      <div className="team-switcher-name">{t.name}</div>
-                      {isActive ? <span className="team-pill">{roleLabel("creator")}</span> : null}
-                    </div>
-                    <div className="console-row-meta team-switcher-id">{formatTeamIdSnippet(t.id)}</div>
+          <div className="team-switcher-label">Switch team</div>
+          <div className="team-switcher-list">
+            {props.showAllTeams ? (
+              <button
+                type="button"
+                role="menuitem"
+                className={`team-switcher-item${isAll ? " is-active" : ""}`}
+                data-testid="team-switcher-all"
+                onClick={() => {
+                  props.onSelect(ALL_TEAMS_ID);
+                  setOpen(false);
+                }}
+              >
+                <TeamAvatar name="Company-wide" size={32} />
+                <div className="team-switcher-item-text">
+                  <div className="page-team-item-title">
+                    <div className="team-switcher-name">Company-wide</div>
                   </div>
-                </button>
-              );
-            })
-          )}
+                  <div className="console-row-meta">Org admin / auditor view</div>
+                </div>
+                {isAll ? <Check size={16} className="team-switcher-check" aria-hidden /> : null}
+              </button>
+            ) : null}
+            {props.teams.length === 0 ? (
+              <div className="team-switcher-empty">No teams yet — create one below</div>
+            ) : (
+              props.teams.map((t) => {
+                const isActive = !isAll && t.id === (props.activeTeamId || active?.id);
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="menuitem"
+                    className={`team-switcher-item${isActive ? " is-active" : ""}`}
+                    onClick={() => {
+                      props.onSelect(t.id);
+                      setOpen(false);
+                    }}
+                  >
+                    <TeamAvatar name={t.name} url={t.avatarUrl} size={32} />
+                    <div className="team-switcher-item-text">
+                      <div className="page-team-item-title">
+                        <div className="team-switcher-name" title={t.name}>
+                          {t.name}
+                        </div>
+                      </div>
+                      <div className="console-row-meta team-switcher-id" title={t.id}>
+                        {formatTeamIdSnippet(t.id)}
+                      </div>
+                    </div>
+                    {isActive ? <Check size={16} className="team-switcher-check" aria-hidden /> : null}
+                  </button>
+                );
+              })
+            )}
+          </div>
           <div className="team-switcher-divider" />
           <div className="team-switcher-actions">
             <button
@@ -1086,7 +1099,7 @@ export function TeamSwitcher(props: {
                 props.onCreate();
               }}
             >
-              <Plus size={14} /> Create team
+              <Plus size={14} strokeWidth={2} /> Create team
             </button>
             <button
               type="button"
@@ -1096,7 +1109,7 @@ export function TeamSwitcher(props: {
                 props.onManage();
               }}
             >
-              <Users size={14} /> Manage team
+              <Users size={14} strokeWidth={2} /> Manage
             </button>
           </div>
         </div>
@@ -1114,6 +1127,7 @@ export function TeamAvatar(props: { name: string; url?: string; size?: number })
         alt=""
         width={size}
         height={size}
+        className="team-avatar-img"
         style={{
           width: size,
           height: size,
@@ -1126,6 +1140,7 @@ export function TeamAvatar(props: { name: string; url?: string; size?: number })
     );
   }
   const hue = hashHue(props.name || "?");
+  const isCompanyWide = props.name === "Company-wide";
   return (
     <div
       aria-hidden
@@ -1134,13 +1149,16 @@ export function TeamAvatar(props: { name: string; url?: string; size?: number })
         width: size,
         height: size,
         borderRadius: 999,
-        background: `color-mix(in oklab, hsl(${hue} 55% 52%) 55%, var(--muted))`,
+        background: isCompanyWide
+          ? `color-mix(in oklab, hsl(262 48% 54%) 62%, var(--muted))`
+          : `color-mix(in oklab, hsl(${hue} 52% 50%) 58%, var(--muted))`,
         display: "grid",
         placeItems: "center",
-        fontSize: Math.max(11, size * 0.35),
+        fontSize: Math.max(11, Math.round(size * 0.36)),
         fontWeight: 650,
         color: "var(--foreground)",
         flexShrink: 0,
+        letterSpacing: "-0.02em",
       }}
     >
       {(props.name || "?").slice(0, 1).toUpperCase()}

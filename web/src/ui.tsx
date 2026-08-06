@@ -87,10 +87,10 @@ type NavGroup = {
 /**
  * Sidebar IA — grouped with dividers (not a flat dump).
  *
- * 1. 工作台：日常主路径（企业账号 / 团队）
+ * 1. 工作台：概览 / 企业账号 / 团队
  *    「团队」= 本队成员；全公司上下文或页内「全部团队」→ 团队列表（/org/teams，不进侧栏）
  * 2. 观测：用量 / 运行 / 审计
- * 3. 能力：Skills / 接入凭证
+ * 3. 能力：应用连接（企业共享）/ Skills / 接入凭证
  * 4. 配置：企业设置 / 文档（模型路由单独外链）
  *
  * 操作 (/actions) 不进侧栏：从「应用连接」行内深链进入。
@@ -99,7 +99,6 @@ const navGroups: readonly NavGroup[] = [
   {
     items: [
       { path: "/overview", labelKey: "nav.overview", icon: Home },
-      { path: "/connections", labelKey: "nav.connections", icon: Cable },
       { path: "/members", labelKey: "nav.members", icon: UserRound },
       { path: "/team", labelKey: "nav.team", icon: Users },
     ],
@@ -115,6 +114,7 @@ const navGroups: readonly NavGroup[] = [
   {
     labelKey: "nav.group.capability",
     items: [
+      { path: "/connections", labelKey: "nav.connections", icon: Cable },
       { path: "/skills", labelKey: "nav.skills", icon: Sparkles },
       { path: "/access", labelKey: "nav.access", icon: KeyRound },
     ],
@@ -413,10 +413,12 @@ function AppShell(props: {
   const isOverviewPage = heading === "overview";
   const isBrowserPage = section === "actions" || section === "runs";
   const isRunsPage = section === "runs";
+  const isConnectionsPage = section === "connections";
   const mainClassName = [
     isBrowserPage ? "main main-browser" : "main",
     isOverviewPage ? "overview-main" : "",
     isRunsPage ? "runs-main" : "",
+    isConnectionsPage ? "connections-main" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -829,7 +831,7 @@ function AccountMenu(props: {
       {/* Gear only — sits to the right of team name, not a second identity row */}
       <button
         type="button"
-        className="footer-gear"
+        className={`footer-gear${open ? " is-open" : ""}`}
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label={t("shell.account.settings")}
@@ -841,7 +843,10 @@ function AccountMenu(props: {
 
       {open ? (
         <div className="account-menu-popover" role="menu">
-          <div className="account-menu-identity">{identity}</div>
+          <div className="account-menu-header">
+            <div className="account-menu-identity-label">{t("shell.account.signedInAs")}</div>
+            <div className="account-menu-identity">{identity}</div>
+          </div>
 
           <div className="account-menu-section">
             <button
@@ -853,31 +858,40 @@ function AccountMenu(props: {
                 props.onOpenOrgConfig();
               }}
             >
-              <Settings2 size={15} />
+              <Settings2 size={15} strokeWidth={1.85} className="account-menu-item-icon" />
               <span>{t("shell.account.settings")}</span>
             </button>
             <button
               type="button"
               role="menuitem"
               className="account-menu-item"
+              disabled={props.loading}
               onClick={() => {
                 props.onRefresh();
               }}
             >
-              {props.loading ? <Loader2 className="spin" size={15} /> : <RefreshCw size={15} />}
+              {props.loading ? (
+                <Loader2 className="spin account-menu-item-icon" size={15} />
+              ) : (
+                <RefreshCw size={15} strokeWidth={1.85} className="account-menu-item-icon" />
+              )}
               <span>{t("shell.refreshData")}</span>
             </button>
+          </div>
 
+          <div className="account-menu-divider" />
+
+          <div className="account-menu-section account-menu-prefs">
             <div className="account-menu-inline-row" role="none">
               <span className="account-menu-inline-label">
-                <Languages size={15} />
+                <Languages size={15} strokeWidth={1.85} className="account-menu-item-icon" />
                 <span>{t("language.label")}</span>
               </span>
               <LanguageSelect compact />
             </div>
             <div className="account-menu-inline-row" role="none">
               <span className="account-menu-inline-label">
-                <Palette size={15} />
+                <Palette size={15} strokeWidth={1.85} className="account-menu-item-icon" />
                 <span>{t("shell.theme")}</span>
               </span>
               <ThemeControl compact theme={props.theme} onThemeChange={props.onThemeChange} />
@@ -897,7 +911,7 @@ function AccountMenu(props: {
                     props.onLogout();
                   }}
                 >
-                  <LogOut size={15} />
+                  <LogOut size={15} strokeWidth={1.85} className="account-menu-item-icon" />
                   <span>{t("shell.logout")}</span>
                 </button>
               </div>
@@ -908,16 +922,17 @@ function AccountMenu(props: {
           <div className="account-menu-section">
             <a
               role="menuitem"
-              className="account-menu-item account-menu-item-muted"
+              className="account-menu-item account-menu-item-muted account-menu-support"
               href={`mailto:${SUPPORT_EMAIL}`}
+              title={SUPPORT_EMAIL}
               onClick={(event) => {
                 event.preventDefault();
                 setOpen(false);
                 props.onOpenSupport();
               }}
             >
-              <Mail size={15} />
-              <span>{SUPPORT_EMAIL}</span>
+              <Mail size={15} strokeWidth={1.85} className="account-menu-item-icon" />
+              <span className="account-menu-support-email">{SUPPORT_EMAIL}</span>
             </a>
           </div>
         </div>
@@ -1004,6 +1019,9 @@ function headingForPath(pathname: string): string {
   if (section === "metering") {
     return "metering";
   }
+  if (section === "audit-events") {
+    return "auditEvents";
+  }
   if (section === "connections") {
     return "connections";
   }
@@ -1028,5 +1046,13 @@ function headingForPath(pathname: string): string {
   if (section === "resources") {
     return "resources";
   }
+  if (section === "overview" || !section) {
+    return "overview";
+  }
   return "overview";
+}
+
+/** Exported for IA tests: shell top bar title key. */
+export function getShellHeadingKey(pathname: string): string {
+  return headingForPath(pathname);
 }

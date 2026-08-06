@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 
-import { Loader2, RefreshCw } from "lucide-react";
+import { Download, Loader2, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router";
 import { ApiError, apiGet, apiPost } from "./api";
 import { MemberLoginCard } from "./member-login-card";
-import { hasMemberSession, memberAuthHeaders, setMemberToken } from "./member-session";
+import { getMemberToken, hasMemberSession, memberAuthHeaders, setMemberToken } from "./member-session";
 import { InlineError } from "./shared-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,10 @@ export interface AuditEventItem {
   actorEmail?: string;
   at?: string;
   createdAt?: string;
+  summary?: string;
+  client?: string;
+  ip?: string;
+  result?: string;
   details?: Record<string, unknown>;
 }
 
@@ -28,24 +32,47 @@ export interface AuditEventsPageResult {
   hasMore: boolean;
 }
 
+export interface AuditListQuery {
+  type?: string;
+  client?: string;
+  actor?: string;
+  q?: string;
+  from?: string;
+  to?: string;
+  limit?: number;
+  offset?: number;
+}
+
 /** Default page size for audit list (load more appends the same size). */
 export const AUDIT_PAGE_SIZE = 50;
+
+/**
+ * Build query string for GET /api/company/audit/events from filter fields.
+ * Exported for unit tests of the real API shape used by the page.
+ */
+export function buildAuditEventsQuery(options?: AuditListQuery): string {
+  const params = new URLSearchParams();
+  if (options?.type?.trim()) params.set("type", options.type.trim());
+  if (options?.client?.trim()) params.set("client", options.client.trim());
+  if (options?.actor?.trim()) params.set("actor", options.actor.trim());
+  if (options?.q?.trim()) params.set("q", options.q.trim());
+  if (options?.from?.trim()) params.set("from", options.from.trim());
+  if (options?.to?.trim()) params.set("to", options.to.trim());
+  params.set("limit", String(options?.limit ?? AUDIT_PAGE_SIZE));
+  params.set("offset", String(options?.offset ?? 0));
+  return params.toString();
+}
 
 /**
  * Load company audit events via the product API.
  * Works with member admin/auditor session, or console ops-admin (same-origin cookie).
  */
-export async function loadAuditEvents(options?: {
-  type?: string;
-  limit?: number;
-  offset?: number;
-  fetchImpl?: typeof fetch;
-}): Promise<AuditEventsPageResult> {
-  const params = new URLSearchParams();
-  if (options?.type) params.set("type", options.type);
-  params.set("limit", String(options?.limit ?? AUDIT_PAGE_SIZE));
-  params.set("offset", String(options?.offset ?? 0));
-  const path = `/api/company/audit/events?${params}`;
+export async function loadAuditEvents(
+  options?: AuditListQuery & {
+    fetchImpl?: typeof fetch;
+  },
+): Promise<AuditEventsPageResult> {
+  const path = `/api/company/audit/events?${buildAuditEventsQuery(options)}`;
 
   if (options?.fetchImpl) {
     const headers = new Headers();
@@ -65,6 +92,62 @@ export async function loadAuditEvents(options?: {
   return normalizeAuditPage(body);
 }
 
+/**
+ * Trigger events export download (CSV by default). Uses real export path.
+ */
+export async function exportAuditEvents(options?: {
+  format?: "csv" | "jsonl";
+  type?: string;
+  client?: string;
+  actor?: string;
+  q?: string;
+  from?: string;
+  to?: string;
+  fetchImpl?: typeof fetch;
+}): Promise<{ blob: Blob; filename: string }> {
+  const format = options?.format ?? "csv";
+  const params = new URLSearchParams();
+  params.set("kind", "events");
+  params.set("format", format);
+  params.set("limit", "10000");
+  if (options?.type?.trim()) params.set("type", options.type.trim());
+  if (options?.client?.trim()) params.set("client", options.client.trim());
+  if (options?.actor?.trim()) params.set("actor", options.actor.trim());
+  if (options?.q?.trim()) params.set("q", options.q.trim());
+  if (options?.from?.trim()) params.set("from", options.from.trim());
+  if (options?.to?.trim()) params.set("to", options.to.trim());
+  const path = `/api/company/audit/export?${params}`;
+
+  const headers = new Headers();
+  const bearer = getMemberToken();
+  if (bearer) headers.set("authorization", `Bearer ${bearer}`);
+
+  const fetchImpl = options?.fetchImpl ?? fetch;
+  const res = await fetchImpl(path, { headers, credentials: "same-origin" });
+  if (!res.ok) {
+    throw new ApiError(res.status, `audit export ${res.status}`);
+  }
+  const blob = await res.blob();
+  const filename = format === "csv" ? "audit-events.csv" : "audit-events.jsonl";
+  return { blob, filename };
+}
+
+/** Readable date presets → ISO from/to for the audit API. */
+export function datePresetRange(preset: "today" | "7d" | "30d" | "all"): { from?: string; to?: string } {
+  if (preset === "all") return {};
+  const now = new Date();
+  const end = now.toISOString();
+  const start = new Date(now);
+  if (preset === "today") {
+    start.setUTCHours(0, 0, 0, 0);
+  } else if (preset === "7d") {
+    start.setUTCDate(start.getUTCDate() - 7);
+  } else {
+    start.setUTCDate(start.getUTCDate() - 30);
+  }
+  return { from: start.toISOString(), to: end };
+}
+
 function normalizeAuditPage(
   body: Partial<AuditEventsPageResult> | { items?: AuditEventItem[] },
 ): AuditEventsPageResult {
@@ -77,17 +160,22 @@ function normalizeAuditPage(
 }
 
 /**
- * 审计事件 — 每页 50 条 + 加载更多；控制台 ops-admin 或成员 admin/auditor 可读。
+ * 审计事件 — 日期/类型/搜索 + 可读列 + CSV 导出；控制台 ops-admin 或成员 admin/auditor 可读。
  */
 export function AuditEventsPage(): ReactNode {
   const [items, setItems] = useState<AuditEventItem[]>([]);
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [typeFilter, setTypeFilter] = useState("");
-  const [appliedType, setAppliedType] = useState("");
+  const [queryFilter, setQueryFilter] = useState("");
+  const [actorFilter, setActorFilter] = useState("");
+  const [clientFilter, setClientFilter] = useState("");
+  const [datePreset, setDatePreset] = useState<"today" | "7d" | "30d" | "all">("30d");
+  const [applied, setApplied] = useState<AuditListQuery>({});
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [needLogin, setNeedLogin] = useState(false);
   const [loginEmail, setLoginEmail] = useState("admin@company.internal");
   const [loginCode, setLoginCode] = useState("000000");
@@ -101,7 +189,7 @@ export function AuditEventsPage(): ReactNode {
       setError(null);
       try {
         const page = await loadAuditEvents({
-          type: appliedType.trim() || undefined,
+          ...applied,
           limit: AUDIT_PAGE_SIZE,
           offset,
         });
@@ -127,7 +215,7 @@ export function AuditEventsPage(): ReactNode {
         setLoadingMore(false);
       }
     },
-    [appliedType],
+    [applied],
   );
 
   useEffect(() => {
@@ -135,7 +223,41 @@ export function AuditEventsPage(): ReactNode {
   }, [loadPage]);
 
   function applyFilter(): void {
-    setAppliedType(typeFilter.trim());
+    const range = datePresetRange(datePreset);
+    setApplied({
+      type: typeFilter.trim() || undefined,
+      q: queryFilter.trim() || undefined,
+      actor: actorFilter.trim() || undefined,
+      client: clientFilter.trim() || undefined,
+      from: range.from,
+      to: range.to,
+    });
+  }
+
+  async function onExport(): Promise<void> {
+    setExporting(true);
+    setError(null);
+    try {
+      const { blob, filename } = await exportAuditEvents({
+        format: "csv",
+        type: applied.type,
+        client: applied.client,
+        actor: applied.actor,
+        q: applied.q,
+        from: applied.from,
+        to: applied.to,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "导出失败");
+    } finally {
+      setExporting(false);
+    }
   }
 
   async function login(): Promise<void> {
@@ -167,7 +289,7 @@ export function AuditEventsPage(): ReactNode {
           <div>
             <h1>审计事件</h1>
             <p className="console-page-desc">
-              控制台未解锁且无企业成员会话时，需登录后查看 login / config.write / member.* 等事件。
+              控制台未解锁且无企业成员会话时，需登录后查看 login / config / token / connection 等事件。
             </p>
           </div>
         </header>
@@ -195,20 +317,62 @@ export function AuditEventsPage(): ReactNode {
         <div>
           <h1>审计事件</h1>
           <p className="console-page-desc">
-            产品事件流（login / config.write / member.*），每页 {AUDIT_PAGE_SIZE} 条。Action 运行见{" "}
+            组织运营与管控事件（登录、成员、配置、token、连接、策略拒绝、Skill）。Action 执行历史见{" "}
             <Link to="/runs">运行</Link> 或 <Link to="/metering">计量</Link>。
           </p>
         </div>
-        <div className="console-page-actions">
+        <div className="console-page-actions" style={{ flexWrap: "wrap", gap: 8 }}>
+          <select
+            value={datePreset}
+            onChange={(e) => setDatePreset(e.target.value as typeof datePreset)}
+            data-testid="audit-date-preset"
+            aria-label="日期范围"
+            style={{ maxWidth: 120, height: 32 }}
+          >
+            <option value="today">今日</option>
+            <option value="7d">近 7 天</option>
+            <option value="30d">近 30 天</option>
+            <option value="all">全部</option>
+          </select>
           <Input
-            placeholder="类型过滤，如 login"
+            placeholder="类型，如 login / token"
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") applyFilter();
             }}
             data-testid="audit-type-filter"
-            style={{ maxWidth: 180 }}
+            style={{ maxWidth: 140 }}
+          />
+          <Input
+            placeholder="操作人"
+            value={actorFilter}
+            onChange={(e) => setActorFilter(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") applyFilter();
+            }}
+            data-testid="audit-actor-filter"
+            style={{ maxWidth: 140 }}
+          />
+          <Input
+            placeholder="操作端 client"
+            value={clientFilter}
+            onChange={(e) => setClientFilter(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") applyFilter();
+            }}
+            data-testid="audit-client-filter"
+            style={{ maxWidth: 120 }}
+          />
+          <Input
+            placeholder="搜索内容"
+            value={queryFilter}
+            onChange={(e) => setQueryFilter(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") applyFilter();
+            }}
+            data-testid="audit-q-filter"
+            style={{ maxWidth: 160 }}
           />
           <Button variant="outline" size="sm" onClick={applyFilter} data-testid="audit-type-apply">
             筛选
@@ -222,6 +386,16 @@ export function AuditEventsPage(): ReactNode {
             <RefreshCw size={16} />
             刷新
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={exporting}
+            onClick={() => void onExport()}
+            data-testid="audit-events-export"
+          >
+            {exporting ? <Loader2 size={14} className="spin" /> : <Download size={14} />}
+            导出 CSV
+          </Button>
         </div>
       </header>
 
@@ -234,15 +408,17 @@ export function AuditEventsPage(): ReactNode {
             <tr>
               <th>时间</th>
               <th>类型</th>
+              <th>内容</th>
+              <th>操作端</th>
               <th>操作者</th>
-              <th>详情</th>
+              <th>IP</th>
             </tr>
           </thead>
           <tbody>
             {items.map((ev, i) => {
               const when = ev.at || ev.createdAt || "—";
               const actor = ev.actorEmail || ev.actorMemberId || "—";
-              const details = ev.details ? JSON.stringify(ev.details) : "";
+              const summary = ev.summary || (ev.details ? compactDetails(ev.details) : "") || "—";
               return (
                 <tr key={ev.id || `${ev.type}-${when}-${i}`}>
                   <td className="console-row-meta mono">{when}</td>
@@ -251,19 +427,23 @@ export function AuditEventsPage(): ReactNode {
                       {ev.type}
                     </span>
                   </td>
-                  <td className="console-row-meta">{actor}</td>
                   <td
-                    className="console-row-meta mono"
-                    style={{ maxWidth: 360, overflow: "hidden", textOverflow: "ellipsis" }}
+                    className="console-row-meta"
+                    style={{ maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis" }}
+                    data-testid="audit-event-summary"
+                    title={summary}
                   >
-                    {details || "—"}
+                    {summary}
                   </td>
+                  <td className="console-row-meta">{ev.client || "—"}</td>
+                  <td className="console-row-meta">{actor}</td>
+                  <td className="console-row-meta mono">{ev.ip || "—"}</td>
                 </tr>
               );
             })}
             {!loading && items.length === 0 ? (
               <tr>
-                <td colSpan={4} className="console-row-meta" style={{ padding: 24, textAlign: "center" }}>
+                <td colSpan={6} className="console-row-meta" style={{ padding: 24, textAlign: "center" }}>
                   暂无审计事件
                 </td>
               </tr>
@@ -292,4 +472,13 @@ export function AuditEventsPage(): ReactNode {
       </div>
     </div>
   );
+}
+
+function compactDetails(details: Record<string, unknown>): string {
+  try {
+    const s = JSON.stringify(details);
+    return s.length > 120 ? `${s.slice(0, 117)}…` : s;
+  } catch {
+    return "";
+  }
 }

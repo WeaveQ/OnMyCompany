@@ -87,19 +87,21 @@ SoT：实现对照 `src/company/routes.ts` + Gateway `ConnectServer`。
 
 ### 归因 · 审计 · 用量 · 概览 · 计量（G2）
 
-| 方法 | 路径                               | 状态  | 说明                                                                                                                                     |
-| ---- | ---------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| POST | `/api/company/runtime-tokens`      | ✅    | 铸造 runtime token 并绑定 memberId                                                                                                       |
-| POST | `/api/company/runtime-tokens/bind` | ✅    | 绑定已有 tokenId → member                                                                                                                |
-| GET  | `/api/company/audit/events`        | ✅ A2 | 登录/配置/member.\*；admin/auditor；控制台 `/audit-events`；`?type=&limit=`                                                              |
-| GET  | `/api/company/audit/export`        | ✅    | `format=jsonl\|csv`；`kind=runs\|events`                                                                                                 |
-| GET  | `/api/company/usage`               | ✅ G2 | **工具**用量；时间窗 `from`/`to`、可选 `memberId`/`teamId`/`service`/`limit`；KPI + byDay + **fallbackRuns**                             |
-| GET  | `/api/company/usage/llm`           | ✅ B  | **LLM**用量代理 OmniRoute `GET /api/usage/history`；可选 `from`/`to`；与工具用量分账                                                     |
-| GET  | `/api/company/pricing`             | ✅ G2 | 参考价目；`?source=auto\|omniroute\|static`；**LLM 默认可从 OmniRoute `/api/pricing` 拉**，工具价始终本地；响应含 `source` / `omniroute` |
-| GET  | `/api/company/runs`                | ✅ G2 | 计量日志（**成员会话**）；勿用 ops `/api/runs` 作产品主路径                                                                              |
-| GET  | `/api/company/overview`            | ✅    | 配置 version · 成员数 · Skills · 策略拒绝                                                                                                |
-| GET  | `/api/me/userdata`                 | ✅    | 成员 UserData 袋                                                                                                                         |
-| PUT  | `/api/me/userdata`                 | ✅    | merge 写 UserData                                                                                                                        |
+| 方法 | 路径                                | 状态  | 说明                                                                                                                                                              |
+| ---- | ----------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST | `/api/company/runtime-tokens`       | ✅    | 铸造 runtime token 并绑定 memberId                                                                                                                                |
+| POST | `/api/company/runtime-tokens/bind`  | ✅    | 绑定已有 tokenId → member                                                                                                                                         |
+| GET  | `/api/company/audit/events`         | ✅ A2 | 登录/配置/token/connection/skills/policy.deny 等；字段含 `summary`/`client`/`ip`；`?type=&client=&actor=&q=&from=&to=&limit=&offset=`；admin/auditor 或 ops-admin |
+| GET  | `/api/company/audit/export`         | ✅    | `format=jsonl\|csv`；`kind=runs\|events`；events 支持与 list 相同过滤；导出写 `audit.export`；**不含 secret**                                                     |
+| POST | `/api/company/connections/state`    | ✅    | org-admin：`{ service, connectionName?, disabled }` 启停组织连接；禁用后 Gateway `resolveForExecution` → `connection_disabled`；写审计                            |
+| GET  | `/api/company/connections/disabled` | ✅    | 当前禁用连接列表（无 secret）                                                                                                                                     |
+| GET  | `/api/company/usage`                | ✅ G2 | **工具**用量；时间窗 `from`/`to`、可选 `memberId`/`teamId`/`service`/`limit`；KPI + byDay + **fallbackRuns**                                                      |
+| GET  | `/api/company/usage/llm`            | ✅ B  | **LLM**用量代理 OmniRoute `GET /api/usage/history`；可选 `from`/`to`；与工具用量分账                                                                              |
+| GET  | `/api/company/pricing`              | ✅ G2 | 参考价目；`?source=auto\|omniroute\|static`；**LLM 默认可从 OmniRoute `/api/pricing` 拉**，工具价始终本地；响应含 `source` / `omniroute`                          |
+| GET  | `/api/company/runs`                 | ✅ G2 | 计量日志（**成员会话**）；勿用 ops `/api/runs` 作产品主路径                                                                                                       |
+| GET  | `/api/company/overview`             | ✅    | 配置 version · 成员数 · Skills · 策略拒绝                                                                                                                         |
+| GET  | `/api/me/userdata`                  | ✅    | 成员 UserData 袋                                                                                                                                                  |
+| PUT  | `/api/me/userdata`                  | ✅    | merge 写 UserData                                                                                                                                                 |
 
 ## Gateway / Connect 路径（并存 · 未改语义）
 
