@@ -1,7 +1,7 @@
 # Notices
 
 OnMyCompany is licensed under the **WeaveQ Source-Available Non-Commercial License**.  
-See `LICENSE` / `NOTICE`. **不对商用开放** — commercial use requires a separate WeaveQ license.
+See `LICENSE` / `NOTICE`. **Not open for commercial use** — commercial use requires a separate WeaveQ license.
 
 Companion desktop product: **OnMyAgent** (Apache-2.0) — different repository and terms.
 

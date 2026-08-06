@@ -15,7 +15,7 @@
 | [onmycompany/UPSTREAM.md](onmycompany/UPSTREAM.md)                 | fork / merge                                         |
 | [onmycompany/INIT-CHECKLIST.md](onmycompany/INIT-CHECKLIST.md)     | 初始化检查表                                         |
 
-Root: [README.md](../README.md) · [AGENTS.md](../AGENTS.md)
+Root: [README.md](../README.md) · [README.zh-CN.md](../README.zh-CN.md) · [AGENTS.md](../AGENTS.md) · [AGENTS.zh-CN.md](../AGENTS.zh-CN.md)
 
 ## OnMyAgent（sibling · 链接）
 
