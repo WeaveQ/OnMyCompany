@@ -8,7 +8,9 @@ import type { ISecretCodec } from "./secrets/secret-codec-core.ts";
 import type { RuntimeDatabase } from "./storage/runtime-database.ts";
 import type { Hono } from "hono";
 
+import { CompanyAuditEventStore } from "../company/audit/events.ts";
 import { TokenMemberBindingStore } from "../company/auth/token-bindings.ts";
+import { ConnectionDisableStore } from "../company/connections/disable-store.ts";
 import { orgPolicyToRuntimeRules } from "../company/policy/org-to-runtime.ts";
 import { registerCompanyRoutes } from "../company/routes.ts";
 import { ConnectionService } from "../connection-service.ts";
@@ -62,12 +64,32 @@ export async function createConnectApp(options: ConnectAppOptions): Promise<Conn
     origin: options.publicOrigin,
     store: options.runtimeDatabase.oauthClientConfigStore,
   });
+
+  const companyAuditEvents = options.company
+    ? new CompanyAuditEventStore(options.company.dataDir)
+    : undefined;
+  const connectionDisableStore = options.company
+    ? new ConnectionDisableStore(options.company.dataDir)
+    : undefined;
+
   const connections = new ConnectionService({
     catalog: options.catalog,
     oauthCredentials: new OAuthCredentialRefreshService(oauthClientConfigs),
     providerLoader: options.providerLoader,
     store: options.runtimeDatabase.connectionStore,
     logger: options.logger,
+    isConnectionDisabled: connectionDisableStore
+      ? (service, connectionName) => connectionDisableStore.isDisabled(service, connectionName)
+      : undefined,
+    onConnectionMutation: companyAuditEvents
+      ? async (event) => {
+          await companyAuditEvents.append({
+            type: event.op === "create" ? "connection.create" : "connection.delete",
+            client: "admin_console",
+            details: { service: event.service, connectionName: event.connectionName },
+          });
+        }
+      : undefined,
   });
   const actions = new ActionRunner({
     catalog: options.catalog,
@@ -77,6 +99,24 @@ export async function createConnectApp(options: ConnectAppOptions): Promise<Conn
     transitFiles: options.transitFiles,
     actionPolicy: options.actionPolicy,
     logger: options.logger,
+    onPolicyDeny: companyAuditEvents
+      ? async (input) => {
+          await companyAuditEvents.append({
+            type: "policy.deny",
+            result: "denied",
+            actorMemberId: input.memberId,
+            client: input.caller === "mcp" ? "mcp" : input.caller === "web" ? "admin_console" : "api",
+            details: {
+              actionId: input.actionId,
+              service: input.service,
+              code: input.code,
+              message: input.message,
+              runtimeTokenId: input.runtimeTokenId,
+              caller: input.caller,
+            },
+          });
+        }
+      : undefined,
   });
 
   const tokenBindings = options.company ? new TokenMemberBindingStore(options.company.dataDir) : undefined;
@@ -122,6 +162,9 @@ export async function createConnectApp(options: ConnectAppOptions): Promise<Conn
       ...company,
       // Single shared binding store (connect-app + routes) — no dual cache (P5).
       tokenBindings,
+      // Shared audit + connection-disable stores with Gateway hooks (no dual cache).
+      auditEvents: companyAuditEvents,
+      connectionDisableStore,
       // Console unlock (ops-admin) may read audit without a second member OTP.
       isOpsAdmin: (context) => isLocalAdminAuthenticated(context, options.adminToken),
       onOrgPolicyWrite: async (policy) => {

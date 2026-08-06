@@ -70,6 +70,7 @@ export function isRetriableExecutionError(error: { code?: string; message?: stri
 
   if (
     code === "connection_not_found" ||
+    code === "connection_disabled" ||
     code === "invalid_input" ||
     code === "action_blocked" ||
     code === "action_not_allowed" ||

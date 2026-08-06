@@ -26,6 +26,18 @@ export interface ActionRunnerOptions {
   actionPolicy?: ActionPolicyService;
   logger?: Logger;
   fallbackPolicy?: Partial<FallbackPolicy>;
+  /**
+   * Company audit hook when action policy denies execution (no secrets).
+   */
+  onPolicyDeny?: (input: {
+    actionId: string;
+    service: string;
+    code?: string;
+    message?: string;
+    memberId?: string;
+    runtimeTokenId?: string;
+    caller: RunLogCaller;
+  }) => void | Promise<void>;
 }
 
 export interface RunActionInput {
@@ -95,6 +107,19 @@ export class ActionRunner {
 
     if (!policy.allowed) {
       result = { ok: false, error: { code: policy.code, message: policy.message } };
+      try {
+        await this.options.onPolicyDeny?.({
+          actionId: action.id,
+          service: action.service,
+          code: policy.code,
+          message: policy.message,
+          memberId: input.memberId,
+          runtimeTokenId: input.runtimeTokenId,
+          caller: input.caller,
+        });
+      } catch {
+        // audit must not break execution path
+      }
     } else {
       const executed = await this.executeWithConnectionFallback({
         service: action.service,

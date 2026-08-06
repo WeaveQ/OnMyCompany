@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { createCatalogStore } from "../../catalog-store.ts";
 import { ConnectionService } from "../../connection-service.ts";
 import { ActionPolicyService } from "../../core/action-policy.ts";
-import { ActionRunner } from "./action-runner.ts";
+import { ActionRunner, type ActionRunnerOptions } from "./action-runner.ts";
 import * as runLogSummary from "./run-log-summary.ts";
 
 const echoAction: ActionDefinition = {
@@ -186,7 +186,16 @@ describe("ActionRunner", () => {
     const loadExecutor = vi.spyOn(providerLoader, "loadActionExecutor");
     const resolveConnection = vi.spyOn(ConnectionService.prototype, "resolveForExecution");
     const actionPolicy = new ActionPolicyService({ blockedActions: ["example.echo"] });
-    const runner = createRunner({ runs, logger, providerLoader, actionPolicy });
+    const denyEvents: Array<Record<string, unknown>> = [];
+    const runner = createRunner({
+      runs,
+      logger,
+      providerLoader,
+      actionPolicy,
+      onPolicyDeny: async (input) => {
+        denyEvents.push({ ...input });
+      },
+    });
 
     const run = await runner.run({
       actionId: "example.echo",
@@ -194,6 +203,7 @@ describe("ActionRunner", () => {
       caller: "http",
       policy: actionPolicy.createSnapshot(),
       runtimeTokenId: "token-1",
+      memberId: "mem-1",
     });
 
     expect(run).toMatchObject({
@@ -209,6 +219,61 @@ describe("ActionRunner", () => {
         checks: [{ source: "deployment", outcome: "block_match", rule: "example.echo" }],
       },
     });
+    expect(denyEvents).toEqual([
+      expect.objectContaining({
+        actionId: "example.echo",
+        service: "example",
+        code: "action_blocked",
+        memberId: "mem-1",
+        runtimeTokenId: "token-1",
+        caller: "http",
+      }),
+    ]);
+  });
+
+  it("blocks execution when connection is disabled (real ConnectionService path)", async () => {
+    const runs = new MemoryRunLogStore();
+    const { logger } = createTestLogger();
+    const catalog = createCatalogStore([exampleProvider], { executableActionIds: [echoAction.id] });
+    const providerLoader = new TestProviderLoader(async () => ({ ok: true, output: { message: "ok" } }));
+    let executed = 0;
+    const originalLoad = providerLoader.loadActionExecutor.bind(providerLoader);
+    providerLoader.loadActionExecutor = async (...args) => {
+      const executor = await originalLoad(...args);
+      return async (input, ctx) => {
+        executed += 1;
+        return executor(input, ctx);
+      };
+    };
+    const connections = new ConnectionService({
+      catalog,
+      providerLoader,
+      store: new MemoryConnectionStore(),
+      isConnectionDisabled: async (service, connectionName) =>
+        service === "example" && connectionName === "default",
+    });
+    const runner = new ActionRunner({
+      catalog,
+      providerLoader,
+      connections,
+      runs,
+      logger,
+    });
+
+    const run = await runner.run({
+      actionId: "example.echo",
+      input: {},
+      caller: "http",
+      connectionName: "default",
+    });
+
+    expect(run?.result).toMatchObject({
+      ok: false,
+      error: { code: "connection_disabled" },
+    });
+    // resolveForExecution rejects before provider executor runs
+    expect(executed).toBe(0);
+    expect(runs.items[0]).toMatchObject({ ok: false, errorCode: "connection_disabled" });
   });
 });
 
@@ -217,6 +282,7 @@ function createRunner(options: {
   logger: Logger;
   providerLoader?: IProviderLoader;
   actionPolicy?: ActionPolicyService;
+  onPolicyDeny?: ActionRunnerOptions["onPolicyDeny"];
 }): ActionRunner {
   const catalog = createCatalogStore([exampleProvider], { executableActionIds: [echoAction.id] });
   const providerLoader =
@@ -228,6 +294,7 @@ function createRunner(options: {
     runs: options.runs,
     actionPolicy: options.actionPolicy,
     logger: options.logger,
+    onPolicyDeny: options.onPolicyDeny,
   });
 }
 

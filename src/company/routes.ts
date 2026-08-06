@@ -3,8 +3,15 @@ import type { MemberRole } from "./auth/store.ts";
 import type { TeamMemberRole } from "./teams/store.ts";
 import type { Context, Hono } from "hono";
 
-import { CompanyAuditEventStore, eventsToJsonl } from "./audit/events.ts";
+import {
+  CompanyAuditEventStore,
+  eventsToCsv,
+  eventsToJsonl,
+  resolveAuditClient,
+  resolveClientIp,
+} from "./audit/events.ts";
 import { runsToCsv, runsToJsonl, summarizeUsage } from "./audit/export.ts";
+import { ConnectionDisableStore } from "./connections/disable-store.ts";
 import { sendOtpEmail } from "./auth/mail.ts";
 import {
   CompanyAuthStore,
@@ -68,6 +75,12 @@ export interface CompanyRouteOptions {
    * When true, read-only audit endpoints skip member OTP.
    */
   isOpsAdmin?: (context: Context) => Promise<boolean>;
+  /**
+   * Shared audit store (same instance as Gateway policy-deny / connection hooks).
+   */
+  auditEvents?: CompanyAuditEventStore;
+  /** Shared connection disable flags used by Gateway resolveForExecution. */
+  connectionDisableStore?: ConnectionDisableStore;
 }
 
 export interface CompanyHealthBody {
@@ -102,9 +115,23 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
   const tokenBindings = options.tokenBindings ?? new TokenMemberBindingStore(options.dataDir);
   const userDataStore = new UserDataStore(options.dataDir);
   const teamsStore = new TeamsStore(options.dataDir);
-  const auditEvents = new CompanyAuditEventStore(options.dataDir);
+  const auditEvents = options.auditEvents ?? new CompanyAuditEventStore(options.dataDir);
+  const connectionDisableStore = options.connectionDisableStore ?? new ConnectionDisableStore(options.dataDir);
   const devOtp = options.devOtp?.trim() || process.env.OMC_DEV_OTP?.trim() || "000000";
   const bootstrapEmail = normalizeEmail(options.bootstrapAdminEmail ?? process.env.OMC_BOOTSTRAP_ADMIN_EMAIL ?? "");
+
+  const requestAuditMeta = (context: Context) => ({
+    client: resolveAuditClient({
+      headerClient: context.req.header("x-omc-client") || context.req.header("x-client"),
+      userAgent: context.req.header("user-agent"),
+      pathHint: context.req.path,
+    }),
+    ip: resolveClientIp({
+      xForwardedFor: context.req.header("x-forwarded-for"),
+      xRealIp: context.req.header("x-real-ip"),
+      cfConnectingIp: context.req.header("cf-connecting-ip"),
+    }),
+  });
 
   app.get("/api/company/health", async (context) => {
     const layout = await ensureOrgConfigLayout(orgConfigRoot);
@@ -194,6 +221,7 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         type: "login",
         actorMemberId: refreshed.id,
         actorEmail: refreshed.email,
+        ...requestAuditMeta(context),
         details: { provider: "feishu" },
       });
       return context.json({ ok: true, token, member: publicMember(refreshed), provider: "feishu" });
@@ -256,6 +284,7 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         type: "login",
         actorMemberId: refreshed.id,
         actorEmail: refreshed.email,
+        ...requestAuditMeta(context),
         details: { provider: "email" },
       });
       return context.json({
@@ -281,12 +310,23 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         // Fallback: unbind only (token may still resolve until store revoke wired)
         revokedTokens = await tokenBindings.unbindAllForMember(member.id);
       }
+      const meta = requestAuditMeta(context);
       await auditEvents.append({
         type: "logout",
         actorMemberId: member.id,
         actorEmail: member.email,
+        ...meta,
         details: { revokedRuntimeTokens: revokedTokens },
       });
+      if (revokedTokens > 0) {
+        await auditEvents.append({
+          type: "token.revoke",
+          actorMemberId: member.id,
+          actorEmail: member.email,
+          ...meta,
+          details: { revokedRuntimeTokens: revokedTokens, reason: "logout" },
+        });
+      }
     }
     await authStore.revokeSession(token);
     clearMemberCookie(context);
@@ -357,6 +397,7 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         type: "config.write",
         actorMemberId: member.id,
         actorEmail: member.email,
+        ...requestAuditMeta(context),
         details: { section, version: manifest.version },
       });
       return context.json({ ok: true, manifest });
@@ -402,6 +443,7 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         type: "config.write",
         actorMemberId: member.id,
         actorEmail: member.email,
+        ...requestAuditMeta(context),
         details: { section: "import", version: manifest.version },
       });
       return context.json({ ok: true, manifest });
@@ -488,6 +530,13 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         return jsonError(context, 400, "validation_error", "packageId required");
       }
       const entry = await skillsStore.enable(packageId, member.id);
+      await auditEvents.append({
+        type: "skills.enable",
+        actorMemberId: member.id,
+        actorEmail: member.email,
+        ...requestAuditMeta(context),
+        details: { packageId },
+      });
       return context.json({ ok: true, entry });
     } catch (error) {
       return mapError(context, error);
@@ -506,6 +555,13 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         return jsonError(context, 400, "validation_error", "packageId required");
       }
       await skillsStore.disable(packageId);
+      await auditEvents.append({
+        type: "skills.disable",
+        actorMemberId: member.id,
+        actorEmail: member.email,
+        ...requestAuditMeta(context),
+        details: { packageId },
+      });
       return context.json({ ok: true });
     } catch (error) {
       return mapError(context, error);
@@ -571,6 +627,13 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
       const name = String(body.name ?? "").trim() || `member-${member.email}`;
       const created = await options.createMemberRuntimeToken({ name, memberId: member.id });
       await tokenBindings.bind(created.tokenId, member.id);
+      await auditEvents.append({
+        type: "token.create",
+        actorMemberId: member.id,
+        actorEmail: member.email,
+        ...requestAuditMeta(context),
+        details: { tokenId: created.tokenId, name },
+      });
       return context.json({
         ok: true,
         token: created.token,
@@ -682,6 +745,13 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         return jsonError(context, 400, "validation_error", "packageId required");
       }
       const entry = await skillsStore.setVisibility(packageId, roles);
+      await auditEvents.append({
+        type: "skills.visibility",
+        actorMemberId: member.id,
+        actorEmail: member.email,
+        ...requestAuditMeta(context),
+        details: { packageId, visibleToRoles: roles },
+      });
       return context.json({ ok: true, entry });
     } catch (error) {
       return mapError(context, error);
@@ -751,6 +821,7 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         type: "member.create",
         actorMemberId: actor.id,
         actorEmail: actor.email,
+        ...requestAuditMeta(context),
         details: { memberId: member.id, email: member.email, roles },
       });
       return context.json({ ok: true, member: publicMember(member) }, 201 as 201);
@@ -800,12 +871,23 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         } else {
           revokedTokens = await tokenBindings.unbindAllForMember(memberId);
         }
+        const meta = requestAuditMeta(context);
         await auditEvents.append({
           type: "member.deactivate",
           actorMemberId: actor.id,
           actorEmail: actor.email,
+          ...meta,
           details: { memberId, email: member.email, revokedRuntimeTokens: revokedTokens },
         });
+        if (revokedTokens > 0) {
+          await auditEvents.append({
+            type: "token.revoke",
+            actorMemberId: actor.id,
+            actorEmail: actor.email,
+            ...meta,
+            details: { memberId, revokedRuntimeTokens: revokedTokens, reason: "deactivate" },
+          });
+        }
         return context.json({
           ok: true,
           member: publicMember(member),
@@ -818,6 +900,7 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
           type: "member.reactivate",
           actorMemberId: actor.id,
           actorEmail: actor.email,
+          ...requestAuditMeta(context),
           details: { memberId, email: member.email },
         });
         return context.json({ ok: true, member: publicMember(member) });
@@ -828,6 +911,7 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
           type: "member.update",
           actorMemberId: actor.id,
           actorEmail: actor.email,
+          ...requestAuditMeta(context),
           details: {
             memberId,
             email: member.email,
@@ -865,12 +949,23 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         revokedTokens = await tokenBindings.unbindAllForMember(memberId);
       }
       await authStore.removeMember(memberId);
+      const meta = requestAuditMeta(context);
       await auditEvents.append({
         type: "member.remove",
         actorMemberId: actor.id,
         actorEmail: actor.email,
+        ...meta,
         details: { memberId, email: existing.email, revokedRuntimeTokens: revokedTokens },
       });
+      if (revokedTokens > 0) {
+        await auditEvents.append({
+          type: "token.revoke",
+          actorMemberId: actor.id,
+          actorEmail: actor.email,
+          ...meta,
+          details: { memberId, revokedRuntimeTokens: revokedTokens, reason: "remove" },
+        });
+      }
       return context.json({ ok: true, revokedRuntimeTokens: revokedTokens });
     } catch (error) {
       return mapError(context, error);
@@ -1008,6 +1103,7 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
           type: "member.create",
           actorMemberId: actor.id,
           actorEmail: actor.email,
+          ...requestAuditMeta(context),
           details: { memberId: target.id, email: target.email, roles: ["member"], via: "team.add" },
         });
       }
@@ -1066,15 +1162,65 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
     }
   });
 
+  // ── Connection enable/disable (blocks Gateway resolveForExecution) ─────
+
+  app.post("/api/company/connections/state", async (context) => {
+    try {
+      const member = await requireMember(context, authStore);
+      if (!memberIsOrgAdmin(member)) {
+        return jsonError(context, 403, "forbidden", "org-admin role required");
+      }
+      const body = await readJsonBody(context);
+      const service = String(body.service ?? "").trim();
+      const connectionName = body.connectionName ? String(body.connectionName).trim() : undefined;
+      const disabled = body.disabled === true || body.enabled === false;
+      if (!service) {
+        return jsonError(context, 400, "validation_error", "service required");
+      }
+      const key = await connectionDisableStore.setDisabled(service, connectionName, disabled);
+      await auditEvents.append({
+        type: disabled ? "connection.disable" : "connection.enable",
+        actorMemberId: member.id,
+        actorEmail: member.email,
+        ...requestAuditMeta(context),
+        details: { service: key.service, connectionName: key.connectionName, disabled },
+      });
+      return context.json({
+        ok: true,
+        service: key.service,
+        connectionName: key.connectionName,
+        enabled: !disabled,
+        disabled,
+      });
+    } catch (error) {
+      return mapError(context, error);
+    }
+  });
+
+  app.get("/api/company/connections/disabled", async (context) => {
+    try {
+      await requireMember(context, authStore);
+      const items = await connectionDisableStore.listDisabled();
+      return context.json({ items });
+    } catch (error) {
+      return mapError(context, error);
+    }
+  });
+
   // ── A2: company audit events (login / config.write / …) ────────────────
 
   app.get("/api/company/audit/events", async (context) => {
     try {
       await requireAuditReader(context, authStore, options.isOpsAdmin);
       const type = context.req.query("type") || undefined;
+      const client = context.req.query("client") || undefined;
+      const actor = context.req.query("actor") || undefined;
+      const q = context.req.query("q") || undefined;
+      const from = context.req.query("from") || undefined;
+      const to = context.req.query("to") || undefined;
       const limit = Math.min(Number(context.req.query("limit") || 50) || 50, 500);
       const offset = Math.max(Number(context.req.query("offset") || 0) || 0, 0);
-      const page = await auditEvents.list({ type, limit, offset });
+      const page = await auditEvents.list({ type, client, actor, q, from, to, limit, offset });
       return context.json({
         items: page.items,
         total: page.total,
@@ -1097,9 +1243,34 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
       }
       const format = (context.req.query("format") || "jsonl").toLowerCase();
       const kind = (context.req.query("kind") || "runs").toLowerCase();
+      const type = context.req.query("type") || undefined;
+      const client = context.req.query("client") || undefined;
+      const actor = context.req.query("actor") || undefined;
+      const q = context.req.query("q") || undefined;
+      const from = context.req.query("from") || undefined;
+      const to = context.req.query("to") || undefined;
+      const meta = requestAuditMeta(context);
+
       if (kind === "events") {
         const limit = Math.min(Number(context.req.query("limit") || 5000) || 5000, 10_000);
-        const all = await auditEvents.listAll({ limit });
+        const all = await auditEvents.listAll({ limit, type, client, actor, q, from, to });
+        await auditEvents.append({
+          type: "audit.export",
+          actorMemberId: member.id,
+          actorEmail: member.email,
+          ...meta,
+          details: { kind: "events", format, count: all.length, type, client, actor, q, from, to },
+        });
+        if (format === "csv") {
+          const body = eventsToCsv(all);
+          return new Response(body, {
+            status: 200,
+            headers: {
+              "content-type": "text/csv; charset=utf-8",
+              "content-disposition": `attachment; filename="audit-events.csv"`,
+            },
+          });
+        }
         const body = eventsToJsonl(all);
         return new Response(body, {
           status: 200,
@@ -1114,6 +1285,13 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
       }
       const limit = Math.min(Number(context.req.query("limit") || 5000) || 5000, 20_000);
       const runs = await options.listRuns(limit);
+      await auditEvents.append({
+        type: "audit.export",
+        actorMemberId: member.id,
+        actorEmail: member.email,
+        ...meta,
+        details: { kind: "runs", format, count: runs.length },
+      });
       if (format === "csv") {
         const body = runsToCsv(runs);
         return new Response(body, {

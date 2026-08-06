@@ -30,6 +30,8 @@ export interface ConnectionSummary {
   virtual: boolean;
   default: boolean;
   profile: CredentialProfile;
+  /** When false, resolveForExecution rejects with connection_disabled. Default true. */
+  enabled?: boolean;
 }
 
 /**
@@ -50,6 +52,19 @@ export interface ConnectionServiceOptions {
   providerLoader: IProviderLoader;
   store: IConnectionStore;
   logger?: RuntimeLogger;
+  /**
+   * Org-level disable flag (no secrets). When true, execution is blocked.
+   */
+  isConnectionDisabled?: (service: string, connectionName: string) => Promise<boolean> | boolean;
+  /**
+   * Fired after successful create (credential store) or delete — for company audit.
+   * Must not receive secrets.
+   */
+  onConnectionMutation?: (event: {
+    op: "create" | "delete";
+    service: string;
+    connectionName: string;
+  }) => void | Promise<void>;
 }
 
 export interface StoredConnection {
@@ -123,6 +138,8 @@ export class ConnectionService {
   private readonly providerLoader: IProviderLoader;
   private readonly store: IConnectionStore;
   private readonly logger?: RuntimeLogger;
+  private readonly isConnectionDisabled?: ConnectionServiceOptions["isConnectionDisabled"];
+  private readonly onConnectionMutation?: ConnectionServiceOptions["onConnectionMutation"];
 
   constructor(input: ConnectionServiceOptions) {
     this.catalog = input.catalog;
@@ -130,6 +147,8 @@ export class ConnectionService {
     this.providerLoader = input.providerLoader;
     this.store = input.store;
     this.logger = input.logger;
+    this.isConnectionDisabled = input.isConnectionDisabled;
+    this.onConnectionMutation = input.onConnectionMutation;
   }
 
   async listConnections(): Promise<ConnectionSummary[]> {
@@ -145,41 +164,56 @@ export class ConnectionService {
       configuredByService.set(connection.service, serviceConnections);
     }
 
-    return this.catalog.providers.flatMap((provider) => {
+    const summaries: ConnectionSummary[] = [];
+    for (const provider of this.catalog.providers) {
       const connections = configuredByService.get(provider.service) ?? [];
       if (connections.length > 0) {
-        return connections.map((connection) =>
-          this.createConfiguredConnectionSummary(
-            provider,
-            connection.id,
-            connection.connectionName,
-            connection.credential,
-          ),
-        );
+        for (const connection of connections) {
+          summaries.push(
+            await this.withEnabledFlag(
+              this.createConfiguredConnectionSummary(
+                provider,
+                connection.id,
+                connection.connectionName,
+                connection.credential,
+              ),
+            ),
+          );
+        }
+        continue;
       }
 
-      return this.supportsAuth(provider, "no_auth")
-        ? [this.createNoAuthConnectionSummary(provider, defaultConnectionName)]
-        : [];
-    });
+      if (this.supportsAuth(provider, "no_auth")) {
+        summaries.push(
+          await this.withEnabledFlag(this.createNoAuthConnectionSummary(provider, defaultConnectionName)),
+        );
+      }
+    }
+    return summaries;
   }
 
   async listConnectionsByService(service: string): Promise<ConnectionSummary[]> {
     const provider = this.getProvider(service);
     const connections = (await this.store.list()).filter((connection) => connection.service === service);
     if (connections.length > 0) {
-      return connections.map((connection) =>
-        this.createConfiguredConnectionSummary(
-          provider,
-          connection.id,
-          connection.connectionName,
-          connection.credential,
-        ),
-      );
+      const out: ConnectionSummary[] = [];
+      for (const connection of connections) {
+        out.push(
+          await this.withEnabledFlag(
+            this.createConfiguredConnectionSummary(
+              provider,
+              connection.id,
+              connection.connectionName,
+              connection.credential,
+            ),
+          ),
+        );
+      }
+      return out;
     }
 
     return this.supportsAuth(provider, "no_auth")
-      ? [this.createNoAuthConnectionSummary(provider, defaultConnectionName)]
+      ? [await this.withEnabledFlag(this.createNoAuthConnectionSummary(provider, defaultConnectionName))]
       : [];
   }
 
@@ -201,16 +235,22 @@ export class ConnectionService {
       throw new ConnectionError("connection_not_found", `${service} connection not found: ${name}.`);
     }
 
-    return stored
-      ? this.createConfiguredConnectionSummary(provider, stored.id, name, stored.credential)
-      : this.supportsAuth(provider, "no_auth")
-        ? this.createNoAuthConnectionSummary(provider, name)
-        : undefined;
+    if (stored) {
+      return this.withEnabledFlag(
+        this.createConfiguredConnectionSummary(provider, stored.id, name, stored.credential),
+      );
+    }
+    return this.supportsAuth(provider, "no_auth")
+      ? this.withEnabledFlag(this.createNoAuthConnectionSummary(provider, name))
+      : undefined;
   }
 
   async resolveForExecution(service: string, connectionName?: string): Promise<ExecutionConnection> {
     const provider = this.getProvider(service);
     const name = normalizeConnectionName(connectionName);
+    if (await this.checkDisabled(service, name)) {
+      throw new ConnectionError("connection_disabled", `${service} connection is disabled: ${name}.`);
+    }
     const stored = await this.store.get(service, name);
     if (!stored && connectionName && !this.supportsAuth(provider, "no_auth")) {
       throw new ConnectionError("connection_not_found", `${service} connection not found: ${name}.`);
@@ -293,8 +333,9 @@ export class ConnectionService {
     };
     const connectionName = normalizeConnectionName(input.connectionName);
     const stored = await this.store.set(service, connectionName, credential);
+    await this.onConnectionMutation?.({ op: "create", service, connectionName });
 
-    return this.createStoredConnectionSummary(provider, stored.id, connectionName, credential);
+    return this.withEnabledFlag(this.createStoredConnectionSummary(provider, stored.id, connectionName, credential));
   }
 
   async connectWithCustomCredential(service: string, input: ConnectWithCredentialInput): Promise<ConnectionSummary> {
@@ -322,8 +363,9 @@ export class ConnectionService {
     };
     const connectionName = normalizeConnectionName(input.connectionName);
     const stored = await this.store.set(service, connectionName, credential);
+    await this.onConnectionMutation?.({ op: "create", service, connectionName });
 
-    return this.createStoredConnectionSummary(provider, stored.id, connectionName, credential);
+    return this.withEnabledFlag(this.createStoredConnectionSummary(provider, stored.id, connectionName, credential));
   }
 
   async setOAuthCredential(
@@ -350,7 +392,10 @@ export class ConnectionService {
       ...this.mergeCredentialRuntimeData(provider, "oauth2", credential, validation),
     };
     const stored = await this.store.set(service, connectionName, storedCredential);
-    return this.createStoredConnectionSummary(provider, stored.id, connectionName, storedCredential);
+    await this.onConnectionMutation?.({ op: "create", service, connectionName });
+    return this.withEnabledFlag(
+      this.createStoredConnectionSummary(provider, stored.id, connectionName, storedCredential),
+    );
   }
 
   async disconnect(
@@ -359,12 +404,25 @@ export class ConnectionService {
   ): Promise<ConnectionSummary | DisconnectedConnectionSummary> {
     const connectionName = normalizeConnectionName(connectionNameInput);
     await this.store.delete(service, connectionName);
+    await this.onConnectionMutation?.({ op: "delete", service, connectionName });
     const provider = this.catalog.providers.find((provider) => provider.service === service);
     if (provider && this.supportsAuth(provider, "no_auth")) {
       return this.connectWithoutAuth(service, { connectionName });
     }
 
     return { service, connectionName, configured: false };
+  }
+
+  private async checkDisabled(service: string, connectionName: string): Promise<boolean> {
+    if (!this.isConnectionDisabled) return false;
+    return Boolean(await this.isConnectionDisabled(service, connectionName));
+  }
+
+  private async withEnabledFlag(summary: ConnectionSummary): Promise<ConnectionSummary> {
+    // Only attach `enabled` when org disable store is wired (company mount).
+    if (!this.isConnectionDisabled) return summary;
+    const disabled = await this.checkDisabled(summary.service, summary.connectionName);
+    return { ...summary, enabled: !disabled };
   }
 
   private createConfiguredConnectionSummary(
