@@ -202,3 +202,5 @@ examples/
 
 - 代码：Apache-2.0，见 `LICENSE.txt`。  
 - 第三方服务商标仅用于互操作标识，见 `NOTICE.md`。
+
+<!-- ci: pr gate -->
