@@ -38,6 +38,18 @@ export interface ActionRunnerOptions {
     runtimeTokenId?: string;
     caller: RunLogCaller;
   }) => void | Promise<void>;
+  /**
+   * Company guards (team connection grants, G3 tool-run quota).
+   * Return a deny to skip provider execution.
+   */
+  assertBeforeExecute?: (input: {
+    actionId: string;
+    service: string;
+    connectionName?: string;
+    memberId?: string;
+    teamId?: string;
+    caller: RunLogCaller;
+  }) => Promise<{ allowed: true } | { allowed: false; code: string; message: string }>;
 }
 
 export interface RunActionInput {
@@ -121,20 +133,47 @@ export class ActionRunner {
         // audit must not break execution path
       }
     } else {
-      const executed = await this.executeWithConnectionFallback({
-        service: action.service,
-        actionId: action.id,
-        action,
-        input: input.input,
-        pinnedConnectionName: input.connectionName,
-        startedAtMs,
-        logContext,
-      });
-      result = executed.result;
-      connection = executed.connection;
-      attempt = executed.attempt;
-      fallback = executed.fallback;
-      usedConnectionName = executed.connectionName;
+      const guard = this.options.assertBeforeExecute
+        ? await this.options.assertBeforeExecute({
+            actionId: action.id,
+            service: action.service,
+            connectionName: input.connectionName,
+            memberId: input.memberId,
+            teamId: input.teamId,
+            caller: input.caller,
+          })
+        : { allowed: true as const };
+      if (!guard.allowed) {
+        result = { ok: false, error: { code: guard.code, message: guard.message } };
+        try {
+          await this.options.onPolicyDeny?.({
+            actionId: action.id,
+            service: action.service,
+            code: guard.code,
+            message: guard.message,
+            memberId: input.memberId,
+            runtimeTokenId: input.runtimeTokenId,
+            caller: input.caller,
+          });
+        } catch {
+          // audit must not break execution path
+        }
+      } else {
+        const executed = await this.executeWithConnectionFallback({
+          service: action.service,
+          actionId: action.id,
+          action,
+          input: input.input,
+          pinnedConnectionName: input.connectionName,
+          startedAtMs,
+          logContext,
+        });
+        result = executed.result;
+        connection = executed.connection;
+        attempt = executed.attempt;
+        fallback = executed.fallback;
+        usedConnectionName = executed.connectionName;
+      }
     }
 
     const completedAtMs = Date.now();

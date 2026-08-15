@@ -7,6 +7,7 @@ export const ORG_CONFIG_SECTION_DIRS = [
   "skills",
   "experts/installed",
   "experts/mine",
+  "experts/available",
   "tools",
   "design",
 ] as const;
@@ -101,6 +102,7 @@ export async function ensureOrgConfigLayout(configRoot: string): Promise<OrgConf
     },
     { rel: "tools/mcp.json", body: JSON.stringify({ servers: [] }, null, 2) },
     { rel: "tools/gateway.json", body: JSON.stringify({ services: [] }, null, 2) },
+    { rel: "tools/aliases.json", body: JSON.stringify({ aliases: {} }, null, 2) },
   ];
 
   for (const file of files) {

@@ -33,6 +33,7 @@ OnMyCompany = 一个进程 / 一个主端口
 **不管**：员工本机对话、工作区目录结构、企业审批队列主路径、公网多租户、默认 LLM 全量反代。
 
 任意 Agent（OnMyAgent / curl / MCP 客户端）可凭 runtime token 调 `/v1` 或 `/mcp`。  
+**怎么用：** [docs/user-guide/index.md](docs/user-guide/index.md) · 文档站 `npm run dev:docs`（`http://127.0.0.1:5181`）。  
 企业 HTTP 路径表：[docs/onmycompany/API-NOTES.md](docs/onmycompany/API-NOTES.md)。
 
 ---
@@ -65,18 +66,19 @@ npm install
 npm run dev
 ```
 
-| 入口                       | URL                                                      |
-| -------------------------- | -------------------------------------------------------- |
-| API / OpenAPI              | http://127.0.0.1:3100 · http://127.0.0.1:3100/docs       |
-| 健康检查                   | http://127.0.0.1:3100/health · `GET /api/company/health` |
-| 管理台                     | http://127.0.0.1:5180                                    |
-| 模型边车 OmniRoute（可选） | http://127.0.0.1:20128 · `npm run dev:omniroute`         |
+| 入口                           | URL                                                      |
+| ------------------------------ | -------------------------------------------------------- |
+| API / OpenAPI                  | http://127.0.0.1:3100 · http://127.0.0.1:3100/docs       |
+| 健康检查                       | http://127.0.0.1:3100/health · `GET /api/company/health` |
+| 管理台                         | http://127.0.0.1:5180                                    |
+| 使用说明（`npm run dev:docs`） | http://127.0.0.1:5181                                    |
+| 模型边车 OmniRoute（可选）     | http://127.0.0.1:20128 · `npm run dev:omniroute`         |
 
 企业登录（dev OTP）：`admin@company.internal` + `OMC_DEV_OTP`（默认 `000000`）。  
 Runtime 执行示例（需 token 时见 `data/TEST-CREDENTIALS.txt` 或控制台铸造）：
 
 ```bash
-curl -s -X POST http://localhost:3000/v1/actions/hackernews.get_top_stories \
+curl -s -X POST http://127.0.0.1:3100/v1/actions/hackernews.get_top_stories \
   -H "Authorization: Bearer <runtime-token>" \
   -H 'content-type: application/json' \
   -d '{"input":{}}'

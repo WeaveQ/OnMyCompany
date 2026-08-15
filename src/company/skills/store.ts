@@ -14,6 +14,9 @@ export interface SkillPackageMeta {
   /** Roles that may see this package when enabled (empty = all members). S5 */
   visibleToRoles?: string[];
   shareToken?: string;
+  version?: string;
+  enabledBy?: string;
+  enabledAt?: string;
 }
 
 export interface EnabledSkillEntry {
@@ -116,7 +119,18 @@ export class SkillsStore {
     } catch {
       skillMd = undefined;
     }
-    return { meta, skillMd };
+    const enabled = (await this.readEnabled()).enabled.find((e) => e.packageId === packageId);
+    const at = packageId.lastIndexOf("@");
+    const version = at > 0 ? packageId.slice(at + 1) : undefined;
+    return {
+      meta: {
+        ...meta,
+        version,
+        enabledBy: enabled?.enabledBy,
+        enabledAt: enabled?.enabledAt,
+      },
+      skillMd,
+    };
   }
 
   async enable(packageId: string, enabledBy?: string): Promise<EnabledSkillEntry> {

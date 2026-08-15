@@ -1,5 +1,7 @@
 import type { ProviderDefinition } from "./model";
 
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
@@ -104,5 +106,15 @@ describe("AccessPage", () => {
       allowedProxies: "github",
       blockedProxies: "*",
     });
+  });
+
+  it("create/save write company OrgConfig paths, not unbound ops writers", () => {
+    const src = readFileSync(join(import.meta.dirname, "access-page.tsx"), "utf8");
+    expect(src).toContain('"/api/company/runtime-tokens"');
+    expect(src).toContain('"/api/org/config/policy"');
+    expect(src).toContain('"/api/org/config"');
+    expect(src).toContain("mergeRuntimeRulesIntoOrgPolicy");
+    expect(src).not.toContain('apiPost<RuntimeTokenCreation>("/api/runtime-tokens"');
+    expect(src).not.toContain('apiPut<RuntimePolicyState>("/api/runtime-policy"');
   });
 });

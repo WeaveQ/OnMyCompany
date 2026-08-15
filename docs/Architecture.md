@@ -6,7 +6,7 @@ OnMyCompany 是 **内网企业管控面 + 外发 Gateway**：身份、组织配�
 |                  |                                                                                                                      |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------- |
 | **产品阶段**     | **试点 MVP 已完成** → Gateway + 企业层 + 管理台 + G0/G1a/G2 + office catalog；见 [ROADMAP](./onmycompany/ROADMAP.md) |
-| **配套桌面**     | [OnMyAgent](../../onmyagent)（本地优先；Phase 2）                                                                    |
+| **配套桌面**     | [OnMyAgent](https://github.com/WeaveQ/OnMyAgent)（本地优先；Phase 2）                                                |
 | **桌面架构 SoT** | `onmyagent/docs/Architecture.md`                                                                                     |
 | **桌面配置 2a**  | `onmyagent/docs/design/2026-08-02-config-consistency.md`（**已落地**）                                               |
 | **桌面 Phase 2** | `onmyagent/docs/design/2026-08-02-phase-2-enterprise-prep.md`                                                        |

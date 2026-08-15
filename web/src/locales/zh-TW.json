@@ -39,6 +39,8 @@
     "orgConfig": "企業設定",
     "orgTeams": "團隊列表",
     "skills": "Skills",
+    "experts": "專家包",
+    "tools": "工具",
     "connections": "連接器",
     "team": "團隊",
     "members": "企業帳號",
@@ -94,6 +96,14 @@
       "skills": {
         "title": "Skills",
         "subtitle": "團隊 Skill 包 — 從公開或我的貨架關聯。"
+      },
+      "experts": {
+        "title": "專家包",
+        "subtitle": "下發給桌面的人設包。公司端不提供對話。"
+      },
+      "tools": {
+        "title": "工具",
+        "subtitle": "MCP 聲明與閘道投影。公司進程不拉起 MCP。"
       },
       "connections": {
         "title": "連接器",

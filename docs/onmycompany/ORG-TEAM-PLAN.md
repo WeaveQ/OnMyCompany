@@ -3,7 +3,7 @@
 > **状态**：**Phase 1 已落地**（IA 正名、职责拆分、侧栏「团队」合并）  
 > **分支**：`feat/team-isolation-members`  
 > **角色白话 SoT**：[RBAC.md](./RBAC.md) · **落地摘要**：[TEAM-ISOLATION.md](./TEAM-ISOLATION.md)  
-> **桌面**：[omc-team-isolation](../../../onmyagent/.loop/goals/omc-team-isolation)
+> **桌面**：`onmyagent/.loop/goals/omc-team-isolation`
 
 ---
 

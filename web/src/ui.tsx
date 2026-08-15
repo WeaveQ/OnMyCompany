@@ -16,6 +16,7 @@ import { useI18n, useLang, useTranslate } from "@embra/i18n/react";
 import {
   Activity,
   BookOpen,
+  Briefcase,
   Cable,
   Gauge,
   Home,
@@ -37,6 +38,7 @@ import {
   UserRound,
   Users,
   Waypoints,
+  Wrench,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router";
@@ -46,6 +48,7 @@ import { ApiError, apiGet, apiPost } from "./api";
 import oomolConnectLogoUrl from "./assets/oomol-connect-logo.png";
 import { AuditEventsPage } from "./audit-events-page";
 import { ConnectionsPage } from "./connections-page";
+import { ExpertsPage } from "./experts-page";
 import { persistLang, supportedLangs } from "./i18n";
 import {
   ensureMemberSessionForConsole,
@@ -67,6 +70,7 @@ import { SkillsPage } from "./skills-page";
 import { CreateTeamModal, TeamManagePage, TeamSwitcher } from "./team-manage-page";
 import { ALL_TEAMS_ID, resolveActiveTeamId, teamNavTarget } from "./team-ui";
 import { useThemeMode } from "./theme";
+import { ToolsPage } from "./tools-page";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -76,6 +80,8 @@ type NavItem = {
   path: string;
   labelKey: string;
   icon: typeof Home;
+  /** Org-admin write surface — hidden from auditor / member sidebar. */
+  adminWrite?: boolean;
 };
 
 type NavGroup = {
@@ -99,7 +105,7 @@ const navGroups: readonly NavGroup[] = [
   {
     items: [
       { path: "/overview", labelKey: "nav.overview", icon: Home },
-      { path: "/members", labelKey: "nav.members", icon: UserRound },
+      { path: "/members", labelKey: "nav.members", icon: UserRound, adminWrite: true },
       { path: "/team", labelKey: "nav.team", icon: Users },
     ],
   },
@@ -116,13 +122,15 @@ const navGroups: readonly NavGroup[] = [
     items: [
       { path: "/connections", labelKey: "nav.connections", icon: Cable },
       { path: "/skills", labelKey: "nav.skills", icon: Sparkles },
+      { path: "/experts", labelKey: "nav.experts", icon: Briefcase },
+      { path: "/tools", labelKey: "nav.tools", icon: Wrench },
       { path: "/access", labelKey: "nav.access", icon: KeyRound },
     ],
   },
   {
     labelKey: "nav.group.config",
     items: [
-      { path: "/org-config", labelKey: "nav.orgConfig", icon: Settings2 },
+      { path: "/org-config", labelKey: "nav.orgConfig", icon: Settings2, adminWrite: true },
       { path: "/resources", labelKey: "nav.docs", icon: BookOpen },
     ],
   },
@@ -135,14 +143,30 @@ const navItems = [...primaryNavItems, ...secondaryNavItems] as const;
 /** Routes kept reachable but not listed in sidebar (header icon only). */
 const shellOnlyNavItems = [{ path: "/actions", labelKey: "nav.actions", icon: TerminalSquare }] as const;
 
+/** True when this nav item is an org-admin write entry (OMC-6). */
+export function navItemIsAdminWrite(path: string): boolean {
+  return navItems.some((item) => item.path === path && item.adminWrite);
+}
+
+/**
+ * Sidebar paths the given org roles may see.
+ * `null` / omitted roles = unknown (ops-admin unlock or still loading) → show all.
+ * Only `admin` sees write entries (accounts, org settings). Auditor keeps Skills
+ * as a read catalog; add/save stay gated on the page and 403 on the API.
+ */
+export function visibleNavItems(items: readonly NavItem[], roles?: readonly string[] | null): NavItem[] {
+  if (roles == null || roles.includes("admin")) return [...items];
+  return items.filter((item) => !item.adminWrite);
+}
+
 /** Exported for IA tests: primary peer paths only. */
-export function getPrimaryNavPaths(): string[] {
-  return primaryNavItems.map((item) => item.path);
+export function getPrimaryNavPaths(roles?: readonly string[] | null): string[] {
+  return visibleNavItems(primaryNavItems, roles).map((item) => item.path);
 }
 
 /** Exported for IA tests: secondary sidebar paths (formerly under「更多」). */
-export function getMoreNavPaths(): string[] {
-  return secondaryNavItems.map((item) => item.path);
+export function getMoreNavPaths(roles?: readonly string[] | null): string[] {
+  return navGroups.slice(1).flatMap((group) => visibleNavItems(group.items, roles).map((item) => item.path));
 }
 
 const oauthCompletionChannelName = "onmycompany-oauth";
@@ -432,6 +456,11 @@ function AppShell(props: {
   const [activeTeamId, setActiveTeamId] = useState<string | undefined>(() => getActiveTeamId());
   const [createTeamOpen, setCreateTeamOpen] = useState(false);
   const [elevatedTeamView, setElevatedTeamView] = useState(false);
+  const [memberRoles, setMemberRoles] = useState<string[] | null>(null);
+  const canWriteOrg = memberRoles == null || memberRoles.includes("admin");
+  const sidebarGroups = navGroups
+    .map((group) => ({ ...group, items: visibleNavItems(group.items, memberRoles) }))
+    .filter((group) => group.items.length > 0);
 
   /** Switch team: persist + event, sync /team URL, refresh gateway + team-scoped pages. */
   const selectTeam = useCallback(
@@ -470,12 +499,16 @@ function AppShell(props: {
       // Console already open → silent org-admin session so 成员/团队不二次登录
       await ensureMemberSessionForConsole();
       let elevated = false;
+      let roles: string[] | null = null;
       try {
         const me = await apiGet<{ roles?: string[] }>("/api/me", memberAuthHeaders());
-        elevated = Boolean(me.roles?.includes("admin") || me.roles?.includes("auditor"));
+        roles = me.roles ?? [];
+        elevated = Boolean(roles.includes("admin") || roles.includes("auditor"));
       } catch {
         elevated = false;
+        roles = null;
       }
+      setMemberRoles(roles);
       setElevatedTeamView(elevated);
       const list = await apiGet<{ items: TeamRecord[] }>(
         elevated ? "/api/teams?scope=all" : "/api/teams",
@@ -494,6 +527,7 @@ function AppShell(props: {
       // Unauthenticated or company routes unavailable — leave empty until member login.
       setTeams([]);
       setElevatedTeamView(false);
+      setMemberRoles(null);
     }
   }, [activeTeamId]);
 
@@ -513,7 +547,7 @@ function AppShell(props: {
         </div>
 
         <nav className="sidebar-nav" aria-label={t("shell.primaryNav")}>
-          {navGroups.map((group, groupIndex) => (
+          {sidebarGroups.map((group, groupIndex) => (
             <div key={group.labelKey ?? `nav-group-${groupIndex}`} className="sidebar-nav-group">
               {groupIndex > 0 ? <div className="sidebar-nav-divider" aria-hidden /> : null}
               {group.labelKey ? <div className="sidebar-nav-label">{t(group.labelKey)}</div> : null}
@@ -560,6 +594,7 @@ function AppShell(props: {
               teams={teams}
               activeTeamId={activeTeamId}
               showAllTeams={elevatedTeamView}
+              canCreate={canWriteOrg}
               onSelect={selectTeam}
               onCreate={() => setCreateTeamOpen(true)}
               onManage={() => {
@@ -571,6 +606,7 @@ function AppShell(props: {
               loading={props.loading}
               error={props.error}
               theme={props.theme}
+              showOrgConfig={canWriteOrg}
               onRefresh={props.onRefresh}
               onThemeChange={props.onThemeChange}
               onLogout={props.onLogout}
@@ -627,6 +663,8 @@ function AppShell(props: {
             <Route path="/metering" element={<MeteringPage activeTeamId={activeTeamId} />} />
             <Route path="/audit-events" element={<AuditEventsPage />} />
             <Route path="/skills" element={<SkillsPage />} />
+            <Route path="/experts" element={<ExpertsPage />} />
+            <Route path="/tools" element={<ToolsPage />} />
             <Route path="/org/teams" element={<OrgTeamsPage />} />
             <Route path="/team" element={<TeamManagePage />} />
             <Route path="/members" element={<MembersPage />} />
@@ -781,6 +819,7 @@ function AccountMenu(props: {
   loading: boolean;
   error: string | null;
   theme: ThemeMode;
+  showOrgConfig?: boolean;
   onRefresh(): void;
   onThemeChange(theme: ThemeMode): void;
   onLogout(): void;
@@ -849,18 +888,20 @@ function AccountMenu(props: {
           </div>
 
           <div className="account-menu-section">
-            <button
-              type="button"
-              role="menuitem"
-              className="account-menu-item"
-              onClick={() => {
-                setOpen(false);
-                props.onOpenOrgConfig();
-              }}
-            >
-              <Settings2 size={15} strokeWidth={1.85} className="account-menu-item-icon" />
-              <span>{t("shell.account.settings")}</span>
-            </button>
+            {props.showOrgConfig === false ? null : (
+              <button
+                type="button"
+                role="menuitem"
+                className="account-menu-item"
+                onClick={() => {
+                  setOpen(false);
+                  props.onOpenOrgConfig();
+                }}
+              >
+                <Settings2 size={15} strokeWidth={1.85} className="account-menu-item-icon" />
+                <span>{t("shell.account.settings")}</span>
+              </button>
+            )}
             <button
               type="button"
               role="menuitem"
@@ -1015,6 +1056,12 @@ function headingForPath(pathname: string): string {
   }
   if (section === "skills") {
     return "skills";
+  }
+  if (section === "experts") {
+    return "experts";
+  }
+  if (section === "tools") {
+    return "tools";
   }
   if (section === "metering") {
     return "metering";

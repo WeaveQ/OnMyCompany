@@ -27,6 +27,7 @@ export interface IMcpServerOptions {
   actionSearch?: ActionSearchIndexProvider;
   getPolicySnapshot?(): Promise<ActionPolicySnapshot>;
   runtimeGrant?: RuntimeGrant;
+  teamId?: string;
 }
 
 /**
@@ -320,6 +321,7 @@ async function executeAction(
     policy,
     runtimeTokenId: options.runtimeGrant?.tokenId,
     memberId: options.runtimeGrant?.memberId,
+    teamId: options.teamId,
   });
   if (!run) {
     return errorPayload("unknown_action", `Unknown action: ${actionId}`);

@@ -5,6 +5,7 @@
 .access-panel {
   display: grid;
   gap: 16px;
+  padding-bottom: 32px;
 }
 
 .runtime-policy-panel {
@@ -91,6 +92,7 @@
 
 .policy-tester-form {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }

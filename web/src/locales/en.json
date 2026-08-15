@@ -39,6 +39,8 @@
     "orgConfig": "Enterprise settings",
     "orgTeams": "Team directory",
     "skills": "Skills",
+    "experts": "Experts",
+    "tools": "Tools",
     "connections": "Connectors",
     "team": "Team",
     "members": "Accounts",
@@ -94,6 +96,14 @@
       "skills": {
         "title": "Skills",
         "subtitle": "Team skill packages — add from public or personal catalog."
+      },
+      "experts": {
+        "title": "Experts",
+        "subtitle": "Org persona packs for desktop. No company chat."
+      },
+      "tools": {
+        "title": "Tools",
+        "subtitle": "Declared MCP servers and gateway projection. This process does not start MCP."
       },
       "connections": {
         "title": "Connectors",

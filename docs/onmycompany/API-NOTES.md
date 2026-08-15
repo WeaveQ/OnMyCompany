@@ -35,11 +35,11 @@ SoT：实现对照 `src/company/routes.ts` + Gateway `ConnectServer`。
 | 方法 | 路径                              | 状态   | 说明                                                                              |
 | ---- | --------------------------------- | ------ | --------------------------------------------------------------------------------- |
 | GET  | `/api/company/health`             | ✅     | `companyModule` · orgId · orgConfigRoot · **`modelRouter`**（OmniRoute 边车探测） |
-| POST | `/api/company/auth/email/start`   | ✅     | 发 OTP；无 SMTP 时响应含 `devCode`                                                |
-| POST | `/api/company/auth/email/verify`  | ✅     | 校验 OTP；bootstrap 首 admin；返回 token + teams                                  |
+| POST | `/api/company/auth/email/start`   | ✅     | 发 OTP；仅 SMTP 未发出或 `OMC_EXPOSE_DEV_OTP=1` 时回显 `devCode`                  |
+| POST | `/api/company/auth/email/verify`  | ✅     | 校验 OTP；已配 `OMC_SMTP_URL` 时拒绝固定 dev OTP；bootstrap 首 admin              |
 | POST | `/api/company/auth/logout`        | ✅     | 吊销 member session **并**吊销绑定的 runtime tokens（P5）                         |
 | POST | `/api/company/auth/feishu/start`  | ✅ MVP | 返回 authorizeUrl；无 `OMC_FEISHU_APP_ID` 时 mock                                 |
-| POST | `/api/company/auth/feishu/verify` | ✅ MVP | stub：openId/code → session；**真 OAuth 换票延期**                                |
+| POST | `/api/company/auth/feishu/verify` | ✅     | **不签发 session**（501 `not_configured`）直到真换票落地                          |
 | GET  | `/api/me`                         | ✅     | authenticated · memberId · roles · orgId · **teams[]**                            |
 
 ### OrgConfig 与策略
@@ -55,18 +55,22 @@ SoT：实现对照 `src/company/routes.ts` + Gateway `ConnectServer`。
 
 ### Skills（S1–S5）
 
-| 方法   | 路径                                          | 状态 | 说明                                |
-| ------ | --------------------------------------------- | ---- | ----------------------------------- |
-| GET    | `/api/catalog/skills?scope=org\|public\|mine` | ✅   | 列表；org 按角色过滤 visibleToRoles |
-| GET    | `/api/catalog/skills/:packageId`              | ✅   | 详情 + SKILL.md                     |
-| GET    | `/api/catalog/skills/share/:shareToken`       | ✅   | 分享链接读（无需登录）              |
-| POST   | `/api/org/skills/enable`                      | ✅   | org-admin 关联到组织                |
-| POST   | `/api/org/skills/disable`                     | ✅   | 取消关联                            |
-| POST   | `/api/org/skills/upload`                      | ✅   | Markdown 包上传                     |
-| POST   | `/api/org/skills/upload-zip`                  | ✅   | zip/base64 上传（含 SKILL.md）      |
-| POST   | `/api/org/skills/visibility`                  | ✅   | 角色可见                            |
-| POST   | `/api/org/skills/share`                       | ✅   | 生成 shareToken                     |
-| DELETE | `/api/org/skills/:packageId`                  | ✅   | 删除包 + 启用项                     |
+| 方法   | 路径                                          | 状态 | 说明                                        |
+| ------ | --------------------------------------------- | ---- | ------------------------------------------- |
+| GET    | `/api/catalog/skills?scope=org\|public\|mine` | ✅   | 列表；org 按角色过滤 visibleToRoles         |
+| GET    | `/api/catalog/skills/:packageId`              | ✅   | 详情 + SKILL.md                             |
+| GET    | `/api/catalog/skills/share/:shareToken`       | ✅   | 分享链接读（无需登录）                      |
+| POST   | `/api/org/skills/enable`                      | ✅   | org-admin 关联到组织                        |
+| POST   | `/api/org/skills/disable`                     | ✅   | 取消关联                                    |
+| POST   | `/api/org/skills/upload`                      | ✅   | Markdown 包上传                             |
+| POST   | `/api/org/skills/upload-zip`                  | ✅   | zip/base64 上传（含 SKILL.md）              |
+| POST   | `/api/org/skills/visibility`                  | ✅   | 角色可见                                    |
+| POST   | `/api/org/skills/share`                       | ✅   | 生成 shareToken                             |
+| DELETE | `/api/org/skills/:packageId`                  | ✅   | 删除包 + 启用项                             |
+| GET    | `/api/org/tools`                              | ✅   | MCP + gateway 投影（已展开别名，无 secret） |
+| GET    | `/api/catalog/experts`                        | ✅   | `scope=org\|available` 专家包列表           |
+| POST   | `/api/org/experts/enable`                     | ✅   | org-admin 写入 `experts/installed`          |
+| POST   | `/api/org/experts/disable`                    | ✅   | 从 installed 移除                           |
 
 ### 成员与团队
 
@@ -87,21 +91,23 @@ SoT：实现对照 `src/company/routes.ts` + Gateway `ConnectServer`。
 
 ### 归因 · 审计 · 用量 · 概览 · 计量（G2）
 
-| 方法 | 路径                                | 状态  | 说明                                                                                                                                                              |
-| ---- | ----------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| POST | `/api/company/runtime-tokens`       | ✅    | 铸造 runtime token 并绑定 memberId                                                                                                                                |
-| POST | `/api/company/runtime-tokens/bind`  | ✅    | 绑定已有 tokenId → member                                                                                                                                         |
-| GET  | `/api/company/audit/events`         | ✅ A2 | 登录/配置/token/connection/skills/policy.deny 等；字段含 `summary`/`client`/`ip`；`?type=&client=&actor=&q=&from=&to=&limit=&offset=`；admin/auditor 或 ops-admin |
-| GET  | `/api/company/audit/export`         | ✅    | `format=jsonl\|csv`；`kind=runs\|events`；events 支持与 list 相同过滤；导出写 `audit.export`；**不含 secret**                                                     |
-| POST | `/api/company/connections/state`    | ✅    | org-admin：`{ service, connectionName?, disabled }` 启停组织连接；禁用后 Gateway `resolveForExecution` → `connection_disabled`；写审计                            |
-| GET  | `/api/company/connections/disabled` | ✅    | 当前禁用连接列表（无 secret）                                                                                                                                     |
-| GET  | `/api/company/usage`                | ✅ G2 | **工具**用量；时间窗 `from`/`to`、可选 `memberId`/`teamId`/`service`/`limit`；KPI + byDay + **fallbackRuns**                                                      |
-| GET  | `/api/company/usage/llm`            | ✅ B  | **LLM**用量代理 OmniRoute `GET /api/usage/history`；可选 `from`/`to`；与工具用量分账                                                                              |
-| GET  | `/api/company/pricing`              | ✅ G2 | 参考价目；`?source=auto\|omniroute\|static`；**LLM 默认可从 OmniRoute `/api/pricing` 拉**，工具价始终本地；响应含 `source` / `omniroute`                          |
-| GET  | `/api/company/runs`                 | ✅ G2 | 计量日志（**成员会话**）；勿用 ops `/api/runs` 作产品主路径                                                                                                       |
-| GET  | `/api/company/overview`             | ✅    | 配置 version · 成员数 · Skills · 策略拒绝                                                                                                                         |
-| GET  | `/api/me/userdata`                  | ✅    | 成员 UserData 袋                                                                                                                                                  |
-| PUT  | `/api/me/userdata`                  | ✅    | merge 写 UserData                                                                                                                                                 |
+| 方法 | 路径                                   | 状态  | 说明                                                                                                                                                              |
+| ---- | -------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST | `/api/company/runtime-tokens`          | ✅    | 铸造 runtime token 并绑定 memberId                                                                                                                                |
+| POST | `/api/company/runtime-tokens/bind`     | ✅    | 绑定已有 tokenId → member                                                                                                                                         |
+| GET  | `/api/company/audit/events`            | ✅ A2 | 登录/配置/token/connection/skills/policy.deny 等；字段含 `summary`/`client`/`ip`；`?type=&client=&actor=&q=&from=&to=&limit=&offset=`；admin/auditor 或 ops-admin |
+| GET  | `/api/company/audit/export`            | ✅    | `format=jsonl\|csv`；`kind=runs\|events`；events 支持与 list 相同过滤；导出写 `audit.export`；**不含 secret**                                                     |
+| POST | `/api/company/connections/state`       | ✅    | org-admin：`{ service, connectionName?, disabled }` 启停组织连接；禁用后 Gateway `resolveForExecution` → `connection_disabled`；写审计                            |
+| GET  | `/api/company/connections/disabled`    | ✅    | 当前禁用连接列表（无 secret）                                                                                                                                     |
+| GET  | `/api/company/connections/team-grants` | ✅    | 连接按队授权列表                                                                                                                                                  |
+| PUT  | `/api/company/connections/team-grants` | ✅    | org-admin：`{ service, connectionName?, teamIds }`；空列表=全队可用；有 grant 时无 `X-Team-Id` 与未授权队一样 deny                                                |
+| GET  | `/api/company/usage`                   | ✅ G2 | **工具**用量；时间窗 `from`/`to`、可选 `memberId`/`teamId`/`service`/`limit`；KPI + byDay + **fallbackRuns**                                                      |
+| GET  | `/api/company/usage/llm`               | ✅ B  | **LLM**用量代理 OmniRoute `GET /api/usage/history`；可选 `from`/`to`；与工具用量分账                                                                              |
+| GET  | `/api/company/pricing`                 | ✅ G2 | 参考价目；`?source=auto\|omniroute\|static`；**LLM 默认可从 OmniRoute `/api/pricing` 拉**，工具价始终本地；响应含 `source` / `omniroute`                          |
+| GET  | `/api/company/runs`                    | ✅ G2 | 计量日志（**成员会话**）；勿用 ops `/api/runs` 作产品主路径                                                                                                       |
+| GET  | `/api/company/overview`                | ✅    | 配置 version · 成员数 · Skills · 策略拒绝                                                                                                                         |
+| GET  | `/api/me/userdata`                     | ✅    | 成员 UserData 袋                                                                                                                                                  |
+| PUT  | `/api/me/userdata`                     | ✅    | merge 写 UserData                                                                                                                                                 |
 
 ## Gateway / Connect 路径（并存 · 未改语义）
 
@@ -118,11 +124,13 @@ SoT：实现对照 `src/company/routes.ts` + Gateway `ConnectServer`。
 
 ### 执行面护栏与主备（G0 / G1a · 已落地）
 
-| 能力                    | 说明                                                                    | 落点                                          |
-| ----------------------- | ----------------------------------------------------------------------- | --------------------------------------------- |
-| **G0 并发帽**           | 全局 + 每 member in-flight；超限 **429** `rate_limited` + `Retry-After` | `concurrency-guard.ts` · `OMC_MAX_IN_FLIGHT*` |
-| **G1a Connection 主备** | 同 service 多 connectionName 时按序尝试；可重试错误切备路；cooldown     | `connection-fallback.ts` · action-runner      |
-| **Run 字段**            | `attempt` · `fallback` · `connectionName` / `connectionId` · `memberId` | run log / 计量导出                            |
+| 能力                    | 说明                                                                                              | 落点                                          |
+| ----------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| **G0 并发帽**           | 全局 + 每 member in-flight；超限 **429** `rate_limited` + `Retry-After`                           | `concurrency-guard.ts` · `OMC_MAX_IN_FLIGHT*` |
+| **G1a Connection 主备** | 同 service 多 connectionName 时按序尝试；可重试错误切备路；cooldown                               | `connection-fallback.ts` · action-runner      |
+| **Run 字段**            | `attempt` · `fallback` · `connectionName` / `connectionId` · `memberId` · `teamId`（`X-Team-Id`） | run log / 计量导出                            |
+| **连接按队授权**        | 非空 grant 时缺 `X-Team-Id` 或队不在名单 → `403` `connection_team_denied`                         | `connection-team-grants.json` · ActionRunner  |
+| **G3 工具 run 配额**    | `policy.quota` 人/队 × 日/月；超限 `429` `quota_exceeded`；不管模型 token                         | `evaluateToolRunQuota`                        |
 
 计量口径：**只统计经 Gateway 的 Action/MCP**（非默认 LLM 反代）。详见 [GATEWAY-OBSERVABILITY-PLAN.md](./GATEWAY-OBSERVABILITY-PLAN.md)。
 
@@ -140,14 +148,13 @@ SoT：实现对照 `src/company/routes.ts` + Gateway `ConnectServer`。
 
 ## 明确延期（勿写成主路径缺口）
 
-| 项                                  | 说明                                               |
-| ----------------------------------- | -------------------------------------------------- |
-| 真飞书 OAuth 换票                   | 现 stub；需 `OMC_FEISHU_*` 与回调落地              |
-| SMTP 生产运营                       | `OMC_SMTP_URL` 可选已支持；无模板/监控主路径       |
-| Catalog experts/models 独立资源 API | 仍经 OrgConfig sections / 桌面镜像                 |
-| G1b LLM 逻辑路由 / Plan 池          | 默认关；产品升格后才做                             |
-| G3 软配额                           | 可选后置                                           |
-| OpenAPI 企业路径全量录入            | Gateway 见 `docs/runtime-api.md`；企业表以本文为准 |
+| 项                          | 说明                                               |
+| --------------------------- | -------------------------------------------------- |
+| 真飞书 OAuth 换票           | 现 stub；需 `OMC_FEISHU_*` 与回调落地              |
+| SMTP 生产运营               | `OMC_SMTP_URL` 可选已支持；无模板/监控主路径       |
+| Catalog models 独立资源 API | 模型后台在 OmniRoute；`models.json` 仅目录         |
+| G1b LLM 逻辑路由 / Plan 池  | 默认关；产品升格后才做                             |
+| OpenAPI 企业路径全量录入    | Gateway 见 `docs/runtime-api.md`；企业表以本文为准 |
 
 ## PolicyDecision（执行面）
 

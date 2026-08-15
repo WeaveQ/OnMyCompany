@@ -48,6 +48,10 @@ interface PolicyForm {
   blockedActions: string;
   allowPersonalBYOK: boolean;
   egressMode: string;
+  memberDailyRuns: string;
+  memberMonthlyRuns: string;
+  teamDailyRuns: string;
+  teamMonthlyRuns: string;
 }
 
 function policyToForm(policy: Record<string, unknown> | undefined): PolicyForm {
@@ -58,11 +62,16 @@ function policyToForm(policy: Record<string, unknown> | undefined): PolicyForm {
     typeof p.egress === "object" && p.egress !== null
       ? String((p.egress as { mode?: string }).mode ?? "gateway_preferred")
       : "gateway_preferred";
+  const quota = typeof p.quota === "object" && p.quota !== null ? (p.quota as Record<string, unknown>) : {};
   return {
     allowedActions: allowed.join(", "),
     blockedActions: blocked.join(", "),
     allowPersonalBYOK: p.allowPersonalBYOK !== false,
     egressMode: egress || "gateway_preferred",
+    memberDailyRuns: quota.memberDailyRuns != null ? String(quota.memberDailyRuns) : "",
+    memberMonthlyRuns: quota.memberMonthlyRuns != null ? String(quota.memberMonthlyRuns) : "",
+    teamDailyRuns: quota.teamDailyRuns != null ? String(quota.teamDailyRuns) : "",
+    teamMonthlyRuns: quota.teamMonthlyRuns != null ? String(quota.teamMonthlyRuns) : "",
   };
 }
 
@@ -75,6 +84,16 @@ function formToPolicy(form: PolicyForm, previous: Record<string, unknown> | unde
   const prev = previous ?? {};
   const egressPrev =
     typeof prev.egress === "object" && prev.egress !== null ? (prev.egress as Record<string, unknown>) : {};
+  const num = (s: string): number | undefined => {
+    const n = Number(s.trim());
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : undefined;
+  };
+  const quota = {
+    memberDailyRuns: num(form.memberDailyRuns),
+    memberMonthlyRuns: num(form.memberMonthlyRuns),
+    teamDailyRuns: num(form.teamDailyRuns),
+    teamMonthlyRuns: num(form.teamMonthlyRuns),
+  };
   return {
     ...prev,
     allowedActions: split(form.allowedActions),
@@ -84,6 +103,7 @@ function formToPolicy(form: PolicyForm, previous: Record<string, unknown> | unde
       ...egressPrev,
       mode: form.egressMode,
     },
+    quota,
   };
 }
 
@@ -409,6 +429,45 @@ export function OrgConfigPage(): ReactNode {
                 />
                 <span>允许员工使用个人模型 Key（BYOK）</span>
               </label>
+              <div className="org-config-quota-grid" data-testid="quota-grid">
+                <Label className="field">
+                  <span>Tool-run quota: member / day</span>
+                  <Input
+                    value={policyForm.memberDailyRuns}
+                    onChange={(e) => setPolicyForm((f) => ({ ...f, memberDailyRuns: e.target.value }))}
+                    placeholder="unlimited"
+                    disabled={!isAdmin}
+                    data-testid="quota-member-daily"
+                  />
+                </Label>
+                <Label className="field">
+                  <span>Tool-run quota: member / month</span>
+                  <Input
+                    value={policyForm.memberMonthlyRuns}
+                    onChange={(e) => setPolicyForm((f) => ({ ...f, memberMonthlyRuns: e.target.value }))}
+                    placeholder="unlimited"
+                    disabled={!isAdmin}
+                  />
+                </Label>
+                <Label className="field">
+                  <span>Tool-run quota: team / day</span>
+                  <Input
+                    value={policyForm.teamDailyRuns}
+                    onChange={(e) => setPolicyForm((f) => ({ ...f, teamDailyRuns: e.target.value }))}
+                    placeholder="unlimited"
+                    disabled={!isAdmin}
+                  />
+                </Label>
+                <Label className="field">
+                  <span>Tool-run quota: team / month</span>
+                  <Input
+                    value={policyForm.teamMonthlyRuns}
+                    onChange={(e) => setPolicyForm((f) => ({ ...f, teamMonthlyRuns: e.target.value }))}
+                    placeholder="unlimited"
+                    disabled={!isAdmin}
+                  />
+                </Label>
+              </div>
             </div>
 
             <button
@@ -443,6 +502,20 @@ export function OrgConfigPage(): ReactNode {
                 <p className="org-config-card-desc">
                   给桌面/Agent 展示的<strong>公司推荐模型列表</strong>（名称、baseUrl、model id）。
                   <strong>不存放 API Key</strong>；推理默认仍直连模型厂商，不是聊天流量反代。
+                </p>
+                <p className="console-row-meta" data-testid="omni-models-note">
+                  Models live in OmniRoute. Open the model router to set vendors and keys. This page is not a model
+                  admin.
+                </p>
+                <p>
+                  <a
+                    href="http://127.0.0.1:20128/dashboard"
+                    target="_blank"
+                    rel="noreferrer"
+                    data-testid="omni-models-link"
+                  >
+                    Open model router
+                  </a>
                 </p>
               </div>
             </div>
@@ -491,6 +564,9 @@ export function OrgConfigPage(): ReactNode {
               </div>
               <Button asChild size="sm" variant="outline">
                 <Link to="/skills">打开 Skills</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <Link to="/experts">Experts</Link>
               </Button>
             </div>
             <div className="org-config-lists">

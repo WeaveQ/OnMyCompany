@@ -25,5 +25,8 @@ describe("OrgConfigPage human IA", () => {
   it("hides models JSON behind advanced and documents no API keys", () => {
     expect(src).toContain("不存放 API Key");
     expect(src).toContain("models JSON");
+    expect(src).toContain("omni-models-note");
+    expect(src).toContain("omni-models-link");
+    expect(src).toContain("OmniRoute");
   });
 });

@@ -39,6 +39,8 @@
     "orgConfig": "企业设置",
     "orgTeams": "团队列表",
     "skills": "Skills",
+    "experts": "专家包",
+    "tools": "工具",
     "connections": "连接器",
     "team": "团队",
     "members": "企业账号",
@@ -94,6 +96,14 @@
       "skills": {
         "title": "Skills",
         "subtitle": "团队 Skill 包 — 从公开或我的货架关联。"
+      },
+      "experts": {
+        "title": "专家包",
+        "subtitle": "下发给桌面的人设包。公司端不提供对话。"
+      },
+      "tools": {
+        "title": "工具",
+        "subtitle": "MCP 声明与网关投影。公司进程不拉起 MCP。"
       },
       "connections": {
         "title": "连接器",

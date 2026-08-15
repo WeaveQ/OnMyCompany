@@ -988,6 +988,8 @@ export function TeamSwitcher(props: {
   activeTeamId?: string;
   /** Show「Company-wide」for org-admin / auditor. */
   showAllTeams?: boolean;
+  /** Hide create for auditor / member (org-admin write). */
+  canCreate?: boolean;
   onSelect(teamId: string): void;
   onCreate(): void;
   onManage(): void;
@@ -1091,16 +1093,18 @@ export function TeamSwitcher(props: {
           </div>
           <div className="team-switcher-divider" />
           <div className="team-switcher-actions">
-            <button
-              type="button"
-              className="team-switcher-menu-btn"
-              onClick={() => {
-                setOpen(false);
-                props.onCreate();
-              }}
-            >
-              <Plus size={14} strokeWidth={2} /> Create team
-            </button>
+            {props.canCreate === false ? null : (
+              <button
+                type="button"
+                className="team-switcher-menu-btn"
+                onClick={() => {
+                  setOpen(false);
+                  props.onCreate();
+                }}
+              >
+                <Plus size={14} strokeWidth={2} /> Create team
+              </button>
+            )}
             <button
               type="button"
               className="team-switcher-menu-btn"

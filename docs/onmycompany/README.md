@@ -10,15 +10,17 @@
 
 | 你是…         | 先读                                                                                                     |
 | ------------- | -------------------------------------------------------------------------------------------------------- |
+| 管理员 / 员工 | **[使用说明](../user-guide/index.md)**（文档站：`npm run dev:docs` → `:5181`）                           |
 | AI Agent      | 根目录 [AGENTS.md](../../AGENTS.md) → [Architecture.md](../Architecture.md) → [ROADMAP.md](./ROADMAP.md) |
 | 后端实现      | Architecture · CONFIG-SCHEMA · **[API-NOTES.md](./API-NOTES.md)** · RBAC · BOOTSTRAP                     |
 | 桌面对接      | [DESKTOP-CONTRACT.md](./DESKTOP-CONTRACT.md) · CONFIG-SCHEMA · OMA Phase2                                |
-| 运维 / 初始化 | [INIT-CHECKLIST.md](./INIT-CHECKLIST.md) · [ENV.md](./ENV.md) · `.env.example`                           |
+| 运维 / 初始化 | [使用说明 · 快速开始](../user-guide/quickstart.md) · [ENV.md](./ENV.md) · `.env.example`                 |
 
 ## 文档表
 
 | 文档                                                             | 内容                                                                  |
 | ---------------------------------------------------------------- | --------------------------------------------------------------------- |
+| [../user-guide/index.md](../user-guide/index.md)                 | **给人看的使用说明**；文档站 `npm run dev:docs`                       |
 | [../Architecture.md](../Architecture.md)                         | 系统架构 · 与 OMA 分层 · 代码地图 · 鉴权                              |
 | [ENV.md](./ENV.md)                                               | 环境变量 `OMC_*` · catalog · 并发帽                                   |
 | [CONFIG-SCHEMA.md](./CONFIG-SCHEMA.md)                           | 配置同构 local/company · 磁盘树                                       |
@@ -28,12 +30,15 @@
 | [SKILLS-PLAN.md](./SKILLS-PLAN.md)                               | Skills 组织/个人 · 添加弹窗                                           |
 | [TEAM-ISOLATION.md](./TEAM-ISOLATION.md)                         | **已落地 IA**：企业账号 / 团队（合并）/ 企业设置 · 全公司 · 桌面 goal |
 | [ORG-TEAM-PLAN.md](./ORG-TEAM-PLAN.md)                           | 企业/团队/账号总计划 · Phase 1 完成 · Phase 2/3 后续                  |
+| [../plan/OMC-DEV-PLAN.md](../plan/OMC-DEV-PLAN.md)               | **下一轮 OMC**：开局 / 模型表单 / 专家 / 连接按队 / G3                |
+| [../plan/OMA-DEV-PLAN.md](../plan/OMA-DEV-PLAN.md)               | **下一轮 OMA**（存本仓）：开局摘要 / `/v1` / 队头 / deny UX           |
 | [RBAC.md](./RBAC.md)                                             | **角色白话 + 矩阵**（员工 / 企业管理员 / 企业审计 · 队角色）          |
 | [BOOTSTRAP.md](./BOOTSTRAP.md)                                   | 双 Admin · 首登 · OTP · last-admin                                    |
 | [API-NOTES.md](./API-NOTES.md)                                   | **企业 HTTP 路径表**（与 `routes.ts` 对齐 · 校验脚本）                |
 | [OMNIROUTE-SIDECAR.md](./OMNIROUTE-SIDECAR.md)                   | **B+D** OmniRoute 模型边车 · 配置导航一体                             |
 | [UPSTREAM.md](./UPSTREAM.md)                                     | 上游 / merge 备忘                                                     |
 | [INIT-CHECKLIST.md](./INIT-CHECKLIST.md)                         | 初始化检查表                                                          |
+| [MEMBER-ONBOARDING.md](./MEMBER-ONBOARDING.md)                   | 成员开局：登录公司后桌面该看见什么（无工作台）                        |
 
 ## 钉死决策
 

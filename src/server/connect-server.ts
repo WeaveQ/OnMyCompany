@@ -34,7 +34,13 @@ import {
 } from "./actions/action-idempotency.ts";
 import { ActionRunner } from "./actions/action-runner.ts";
 import { renderActionMarkdown } from "./api/action-markdown.ts";
-import { clearLocalAuthCookie, createLocalAuthMiddleware, readLocalAuthSession, readRuntimeGrant } from "./api/auth.ts";
+import {
+  clearLocalAuthCookie,
+  createLocalAuthMiddleware,
+  isLocalAdminAuthenticated,
+  readLocalAuthSession,
+  readRuntimeGrant,
+} from "./api/auth.ts";
 import { getResponseCachePolicy } from "./api/cache-policy.ts";
 import { HttpRequestError, internalError, jsonError, notFound, readJsonBody } from "./api/http-utils.ts";
 import { renderOAuthCompletionPage } from "./api/oauth-completion-page.ts";
@@ -83,6 +89,8 @@ export interface IConnectServerOptions {
    * rejected. OrgConfig policy section is the sole product write path (P7).
    */
   companyPolicyWriteOnly?: boolean;
+  /** Transit file GET: ops-admin and/or member session. Default is local-admin only. */
+  authorizeFileRead?(context: Context): Promise<boolean>;
 }
 
 /**
@@ -275,6 +283,12 @@ export class ConnectServer {
 
   private async getTransitFile(context: Context, fileId: string): Promise<Response> {
     try {
+      const allowed = this.options.authorizeFileRead
+        ? await this.options.authorizeFileRead(context)
+        : await isLocalAdminAuthenticated(context, this.options.auth?.adminToken);
+      if (!allowed) {
+        return jsonError(context, 401, "unauthorized", "A valid local bearer token is required.");
+      }
       if (this.options.transitFiles.response) {
         return await this.options.transitFiles.response(fileId);
       }
@@ -734,6 +748,7 @@ export class ConnectServer {
       actionSearch: this.actionSearch,
       getPolicySnapshot: () => this.getPolicySnapshot(context),
       runtimeGrant: readRuntimeGrant(context),
+      teamId: readOptionalTeamId(context),
     });
 
     await server.connect(transport);
@@ -1182,7 +1197,7 @@ function readConnectionName(context: Context, body?: Record<string, unknown>): s
 }
 
 /** Multi-team isolation: prefer body.teamId, then X-Team-Id / x-omc-team-id. */
-function readOptionalTeamId(context: Context, body?: Record<string, unknown>): string | undefined {
+export function readOptionalTeamId(context: Context, body?: Record<string, unknown>): string | undefined {
   return (
     optionalString(body?.teamId) ??
     optionalString(context.req.header("x-team-id")) ??

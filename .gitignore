@@ -4,6 +4,7 @@
 wrangler.local.jsonc
 node_modules/
 dist/
+website/.vitepress/cache/
 coverage/
 catalog/
 src/providers/registry*.generated.ts

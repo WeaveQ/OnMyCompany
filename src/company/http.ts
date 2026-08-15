@@ -9,6 +9,7 @@ import {
   memberIsOrgAdmin,
   memberStatus,
 } from "./auth/store.ts";
+import { ExpertsError } from "./experts/store.ts";
 import { OrgConfigError } from "./org-config/store.ts";
 import { SkillsError } from "./skills/store.ts";
 import { ZipError } from "./skills/zip.ts";
@@ -142,6 +143,7 @@ export function mapError(context: Context, error: unknown): Response {
   if (
     error instanceof OrgConfigError ||
     error instanceof SkillsError ||
+    error instanceof ExpertsError ||
     error instanceof ZipError ||
     error instanceof TeamsError
   ) {
