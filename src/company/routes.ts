@@ -753,6 +753,20 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
     }
   });
 
+  app.get("/api/catalog/experts/:packageId", async (context) => {
+    try {
+      await requireMember(context, authStore);
+      const packageId = decodeURIComponent(context.req.param("packageId"));
+      const detail = await expertsStore.getDetail(packageId);
+      if (!detail) {
+        return jsonError(context, 404, "not_found", "Expert package not found");
+      }
+      return context.json(detail);
+    } catch (error) {
+      return mapError(context, error);
+    }
+  });
+
   app.post("/api/org/experts/enable", async (context) => {
     try {
       const member = await requireMember(context, authStore);
@@ -792,6 +806,33 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         details: { packageId },
       });
       return context.json({ ok: true, packageId });
+    } catch (error) {
+      return mapError(context, error);
+    }
+  });
+
+  app.post("/api/org/experts/upload", async (context) => {
+    try {
+      const member = await requireMember(context, authStore);
+      if (!memberIsOrgAdmin(member)) {
+        return jsonError(context, 403, "forbidden", "org-admin role required");
+      }
+      const body = await readJsonBody(context);
+      const item = await expertsStore.upload({
+        packageId: String(body.packageId ?? "").trim(),
+        name: body.name ? String(body.name) : undefined,
+        description: body.description ? String(body.description) : undefined,
+        readme: String(body.readme ?? body.markdown ?? ""),
+        enable: body.enable !== false,
+      });
+      await auditEvents.append({
+        type: "experts.upload",
+        actorMemberId: member.id,
+        actorEmail: member.email,
+        ...requestAuditMeta(context),
+        details: { packageId: item.packageId, installed: item.installed },
+      });
+      return context.json({ ok: true, item });
     } catch (error) {
       return mapError(context, error);
     }

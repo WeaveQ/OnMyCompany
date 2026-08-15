@@ -2665,7 +2665,8 @@ button.connections-chip.console-chip,
 }
 
 /* Skills page */
-.skills-page .console-card {
+.skills-page .console-card,
+.experts-page .console-card {
   padding: 0;
   overflow: hidden;
 }

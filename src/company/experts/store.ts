@@ -8,6 +8,7 @@ export interface ExpertPackageItem {
   name: string;
   description?: string;
   installed: boolean;
+  version?: string;
 }
 
 export class ExpertsError extends Error {
@@ -68,6 +69,53 @@ export class ExpertsStore {
     return items.sort((a, b) => a.packageId.localeCompare(b.packageId));
   }
 
+  async getDetail(packageId: string): Promise<{ item: ExpertPackageItem; readme?: string } | undefined> {
+    await this.ensure();
+    const id = packageId.trim();
+    if (!id) return undefined;
+    const installed = (await this.listInstalledIds()).includes(id);
+    const available = (await listDirNames(this.availableRoot)).includes(id);
+    if (!installed && !available) return undefined;
+    const dir = installed ? join(this.installedRoot, id) : join(this.availableRoot, id);
+    const item = { ...(await this.readMeta(dir, id)), installed };
+    let readme: string | undefined;
+    try {
+      readme = await readFile(join(dir, "README.md"), "utf8");
+    } catch {
+      readme = undefined;
+    }
+    return { item, readme };
+  }
+
+  async upload(input: {
+    packageId: string;
+    name?: string;
+    description?: string;
+    readme: string;
+    enable?: boolean;
+  }): Promise<ExpertPackageItem> {
+    await this.ensure();
+    const id = input.packageId.trim();
+    if (!id || id.includes("/") || id.includes("..")) {
+      throw new ExpertsError("validation_error", "packageId required");
+    }
+    const readme = input.readme.trim();
+    if (!readme) throw new ExpertsError("validation_error", "readme required");
+    const name = input.name?.trim() || id;
+    const description = input.description?.trim();
+    const dir = join(this.availableRoot, id);
+    await mkdir(dir, { recursive: true });
+    await writeFile(
+      join(dir, "meta.json"),
+      `${JSON.stringify({ name, description: description || undefined }, null, 2)}\n`,
+    );
+    await writeFile(join(dir, "README.md"), `${readme.endsWith("\n") ? readme : `${readme}\n`}`);
+    if (input.enable !== false) {
+      return this.enable(id);
+    }
+    return { packageId: id, name, description, installed: false, version: versionOf(id) };
+  }
+
   async enable(packageId: string): Promise<ExpertPackageItem> {
     await this.ensure();
     const id = packageId.trim();
@@ -76,7 +124,18 @@ export class ExpertsStore {
     const dest = join(this.installedRoot, id);
     const meta = await this.readMeta(source, id);
     await mkdir(dest, { recursive: true });
-    await writeFile(join(dest, "README.md"), `# ${meta.name}\n\n${meta.description ?? ""}\n`, "utf8");
+    try {
+      const readme = await readFile(join(source, "README.md"), "utf8");
+      await writeFile(join(dest, "README.md"), readme);
+    } catch {
+      await writeFile(join(dest, "README.md"), `# ${meta.name}\n\n${meta.description ?? ""}\n`, "utf8");
+    }
+    try {
+      const raw = await readFile(join(source, "meta.json"), "utf8");
+      await writeFile(join(dest, "meta.json"), raw);
+    } catch {
+      /* seed-only name */
+    }
     await this.orgStore.bump();
     return { ...meta, installed: true };
   }
@@ -123,7 +182,7 @@ export class ExpertsStore {
         /* seed name */
       }
     }
-    return { packageId, name, description };
+    return { packageId, name, description, version: versionOf(packageId) };
   }
 
   private async seedAvailable(): Promise<void> {
@@ -151,6 +210,11 @@ export class ExpertsStore {
       }
     }
   }
+}
+
+function versionOf(packageId: string): string | undefined {
+  const at = packageId.lastIndexOf("@");
+  return at > 0 ? packageId.slice(at + 1) : undefined;
 }
 
 async function listDirNames(path: string): Promise<string[]> {

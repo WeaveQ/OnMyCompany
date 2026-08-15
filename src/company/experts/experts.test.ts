@@ -65,4 +65,49 @@ describe("experts enable/disable", () => {
     const snap2Body = (await snap2.json()) as { config: { experts: { installed: string[] } } };
     expect(snap2Body.config.experts.installed).not.toContain(pack!.packageId);
   });
+
+  it("uploads a Markdown pack, returns README on detail, and enables it", async () => {
+    const dataDir = await mkdtemp(join(tmpdir(), "omc-exp-up-"));
+    tempRoots.push(dataDir);
+    const app = new Hono();
+    registerCompanyRoutes(app, {
+      dataDir,
+      bootstrapAdminEmail: "admin@acme.test",
+      devOtp: "000000",
+    });
+    await app.request("/api/company/auth/email/start", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: "admin@acme.test" }),
+    });
+    const verify = await app.request("/api/company/auth/email/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: "admin@acme.test", code: "000000" }),
+    });
+    const token = ((await verify.json()) as { token: string }).token;
+    const auth = { authorization: `Bearer ${token}`, "content-type": "application/json" };
+
+    const upload = await app.request("/api/org/experts/upload", {
+      method: "POST",
+      headers: auth,
+      body: JSON.stringify({
+        packageId: "desk-guide@0.2.0",
+        name: "Desk guide",
+        readme: "# Desk guide\n\nHow to greet visitors.\n",
+        enable: true,
+      }),
+    });
+    expect(upload.status).toBe(200);
+
+    const org = await app.request("/api/catalog/experts?scope=org", { headers: auth });
+    const orgBody = (await org.json()) as { items: Array<{ packageId: string; name: string }> };
+    expect(orgBody.items.some((i) => i.packageId === "desk-guide@0.2.0" && i.name === "Desk guide")).toBe(true);
+
+    const detail = await app.request("/api/catalog/experts/desk-guide@0.2.0", { headers: auth });
+    expect(detail.status).toBe(200);
+    const body = (await detail.json()) as { item: { installed: boolean }; readme?: string };
+    expect(body.item.installed).toBe(true);
+    expect(body.readme).toContain("How to greet visitors");
+  });
 });

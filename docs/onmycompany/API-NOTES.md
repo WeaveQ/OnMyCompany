@@ -69,8 +69,10 @@ SoT：实现对照 `src/company/routes.ts` + Gateway `ConnectServer`。
 | DELETE | `/api/org/skills/:packageId`                  | ✅   | 删除包 + 启用项                             |
 | GET    | `/api/org/tools`                              | ✅   | MCP + gateway 投影（已展开别名，无 secret） |
 | GET    | `/api/catalog/experts`                        | ✅   | `scope=org\|available` 专家包列表           |
+| GET    | `/api/catalog/experts/:packageId`             | ✅   | 详情 + README                               |
 | POST   | `/api/org/experts/enable`                     | ✅   | org-admin 写入 `experts/installed`          |
 | POST   | `/api/org/experts/disable`                    | ✅   | 从 installed 移除                           |
+| POST   | `/api/org/experts/upload`                     | ✅   | Markdown 人设包；默认同时启用               |
 
 ### 成员与团队
 

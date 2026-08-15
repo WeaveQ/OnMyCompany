@@ -3,38 +3,43 @@ import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { ExpertRow } from "./experts-page";
+import { ExpertDetailView, ExpertRow } from "./experts-page";
 
 describe("Experts page", () => {
-  it("enable/remove controls have no company-chat CTA", () => {
-    const enabled = renderToStaticMarkup(
+  it("aligns with Skills: details + remove, no chat CTA", () => {
+    const markup = renderToStaticMarkup(
       createElement(ExpertRow, {
         item: { packageId: "ops-oncall@1.0.0", name: "Ops on-call", installed: true },
         isAdmin: true,
-        onEnable() {},
-        onDisable() {},
+        onDetail() {},
+        onRemove() {},
       }),
     );
-    expect(enabled).toContain("expert-remove");
-    expect(enabled).not.toMatch(/start chat|Start chat|chat CTA/i);
-
-    const available = renderToStaticMarkup(
-      createElement(ExpertRow, {
-        item: { packageId: "sales-brief@1.0.0", name: "Sales brief", installed: false },
-        isAdmin: true,
-        onEnable() {},
-        onDisable() {},
-      }),
-    );
-    expect(available).toContain("expert-enable");
-    expect(available).not.toMatch(/start chat/i);
+    expect(markup).toContain("expert-detail");
+    expect(markup).toContain("expert-remove");
+    expect(markup).toContain("skills-row");
+    expect(markup).not.toMatch(/start chat/i);
+    expect(markup).not.toContain("expert-enable");
   });
 
-  it("page source has no window.prompt and no chat action", () => {
+  it("detail view shows README body", () => {
+    const markup = renderToStaticMarkup(
+      createElement(ExpertDetailView, {
+        name: "Ops on-call",
+        packageId: "ops-oncall@1.0.0",
+        readme: "# Ops on-call\n\nTriage pack.\n",
+      }),
+    );
+    expect(markup).toContain("expert-detail-md");
+    expect(markup).toContain("# Ops on-call");
+  });
+
+  it("page has add/upload like Skills", () => {
     const src = readFileSync(join(import.meta.dirname, "experts-page.tsx"), "utf8");
+    expect(src).toContain("experts-add");
+    expect(src).toContain("/api/org/experts/upload");
+    expect(src).toContain("skills-list-card");
+    expect(src).toContain("scope=org");
     expect(src).not.toContain("window.prompt");
-    expect(src).not.toMatch(/start chat/i);
-    expect(src).toContain("/api/org/experts/enable");
-    expect(src).toContain("/api/org/experts/disable");
   });
 });
