@@ -18,6 +18,15 @@
     "notConnected": "尚未連線",
     "open": "開啟",
     "refresh": "重新整理",
+    "add": "新增",
+    "cancel": "取消",
+    "save": "儲存",
+    "remove": "移除",
+    "details": "詳情",
+    "enable": "啟用",
+    "upload": "上傳",
+    "loading": "載入中…",
+    "readOnly": "唯讀",
     "required": "必填",
     "runtimeReady": "執行階段已就緒",
     "showMore": "顯示更多",
@@ -39,6 +48,8 @@
     "orgConfig": "企業設定",
     "orgTeams": "團隊列表",
     "skills": "Skills",
+    "experts": "專家包",
+    "tools": "工具",
     "connections": "連接器",
     "team": "團隊",
     "members": "企業帳號",
@@ -94,6 +105,14 @@
       "skills": {
         "title": "Skills",
         "subtitle": "團隊 Skill 包 — 從公開或我的貨架關聯。"
+      },
+      "experts": {
+        "title": "專家包",
+        "subtitle": "下發給桌面的人設包。公司端不提供對話。"
+      },
+      "tools": {
+        "title": "工具",
+        "subtitle": "MCP 聲明與閘道投影。公司進程不拉起 MCP。"
       },
       "connections": {
         "title": "連接器",
@@ -603,5 +622,137 @@
       "title": "OpenAPI JSON",
       "description": "在指令碼或工具匯入器中使用產生的規格。"
     }
+  },
+  "accountStatus": {
+    "all": "全部",
+    "pending": "未啟用",
+    "active": "已啟用",
+    "deactivated": "已停用"
+  },
+  "orgRoles": {
+    "admin": "企業管理員",
+    "auditor": "企業稽核",
+    "member": "員工"
+  },
+  "onboarding": {
+    "title": "管理員開局",
+    "subtitle": "模型一步只探測 OmniRoute。員工說明見文件 MEMBER-ONBOARDING。",
+    "open": "開啟",
+    "openModelRouter": "開啟模型路由",
+    "membersTitle": "企業帳號",
+    "membersHint": "在花名冊裡加人",
+    "teamsTitle": "團隊",
+    "teamsHint": "建立或開啟一個團隊",
+    "connectionsTitle": "連接器",
+    "connectionsHint": "設定組織共享連接",
+    "skillsTitle": "Skills",
+    "skillsHint": "關聯組織 Skill 包",
+    "policyTitle": "外發策略",
+    "policyHint": "允許或禁止 Gateway Action",
+    "modelRouterTitle": "模型路由（OmniRoute）",
+    "modelRouterHint": "只做探活，金鑰留在 Omni",
+    "runtimeTokenTitle": "執行階段 Token",
+    "runtimeTokenHint": "簽發綁成員的 API Key"
+  },
+  "expertsPage": {
+    "title": "專家包",
+    "lead": "下發給桌面 Agent 的人設包。",
+    "leadWithUser": "組織人設包 · {{user}}",
+    "loginTitle": "登入後管理專家包",
+    "loginDesc": "企業管理員可以新增、上傳或移除。",
+    "empty": "還沒有組織專家包。",
+    "emptyAdmin": " 從貨架啟用，或上傳 Markdown 包。",
+    "emptyMember": " 請聯繫企業管理員新增。",
+    "orgPill": "組織",
+    "addTitle": "新增專家包",
+    "addDesc": "從貨架啟用或上傳 Markdown。僅桌面使用，公司端不提供對話。",
+    "catalog": "貨架",
+    "catalogEmpty": "沒有尚未啟用的貨架包。",
+    "uploadTitle": "上傳 Markdown",
+    "uploadDesc": "寫入組織貨架並立即啟用。",
+    "uploadId": "packageId，例如 sales-brief@1.1.0",
+    "uploadName": "顯示名稱",
+    "uploadCta": "上傳並啟用",
+    "detailDesc": "人設包正文。公司端不提供對話。",
+    "noReadme": "（沒有 README.md）",
+    "enabled": "已啟用專家包",
+    "removed": "已移除專家包",
+    "loadFailed": "載入專家包失敗",
+    "enableFailed": "啟用失敗",
+    "removeFailed": "移除失敗",
+    "uploadFailed": "上傳失敗",
+    "catalogFailed": "載入貨架失敗",
+    "detailFailed": "載入詳情失敗"
+  },
+  "toolsPage": {
+    "title": "工具",
+    "lead": "已聲明的 MCP 服務與閘道投影。",
+    "leadWithUser": "組織 MCP 與閘道聲明 · {{user}}",
+    "loginTitle": "登入後查看工具",
+    "loginDesc": "唯讀聲明。控制台不會拉起 MCP 行程。",
+    "mcpTitle": "MCP 聲明",
+    "mcpSubtitle": "讀取 tools/mcp.json。本行程不會 spawn 或 npx。",
+    "mcpEmpty": "還沒有聲明 MCP 服務。",
+    "gatewayTitle": "閘道投影",
+    "gatewaySubtitle": "讀取 tools/gateway.json。不含連接金鑰。",
+    "gatewayEmpty": "還沒有閘道服務投影。",
+    "aliasesTitle": "命名設定別名",
+    "aliasesSubtitle": "只列出欄位名，從不展示金鑰。",
+    "aliasesNone": "（無）",
+    "declared": "已聲明",
+    "loadFailed": "載入工具失敗"
+  },
+  "orgConfigPage": {
+    "quotaMemberDay": "工具 run 配額：成員 / 日",
+    "quotaMemberMonth": "工具 run 配額：成員 / 月",
+    "quotaTeamDay": "工具 run 配額：團隊 / 日",
+    "quotaTeamMonth": "工具 run 配額：團隊 / 月",
+    "quotaUnlimited": "不限制",
+    "omniNote": "模型在 OmniRoute 設定。開啟模型路由填寫廠商和金鑰。本頁不是模型後台。",
+    "omniLink": "開啟模型路由",
+    "expertsLink": "專家包",
+    "peopleAccess": "人員與權限"
+  },
+  "connectionsGrants": {
+    "title": "連線依團隊授權",
+    "subtitle": "空列表表示所有團隊可用。有授權名單時必須帶 X-Team-Id。",
+    "placeholder": "團隊 ID，逗號分隔",
+    "save": "儲存授權",
+    "saved": "已儲存團隊授權",
+    "cleared": "已清空授權（所有團隊可用）",
+    "failed": "儲存失敗"
+  },
+  "skillsPage": {
+    "details": "詳情",
+    "roles": "角色",
+    "rolesTitle": "可見角色",
+    "rolesDesc": "不選表示所有成員都能看見。",
+    "rolesUpdated": "可見角色已更新",
+    "rolesFailed": "更新失敗",
+    "detailDesc": "Skill 包正文。沒有視覺化編排。",
+    "noSkillMd": "（沒有 SKILL.md）",
+    "detailFailed": "載入詳情失敗",
+    "addedBy": "由 {{id}} 新增"
+  },
+  "membersPage": {
+    "status": "狀態"
+  },
+  "teamPage": {
+    "title": "團隊",
+    "lead": "管理本團隊成員與隊內角色。帳號啟停請到企業帳號。",
+    "loginTitle": "登入後管理團隊",
+    "loginDesc": "請以企業成員身分登入後管理本團隊。",
+    "allTeams": "全部團隊",
+    "connectors": "連接器",
+    "editTeam": "編輯團隊",
+    "addMember": "新增成員",
+    "filterAll": "全部",
+    "filterPending": "未啟用",
+    "filterPendingCount": "未啟用 {{count}}",
+    "hint": "隊內成員與角色。建帳號到企業帳號 · 建隊/切隊到全部團隊",
+    "owner": "負責人",
+    "copied": "已複製",
+    "copyId": "點擊複製完整 ID",
+    "removeFromTeam": "移出團隊"
   }
 }

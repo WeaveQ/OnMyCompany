@@ -33,6 +33,7 @@ OnMyCompany = one process / one primary port
 **Out of scope**: employee local chat, workspace directory layout, enterprise approval-queue as main path, public multi-tenant SaaS, default full LLM reverse-proxy.
 
 Any agent (OnMyAgent / curl / MCP client) can call `/v1` or `/mcp` with a runtime token.  
+**How to use it:** [docs/user-guide/index.md](docs/user-guide/index.md) · docs site `npm run dev:docs` (`http://127.0.0.1:5181`).  
 Company HTTP path table: [docs/onmycompany/API-NOTES.md](docs/onmycompany/API-NOTES.md).
 
 ---
@@ -65,18 +66,19 @@ npm install
 npm run dev
 ```
 
-| Entry                          | URL                                                      |
-| ------------------------------ | -------------------------------------------------------- |
-| API / OpenAPI                  | http://127.0.0.1:3100 · http://127.0.0.1:3100/docs       |
-| Health                         | http://127.0.0.1:3100/health · `GET /api/company/health` |
-| Admin console                  | http://127.0.0.1:5180                                    |
-| OmniRoute model sidecar (opt.) | http://127.0.0.1:20128 · `npm run dev:omniroute`         |
+| Entry                             | URL                                                      |
+| --------------------------------- | -------------------------------------------------------- |
+| API / OpenAPI                     | http://127.0.0.1:3100 · http://127.0.0.1:3100/docs       |
+| Health                            | http://127.0.0.1:3100/health · `GET /api/company/health` |
+| Admin console                     | http://127.0.0.1:5180                                    |
+| Product docs (`npm run dev:docs`) | http://127.0.0.1:5181                                    |
+| OmniRoute model sidecar (opt.)    | http://127.0.0.1:20128 · `npm run dev:omniroute`         |
 
 Company login (dev OTP): `admin@company.internal` + `OMC_DEV_OTP` (default `000000`).  
 Runtime execution example (for token minting see `data/TEST-CREDENTIALS.txt` or the console):
 
 ```bash
-curl -s -X POST http://localhost:3000/v1/actions/hackernews.get_top_stories \
+curl -s -X POST http://127.0.0.1:3100/v1/actions/hackernews.get_top_stories \
   -H "Authorization: Bearer <runtime-token>" \
   -H 'content-type: application/json' \
   -d '{"input":{}}'

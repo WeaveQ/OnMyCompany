@@ -5,7 +5,13 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router";
 import { ApiError, apiGet, apiPost } from "./api";
 import { MemberLoginCard } from "./member-login-card";
-import { getMemberToken, hasMemberSession, memberAuthHeaders, setMemberToken } from "./member-session";
+import {
+  ensureMemberSessionForConsole,
+  getMemberToken,
+  hasMemberSession,
+  memberAuthHeaders,
+  setMemberToken,
+} from "./member-session";
 import { InlineError } from "./shared-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -188,6 +194,9 @@ export function AuditEventsPage(): ReactNode {
       else setLoading(true);
       setError(null);
       try {
+        if (!hasMemberSession()) {
+          await ensureMemberSessionForConsole();
+        }
         const page = await loadAuditEvents({
           ...applied,
           limit: AUDIT_PAGE_SIZE,

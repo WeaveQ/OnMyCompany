@@ -41,6 +41,9 @@ jobs:
       - name: CI (lint + format + typecheck + test)
         run: npm run ci
 
+      - name: Build docs
+        run: npm run build:docs
+
   # Optional matrix slices (same as local `npm run test:*`)
   test-slices:
     name: Test slices

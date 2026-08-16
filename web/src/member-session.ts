@@ -120,7 +120,7 @@ export function activeTeamQueryParam(): string | undefined {
 /**
  * If the management console is already unlocked but there is no member JWT,
  * silently mint a bootstrap org-admin session (local open console / dev OTP).
- * Prevents a second login wall on 企业账号 / 团队 / 企业设置.
+ * Prevents a second login wall on accounts / team / settings / Skills / experts / audit.
  *
  * Safe no-op when already authed, or when email OTP is disabled in production.
  */
@@ -146,10 +146,14 @@ export async function ensureMemberSessionForConsole(): Promise<boolean> {
         // session endpoint unavailable — still try dev OTP once
       }
 
-      await apiPost("/api/company/auth/email/start", { email: DEV_MEMBER_EMAIL });
+      const start = await apiPost<{ devCode?: string }>("/api/company/auth/email/start", {
+        email: DEV_MEMBER_EMAIL,
+      });
+      // Only silent-login when the server handed back a local/dev code (SMTP not sending).
+      if (!start.devCode) return false;
       const verified = await apiPost<{ token?: string }>("/api/company/auth/email/verify", {
         email: DEV_MEMBER_EMAIL,
-        code: DEV_MEMBER_OTP,
+        code: start.devCode,
       });
       if (!verified.token) return false;
       setMemberToken(verified.token);

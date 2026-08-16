@@ -233,7 +233,7 @@ describe("P1/P2 company extensions", () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ openId: "ou_test", email: "feishu@acme.test", autoProvision: true }),
     });
-    expect(feishu.status).toBe(200);
+    expect(feishu.status).toBe(501);
   });
 
   it("audit helpers serialize runs", () => {

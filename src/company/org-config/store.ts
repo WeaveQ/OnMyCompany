@@ -1,5 +1,6 @@
 import { access, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { asConfigAliases, expandConfigValue, publicAliasIndex } from "../config-refs/expand.ts";
 import { ensureOrgConfigLayout } from "./layout.ts";
 
 export type OrgConfigSection = "skills" | "experts" | "models" | "policy" | "tools" | "memory" | "manifest";
@@ -49,8 +50,11 @@ export class OrgConfigStore {
     const models = await readJsonFile(join(this.configRoot, "models.json"), { models: [] });
     const policy = await readJsonFile(join(this.configRoot, "policy.json"), {});
     const memory = await readJsonFile(join(this.configRoot, "memory", "settings.json"), { enabled: true });
-    const mcp = await readJsonFile(join(this.configRoot, "tools", "mcp.json"), { servers: [] });
-    const gateway = await readJsonFile(join(this.configRoot, "tools", "gateway.json"), { services: [] });
+    const aliases = await this.readAliases();
+    const mcpRaw = await readJsonFile(join(this.configRoot, "tools", "mcp.json"), { servers: [] });
+    const gatewayRaw = await readJsonFile(join(this.configRoot, "tools", "gateway.json"), { services: [] });
+    const mcp = expandConfigValue(mcpRaw, aliases);
+    const gateway = expandConfigValue(gatewayRaw, aliases);
     const skillsRoot = join(this.configRoot, "skills");
     const skillsInstalled = await listDirNames(join(skillsRoot, "installed"));
     const skillsEntries = await listDirNames(skillsRoot);
@@ -67,7 +71,7 @@ export class OrgConfigStore {
         models,
         policy,
         memory: { settings: memory },
-        tools: { mcp, gateway },
+        tools: { mcp, gateway, aliases: publicAliasIndex(aliases) },
         skills: {
           entries: skillsEntries,
           installed: skillsInstalled,
@@ -99,20 +103,50 @@ export class OrgConfigStore {
           : body;
       await writeJsonFile(join(this.configRoot, "memory", "settings.json"), settings);
     } else if (key === "tools") {
-      const tools = body as { mcp?: unknown; gateway?: unknown };
+      const tools = body as { mcp?: unknown; gateway?: unknown; aliases?: unknown };
       if (tools.mcp !== undefined) {
         await writeJsonFile(join(this.configRoot, "tools", "mcp.json"), tools.mcp);
       }
       if (tools.gateway !== undefined) {
         await writeJsonFile(join(this.configRoot, "tools", "gateway.json"), tools.gateway);
       }
-      if (tools.mcp === undefined && tools.gateway === undefined) {
-        throw new OrgConfigError("validation_error", "tools section requires mcp and/or gateway");
+      if (tools.aliases !== undefined) {
+        await writeJsonFile(join(this.configRoot, "tools", "aliases.json"), { aliases: tools.aliases });
+      }
+      if (tools.mcp === undefined && tools.gateway === undefined && tools.aliases === undefined) {
+        throw new OrgConfigError("validation_error", "tools section requires mcp, gateway, and/or aliases");
       }
     } else {
       throw new OrgConfigError("not_found", `Unknown section: ${section}`);
     }
     return this.bumpManifest();
+  }
+
+  async getToolsProjection(): Promise<{
+    mcp: unknown;
+    gateway: unknown;
+    aliases: Array<{ alias: string; fields: string[] }>;
+  }> {
+    const snap = await this.getSnapshot();
+    const tools = (snap.config.tools ?? {}) as {
+      mcp?: unknown;
+      gateway?: unknown;
+      aliases?: Array<{ alias: string; fields: string[] }>;
+    };
+    return {
+      mcp: tools.mcp ?? { servers: [] },
+      gateway: tools.gateway ?? { services: [] },
+      aliases: tools.aliases ?? [],
+    };
+  }
+
+  async readAliases(): Promise<ReturnType<typeof asConfigAliases>> {
+    await this.ensure();
+    const raw = await readJsonFile<Record<string, unknown>>(join(this.configRoot, "tools", "aliases.json"), {
+      aliases: {},
+    });
+    const nested = raw.aliases;
+    return asConfigAliases(nested && typeof nested === "object" ? nested : raw);
   }
 
   async getPolicy(): Promise<Record<string, unknown>> {
@@ -186,6 +220,12 @@ export class OrgConfigStore {
         await writeJsonFile(join(this.configRoot, "tools", "gateway.json"), tools.gateway);
       }
     }
+    return this.bumpManifest();
+  }
+
+  /** Public bump for directory-only writes (experts/installed). */
+  async bump(): Promise<OrgConfigManifest> {
+    await this.ensure();
     return this.bumpManifest();
   }
 

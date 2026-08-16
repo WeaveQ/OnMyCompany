@@ -9,9 +9,15 @@ import type { RuntimeDatabase } from "./storage/runtime-database.ts";
 import type { Hono } from "hono";
 
 import { CompanyAuditEventStore } from "../company/audit/events.ts";
+import { CompanyAuthStore } from "../company/auth/store.ts";
 import { TokenMemberBindingStore } from "../company/auth/token-bindings.ts";
 import { ConnectionDisableStore } from "../company/connections/disable-store.ts";
+import { ConnectionTeamGrantStore } from "../company/connections/team-grants.ts";
+import { readMemberToken } from "../company/http.ts";
+import { defaultOrgConfigRoot } from "../company/org-config/layout.ts";
+import { OrgConfigStore } from "../company/org-config/store.ts";
 import { orgPolicyToRuntimeRules } from "../company/policy/org-to-runtime.ts";
+import { evaluateToolRunQuota, parseToolRunQuota } from "../company/quota/tool-run-quota.ts";
 import { registerCompanyRoutes } from "../company/routes.ts";
 import { ConnectionService } from "../connection-service.ts";
 import { OAuthClientConfigService } from "../oauth/oauth-client-config-service.ts";
@@ -67,6 +73,13 @@ export async function createConnectApp(options: ConnectAppOptions): Promise<Conn
 
   const companyAuditEvents = options.company ? new CompanyAuditEventStore(options.company.dataDir) : undefined;
   const connectionDisableStore = options.company ? new ConnectionDisableStore(options.company.dataDir) : undefined;
+  const connectionTeamGrantStore = options.company ? new ConnectionTeamGrantStore(options.company.dataDir) : undefined;
+  const orgConfigForGuards = options.company
+    ? new OrgConfigStore(
+        options.company.orgConfigRoot ?? defaultOrgConfigRoot(options.company.dataDir, options.company.orgId),
+        options.company.orgId ?? "default",
+      )
+    : undefined;
 
   const connections = new ConnectionService({
     catalog: options.catalog,
@@ -100,8 +113,14 @@ export async function createConnectApp(options: ConnectAppOptions): Promise<Conn
     logger: options.logger,
     onPolicyDeny: companyAuditEvents
       ? async (input) => {
+          const type =
+            input.code === "quota_exceeded"
+              ? "quota.deny"
+              : input.code === "connection_team_denied"
+                ? "connection.team_denied"
+                : "policy.deny";
           await companyAuditEvents.append({
-            type: "policy.deny",
+            type,
             result: "denied",
             actorMemberId: input.memberId,
             client: input.caller === "mcp" ? "mcp" : input.caller === "web" ? "admin_console" : "api",
@@ -116,6 +135,40 @@ export async function createConnectApp(options: ConnectAppOptions): Promise<Conn
           });
         }
       : undefined,
+    assertBeforeExecute:
+      connectionTeamGrantStore || orgConfigForGuards
+        ? async (input) => {
+            if (connectionTeamGrantStore) {
+              const allowed = await connectionTeamGrantStore.isTeamAllowed(
+                input.service,
+                input.connectionName,
+                input.teamId,
+              );
+              if (!allowed) {
+                return {
+                  allowed: false,
+                  code: "connection_team_denied",
+                  message: `Team ${input.teamId} is not granted connection ${input.service}.`,
+                };
+              }
+            }
+            if (orgConfigForGuards) {
+              const policy = await orgConfigForGuards.getPolicy();
+              const limits = parseToolRunQuota(policy);
+              const page = await options.runtimeDatabase.runLogStore.list({ limit: 5000 });
+              const decision = evaluateToolRunQuota({
+                limits,
+                runs: page.items,
+                memberId: input.memberId,
+                teamId: input.teamId,
+              });
+              if (!decision.ok) {
+                return { allowed: false, code: decision.code, message: decision.message };
+              }
+            }
+            return { allowed: true };
+          }
+        : undefined,
   });
 
   const tokenBindings = options.company ? new TokenMemberBindingStore(options.company.dataDir) : undefined;
@@ -153,6 +206,12 @@ export async function createConnectApp(options: ConnectAppOptions): Promise<Conn
     compressApiResponses: options.compressApiResponses,
     // P7: company product mount → OrgConfig is sole policy write path
     companyPolicyWriteOnly: Boolean(options.company),
+    authorizeFileRead: async (context) => {
+      if (await isLocalAdminAuthenticated(context, options.adminToken)) return true;
+      if (!options.company) return false;
+      const member = await new CompanyAuthStore(options.company.dataDir).resolveSession(readMemberToken(context));
+      return Boolean(member);
+    },
   }).createApp();
 
   if (options.company) {
@@ -164,6 +223,7 @@ export async function createConnectApp(options: ConnectAppOptions): Promise<Conn
       // Shared audit + connection-disable stores with Gateway hooks (no dual cache).
       auditEvents: companyAuditEvents,
       connectionDisableStore,
+      connectionTeamGrantStore,
       // Console unlock (ops-admin) may read audit without a second member OTP.
       isOpsAdmin: (context) => isLocalAdminAuthenticated(context, options.adminToken),
       onOrgPolicyWrite: async (policy) => {

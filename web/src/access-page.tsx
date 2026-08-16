@@ -29,7 +29,9 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { apiDelete, apiPost, apiPut } from "./api";
+import { mergeRuntimeRulesIntoOrgPolicy } from "../../src/company/policy/merge-runtime-into-org.ts";
+import { apiDelete, apiGet, apiPost, apiPut } from "./api";
+import { ensureMemberSessionForConsole, memberAuthHeaders } from "./member-session";
 import { formatDate } from "./model";
 import {
   countAllowedActions,
@@ -134,12 +136,23 @@ export function AccessPage(props: AccessPageProps): ReactNode {
     setCreated(null);
     const rules = policyRulesFromEditorDraft(createDraft);
     try {
-      const result = await apiPost<RuntimeTokenCreation>("/api/runtime-tokens", {
-        name,
-        allowedActions: rules.allowedActions,
-        blockedActions: rules.blockedActions,
-        allowedProxies: rules.allowedProxies,
-      });
+      await ensureMemberSessionForConsole();
+      const minted = await apiPost<{ token: string; tokenId: string; memberId: string }>(
+        "/api/company/runtime-tokens",
+        { name },
+        memberAuthHeaders(),
+      );
+      const result: RuntimeTokenCreation = {
+        token: minted.token,
+        record: {
+          id: minted.tokenId,
+          name,
+          allowedActions: rules.allowedActions,
+          blockedActions: rules.blockedActions,
+          allowedProxies: rules.allowedProxies,
+          createdAt: new Date().toISOString(),
+        },
+      };
       setCreated(result);
       setName("");
       setCreateDraft(createPolicyEditorDraft(emptyPolicyRules()));
@@ -154,7 +167,14 @@ export function AccessPage(props: AccessPageProps): ReactNode {
     setRuntimeSaving(true);
     setRuntimeStatus(t("access.policy.saving"));
     try {
-      const updated = await apiPut<RuntimePolicyState>("/api/runtime-policy", runtimeRules);
+      await ensureMemberSessionForConsole();
+      const snap = await apiGet<{ config?: { policy?: Record<string, unknown> } }>(
+        "/api/org/config",
+        memberAuthHeaders(),
+      );
+      const payload = mergeRuntimeRulesIntoOrgPolicy(snap.config?.policy, runtimeRules);
+      await apiPut("/api/org/config/policy", payload, memberAuthHeaders());
+      const updated: RuntimePolicyState = { ...policy, runtime: runtimeRules };
       setPolicy(updated);
       setRuntimeDraft(createPolicyEditorDraft(updated.runtime));
       setRuntimeStatus(t("access.policy.saved"));

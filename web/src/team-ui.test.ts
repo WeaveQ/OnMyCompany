@@ -131,7 +131,13 @@ describe("console IA paths", () => {
 
 describe("overview + connections structural markers", () => {
   it("overview sections include capability and usage", () => {
-    expect([...OVERVIEW_SECTION_IDS]).toEqual(["observability", "capability", "team-usage", "personal-usage"]);
+    expect([...OVERVIEW_SECTION_IDS]).toEqual([
+      "onboarding",
+      "observability",
+      "capability",
+      "team-usage",
+      "personal-usage",
+    ]);
   });
 
   it("connections status chips match product labels (English source)", () => {

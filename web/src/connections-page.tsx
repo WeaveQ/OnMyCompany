@@ -5,6 +5,8 @@ import { useTranslate } from "@embra/i18n/react";
 import { ArrowUpDown, ChevronRight, ListFilter, Search, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
+import { ApiError, apiGet, apiPut } from "./api";
+import { memberAuthHeaders } from "./member-session";
 import { filterProviders, resolveProviderConnectionStatus, sortProviders } from "./model";
 import { isProviderLocallyAvailable } from "./providers-page";
 import { ProviderIcon } from "./shared-ui";
@@ -456,6 +458,7 @@ export function ConnectionsPage(props: ConnectionsPageProps): ReactNode {
             ) : null}
           </div>
         )}
+        <ConnectionTeamGrantsCard services={props.data.connections.map((c) => c.service)} />
       </div>
     </section>
   );
@@ -647,4 +650,82 @@ function useIntersectionLoader(enabled: boolean, onLoad: () => void): (node: HTM
   }, [enabled]);
 
   return setNode;
+}
+
+function ConnectionTeamGrantsCard(props: { services: string[] }): ReactNode {
+  const t = useTranslate();
+  const unique = [...new Set(props.services.filter(Boolean))];
+  const [service, setService] = useState(unique[0] ?? "");
+  const [teamIds, setTeamIds] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!service && unique[0]) setService(unique[0]);
+  }, [service, unique]);
+
+  async function save(): Promise<void> {
+    setError(null);
+    setMessage(null);
+    try {
+      const ids = teamIds
+        .split(/[,\s]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      await apiPut(
+        "/api/company/connections/team-grants",
+        { service, connectionName: "default", teamIds: ids },
+        memberAuthHeaders(),
+      );
+      setMessage(ids.length ? t("connectionsGrants.saved") : t("connectionsGrants.cleared"));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t("connectionsGrants.failed"));
+    }
+  }
+
+  async function load(): Promise<void> {
+    try {
+      const res = await apiGet<{ items: Array<{ service: string; connectionName: string; teamIds: string[] }> }>(
+        "/api/company/connections/team-grants",
+        memberAuthHeaders(),
+      );
+      const row = res.items.find((i) => i.service === service && i.connectionName === "default");
+      setTeamIds((row?.teamIds ?? []).join(", "));
+    } catch {
+      /* optional */
+    }
+  }
+
+  useEffect(() => {
+    if (service) void load();
+  }, [service]);
+
+  if (unique.length === 0) return null;
+
+  return (
+    <section className="console-card connection-grants-card" data-testid="connection-team-grants">
+      <h2 className="console-card-title">{t("connectionsGrants.title")}</h2>
+      <p className="console-card-subtitle">{t("connectionsGrants.subtitle")}</p>
+      {error ? <p className="page-toast">{error}</p> : null}
+      {message ? <p className="page-toast">{message}</p> : null}
+      <div className="org-config-form-grid">
+        <select value={service} onChange={(e) => setService(e.target.value)} data-testid="grant-service">
+          {unique.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+        <Input
+          value={teamIds}
+          onChange={(e) => setTeamIds(e.target.value)}
+          placeholder={t("connectionsGrants.placeholder")}
+          data-testid="grant-team-ids"
+        />
+        <Button size="sm" type="button" onClick={() => void save()}>
+          {t("connectionsGrants.save")}
+        </Button>
+      </div>
+    </section>
+  );
 }

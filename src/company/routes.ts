@@ -22,6 +22,8 @@ import {
 } from "./auth/store.ts";
 import { TokenMemberBindingStore } from "./auth/token-bindings.ts";
 import { ConnectionDisableStore } from "./connections/disable-store.ts";
+import { ConnectionTeamGrantStore } from "./connections/team-grants.ts";
+import { ExpertsStore } from "./experts/store.ts";
 import {
   clearMemberCookie,
   jsonError,
@@ -81,6 +83,8 @@ export interface CompanyRouteOptions {
   auditEvents?: CompanyAuditEventStore;
   /** Shared connection disable flags used by Gateway resolveForExecution. */
   connectionDisableStore?: ConnectionDisableStore;
+  /** Shared connection→team grants used by Gateway execute guards. */
+  connectionTeamGrantStore?: ConnectionTeamGrantStore;
 }
 
 export interface CompanyHealthBody {
@@ -117,6 +121,8 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
   const teamsStore = new TeamsStore(options.dataDir);
   const auditEvents = options.auditEvents ?? new CompanyAuditEventStore(options.dataDir);
   const connectionDisableStore = options.connectionDisableStore ?? new ConnectionDisableStore(options.dataDir);
+  const connectionTeamGrantStore = options.connectionTeamGrantStore ?? new ConnectionTeamGrantStore(options.dataDir);
+  const expertsStore = new ExpertsStore(orgConfigRoot, orgId);
   const devOtp = options.devOtp?.trim() || process.env.OMC_DEV_OTP?.trim() || "000000";
   const bootstrapEmail = normalizeEmail(options.bootstrapAdminEmail ?? process.env.OMC_BOOTSTRAP_ADMIN_EMAIL ?? "");
 
@@ -172,11 +178,10 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
     }
   });
 
-  // M7: Feishu login stub (exchange code later; MVP accepts feishuOpenId mock)
+  // Feishu login: authorize URL may be mocked; verify never mints a session without a real ticket exchange.
   app.post("/api/company/auth/feishu/start", async (context) => {
     const redirectUri = context.req.query("redirect_uri") || "/";
     const appId = process.env.OMC_FEISHU_APP_ID?.trim() || "cli_mock";
-    // Mock authorize URL for local wiring
     return context.json({
       ok: true,
       authorizeUrl: `https://open.feishu.cn/open-apis/authen/v1/index?app_id=${encodeURIComponent(appId)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=omc`,
@@ -185,49 +190,12 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
   });
 
   app.post("/api/company/auth/feishu/verify", async (context) => {
-    try {
-      const body = await readJsonBody(context);
-      const openId = String(body.openId ?? body.code ?? "").trim();
-      if (!openId) {
-        return jsonError(context, 400, "validation_error", "openId or code required");
-      }
-      const email = normalizeEmail(String(body.email ?? `${openId}@feishu.local`));
-      let member = await authStore.findMemberByEmail(email);
-      if (!member) {
-        const members = await authStore.listMembers();
-        if (members.length === 0) {
-          member = await authStore.createMember({
-            email,
-            roles: ["admin"],
-            displayName: String(body.displayName ?? openId),
-          });
-        } else if (body.autoProvision === true) {
-          member = await authStore.createMember({
-            email,
-            roles: ["member"],
-            displayName: String(body.displayName ?? openId),
-          });
-        } else {
-          return jsonError(context, 403, "forbidden", "No Feishu-linked account; ask admin to add you");
-        }
-      }
-      if (!memberCanLogin(member)) {
-        return jsonError(context, 403, "forbidden", "Member account is deactivated");
-      }
-      const token = await authStore.createSession(member.id);
-      setMemberCookie(context, token);
-      const refreshed = (await authStore.findMemberById(member.id)) ?? member;
-      await auditEvents.append({
-        type: "login",
-        actorMemberId: refreshed.id,
-        actorEmail: refreshed.email,
-        ...requestAuditMeta(context),
-        details: { provider: "feishu" },
-      });
-      return context.json({ ok: true, token, member: publicMember(refreshed), provider: "feishu" });
-    } catch (error) {
-      return mapError(context, error);
-    }
+    return jsonError(
+      context,
+      501,
+      "not_configured",
+      "Feishu ticket exchange is not configured. Stub login will not issue a member session.",
+    );
   });
 
   app.post("/api/company/auth/email/verify", async (context) => {
@@ -238,7 +206,8 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
       if (!email || !code) {
         return jsonError(context, 400, "validation_error", "email and code required");
       }
-      const ok = (await authStore.consumeOtp(email, code)) || code === devOtp;
+      const smtpConfigured = Boolean(process.env.OMC_SMTP_URL?.trim());
+      const ok = (await authStore.consumeOtp(email, code)) || (!smtpConfigured && code === devOtp);
       if (!ok) {
         return jsonError(context, 401, "unauthorized", "Invalid or expired code");
       }
@@ -407,6 +376,15 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
   });
 
   // ── C5: OrgConfig export / import (no secrets) ─────────────────────────
+
+  app.get("/api/org/tools", async (context) => {
+    try {
+      await requireMember(context, authStore);
+      return context.json(await orgStore.getToolsProjection());
+    } catch (error) {
+      return mapError(context, error);
+    }
+  });
 
   app.get("/api/org/config/export", async (context) => {
     try {
@@ -620,6 +598,9 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
   app.post("/api/company/runtime-tokens", async (context) => {
     try {
       const member = await requireMember(context, authStore);
+      if (member.roles.includes("auditor") && !memberIsOrgAdmin(member)) {
+        return jsonError(context, 403, "forbidden", "auditor cannot mint runtime tokens");
+      }
       if (!options.createMemberRuntimeToken) {
         return jsonError(context, 501, "not_implemented", "Runtime token minting not configured");
       }
@@ -648,6 +629,9 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
   app.post("/api/company/runtime-tokens/bind", async (context) => {
     try {
       const member = await requireMember(context, authStore);
+      if (member.roles.includes("auditor") && !memberIsOrgAdmin(member)) {
+        return jsonError(context, 403, "forbidden", "auditor cannot bind runtime tokens");
+      }
       const body = await readJsonBody(context);
       const tokenId = String(body.tokenId ?? "").trim();
       if (!tokenId) {
@@ -753,6 +737,102 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         details: { packageId, visibleToRoles: roles },
       });
       return context.json({ ok: true, entry });
+    } catch (error) {
+      return mapError(context, error);
+    }
+  });
+
+  app.get("/api/catalog/experts", async (context) => {
+    try {
+      await requireMember(context, authStore);
+      const scope = context.req.query("scope") || "org";
+      const items = scope === "available" ? await expertsStore.listAvailable() : await expertsStore.listInstalled();
+      return context.json({ items });
+    } catch (error) {
+      return mapError(context, error);
+    }
+  });
+
+  app.get("/api/catalog/experts/:packageId", async (context) => {
+    try {
+      await requireMember(context, authStore);
+      const packageId = decodeURIComponent(context.req.param("packageId"));
+      const detail = await expertsStore.getDetail(packageId);
+      if (!detail) {
+        return jsonError(context, 404, "not_found", "Expert package not found");
+      }
+      return context.json(detail);
+    } catch (error) {
+      return mapError(context, error);
+    }
+  });
+
+  app.post("/api/org/experts/enable", async (context) => {
+    try {
+      const member = await requireMember(context, authStore);
+      if (!memberIsOrgAdmin(member)) {
+        return jsonError(context, 403, "forbidden", "org-admin role required");
+      }
+      const body = await readJsonBody(context);
+      const packageId = String(body.packageId ?? "").trim();
+      const item = await expertsStore.enable(packageId);
+      await auditEvents.append({
+        type: "experts.enable",
+        actorMemberId: member.id,
+        actorEmail: member.email,
+        ...requestAuditMeta(context),
+        details: { packageId: item.packageId },
+      });
+      return context.json({ ok: true, item });
+    } catch (error) {
+      return mapError(context, error);
+    }
+  });
+
+  app.post("/api/org/experts/disable", async (context) => {
+    try {
+      const member = await requireMember(context, authStore);
+      if (!memberIsOrgAdmin(member)) {
+        return jsonError(context, 403, "forbidden", "org-admin role required");
+      }
+      const body = await readJsonBody(context);
+      const packageId = String(body.packageId ?? "").trim();
+      await expertsStore.disable(packageId);
+      await auditEvents.append({
+        type: "experts.disable",
+        actorMemberId: member.id,
+        actorEmail: member.email,
+        ...requestAuditMeta(context),
+        details: { packageId },
+      });
+      return context.json({ ok: true, packageId });
+    } catch (error) {
+      return mapError(context, error);
+    }
+  });
+
+  app.post("/api/org/experts/upload", async (context) => {
+    try {
+      const member = await requireMember(context, authStore);
+      if (!memberIsOrgAdmin(member)) {
+        return jsonError(context, 403, "forbidden", "org-admin role required");
+      }
+      const body = await readJsonBody(context);
+      const item = await expertsStore.upload({
+        packageId: String(body.packageId ?? "").trim(),
+        name: body.name ? String(body.name) : undefined,
+        description: body.description ? String(body.description) : undefined,
+        readme: String(body.readme ?? body.markdown ?? ""),
+        enable: body.enable !== false,
+      });
+      await auditEvents.append({
+        type: "experts.upload",
+        actorMemberId: member.id,
+        actorEmail: member.email,
+        ...requestAuditMeta(context),
+        details: { packageId: item.packageId, installed: item.installed },
+      });
+      return context.json({ ok: true, item });
     } catch (error) {
       return mapError(context, error);
     }
@@ -1207,6 +1287,42 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
     }
   });
 
+  app.get("/api/company/connections/team-grants", async (context) => {
+    try {
+      await requireMember(context, authStore);
+      return context.json({ items: await connectionTeamGrantStore.list() });
+    } catch (error) {
+      return mapError(context, error);
+    }
+  });
+
+  app.put("/api/company/connections/team-grants", async (context) => {
+    try {
+      const member = await requireMember(context, authStore);
+      if (!memberIsOrgAdmin(member)) {
+        return jsonError(context, 403, "forbidden", "org-admin role required");
+      }
+      const body = await readJsonBody(context);
+      const service = String(body.service ?? "").trim();
+      const connectionName = body.connectionName ? String(body.connectionName) : undefined;
+      const teamIds = Array.isArray(body.teamIds) ? body.teamIds.map(String) : [];
+      if (!service) {
+        return jsonError(context, 400, "validation_error", "service required");
+      }
+      const grant = await connectionTeamGrantStore.setTeamIds(service, connectionName, teamIds);
+      await auditEvents.append({
+        type: "connection.team_grants",
+        actorMemberId: member.id,
+        actorEmail: member.email,
+        ...requestAuditMeta(context),
+        details: { service: grant.service, connectionName: grant.connectionName, teamIds: grant.teamIds },
+      });
+      return context.json({ ok: true, ...grant });
+    } catch (error) {
+      return mapError(context, error);
+    }
+  });
+
   // ── A2: company audit events (login / config.write / …) ────────────────
 
   app.get("/api/company/audit/events", async (context) => {
@@ -1424,6 +1540,7 @@ export function registerCompanyRoutes(app: Hono, options: CompanyRouteOptions): 
         durationMs: run.durationMs,
         ok: run.ok,
         memberId: run.memberId,
+        teamId: run.teamId,
         connectionName: run.connectionName,
         connectionId: run.connectionId,
         attempt: run.attempt,

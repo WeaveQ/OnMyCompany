@@ -23,6 +23,7 @@
 | 任务类型                  | 至少读                                    |
 | ------------------------- | ----------------------------------------- |
 | 任意改动                  | **本文铁律** + Architecture §1–2          |
+| 给人看的使用说明          | [`docs/user-guide/`](docs/user-guide/)    |
 | 配置 / OrgConfig / policy | CONFIG-SCHEMA + Architecture §3           |
 | 鉴权 / 成员 / token       | BOOTSTRAP + RBAC + API-NOTES              |
 | 桌面对接 / mock           | DESKTOP-CONTRACT + OMA config-consistency |
@@ -127,6 +128,7 @@ examples/
 npm install
 cp .env.example .env    # 可选
 npm run dev             # API :3100 + web :5180（勿与 OnMyAgent 5173/8787 冲突）
+npm run dev:docs        # 使用说明文档站 :5181
 npm run dev:api
 npm test
 npm run test:affected   # 按 git diff 选 company|web|server 切片
@@ -217,11 +219,12 @@ curl -s -X POST http://localhost:3100/v1/actions/hackernews.get_top_stories \
 
 ## 10. 链接
 
-| 资源              | 路径                                                                   |
-| ----------------- | ---------------------------------------------------------------------- |
-| README            | [README.md](README.md) · [中文](README.zh-CN.md)                       |
-| Architecture      | [docs/Architecture.md](docs/Architecture.md)                           |
-| 产品工程文档      | [docs/onmycompany/README.md](docs/onmycompany/README.md)               |
-| 路线图            | [docs/onmycompany/ROADMAP.md](docs/onmycompany/ROADMAP.md)             |
-| 运行时 API        | [docs/runtime-api.md](docs/runtime-api.md)                             |
-| 桌面 Architecture | [../onmyagent/docs/Architecture.md](../onmyagent/docs/Architecture.md) |
+| 资源              | 路径                                                                      |
+| ----------------- | ------------------------------------------------------------------------- |
+| README            | [README.md](README.md) · [中文](README.zh-CN.md)                          |
+| 使用说明          | [docs/user-guide/index.md](docs/user-guide/index.md) · `npm run dev:docs` |
+| Architecture      | [docs/Architecture.md](docs/Architecture.md)                              |
+| 产品工程文档      | [docs/onmycompany/README.md](docs/onmycompany/README.md)                  |
+| 路线图            | [docs/onmycompany/ROADMAP.md](docs/onmycompany/ROADMAP.md)                |
+| 运行时 API        | [docs/runtime-api.md](docs/runtime-api.md)                                |
+| 桌面 Architecture | [../onmyagent/docs/Architecture.md](../onmyagent/docs/Architecture.md)    |

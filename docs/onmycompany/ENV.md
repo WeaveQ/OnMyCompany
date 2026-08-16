@@ -16,30 +16,32 @@
 
 ## 2. 对照表（Gateway / 运行时）
 
-| OnMyCompany（canonical）       | 兼容别名（废弃中）                       | 默认                      | 用途                                        |
-| ------------------------------ | ---------------------------------------- | ------------------------- | ------------------------------------------- |
-| `PORT`                         | 同名                                     | `3000`                    | HTTP 端口                                   |
-| `HOST`                         | 同名                                     | `127.0.0.1`               | 绑定地址；Docker 常用 `0.0.0.0`             |
-| `OMC_ORIGIN`                   | `OOMOL_CONNECT_ORIGIN`                   | `http://localhost:<PORT>` | 公网 origin（OAuth redirect）               |
-| `OMC_DATA_DIR`                 | `OOMOL_CONNECT_DATA_DIR`                 | `./data`                  | SQLite + files + org config 根              |
-| `OMC_ENCRYPTION_KEY`           | `OOMOL_CONNECT_ENCRYPTION_KEY`           | unset                     | 凭据 / OAuth / 幂等响应加密                 |
-| `OMC_NEW_ENCRYPTION_KEY`       | `OOMOL_CONNECT_NEW_ENCRYPTION_KEY`       | unset                     | `runtime:data rotate-key` 新密钥            |
-| `OMC_ADMIN_TOKEN`              | `OOMOL_CONNECT_ADMIN_TOKEN`              | unset                     | **ops-admin** bearer                        |
-| `OMC_RUNTIME_TOKEN`            | `OOMOL_CONNECT_RUNTIME_TOKEN`            | unset                     | 可选 bootstrap runtime token（`/v1` · MCP） |
-| `OMC_JWKS_URI`                 | `OOMOL_CONNECT_JWKS_URI`                 | unset                     | Runtime JWT JWKS（Node）                    |
-| `OMC_JWT_ISSUER`               | `OOMOL_CONNECT_JWT_ISSUER`               | unset                     | JWT `iss`                                   |
-| `OMC_JWT_AUDIENCE`             | `OOMOL_CONNECT_JWT_AUDIENCE`             | unset                     | JWT `aud`                                   |
-| `OMC_ALLOWED_ACTIONS`          | `OOMOL_CONNECT_ALLOWED_ACTIONS`          | unset                     | Action allowlist（`service.*` / `*`）       |
-| `OMC_BLOCKED_ACTIONS`          | `OOMOL_CONNECT_BLOCKED_ACTIONS`          | unset                     | Action denylist                             |
-| `OMC_ALLOWED_PROXIES`          | `OOMOL_CONNECT_ALLOWED_PROXIES`          | unset                     | Proxy allowlist                             |
-| `OMC_BLOCKED_PROXIES`          | `OOMOL_CONNECT_BLOCKED_PROXIES`          | unset                     | Proxy denylist                              |
-| `OMC_ALLOW_PRIVATE_NETWORK`    | `OOMOL_CONNECT_ALLOW_PRIVATE_NETWORK`    | `false`                   | 自托管 provider 访问内网                    |
-| `OMC_LOG_LEVEL`                | `OOMOL_CONNECT_LOG_LEVEL`                | `info`                    | Pino 级别                                   |
-| `OMC_TRANSIT_FILE_TTL_SECONDS` | `OOMOL_CONNECT_TRANSIT_FILE_TTL_SECONDS` | `86400`                   | 中转文件 TTL                                |
-| `OMC_TRANSIT_FILE_MAX_BYTES`   | `OOMOL_CONNECT_TRANSIT_FILE_MAX_BYTES`   | `104857600`               | 中转文件上限                                |
-| `OMC_RUN_LIMIT`                | `OOMOL_CONNECT_RUN_LIMIT`                | `5000`                    | runs 保留条数                               |
-| `OMC_CATALOG_PROFILE`          | `OOMOL_CONNECT_CATALOG_PROFILE`          | `office`                  | `office` 白名单 / `full` 全量 catalog       |
-| `OMC_ALLOWED_SERVICES`         | `OOMOL_CONNECT_ALLOWED_SERVICES`         | unset                     | 逗号 service id 或 `*`（覆盖 profile）      |
+| OnMyCompany（canonical）       | 兼容别名（废弃中）                       | 默认                                                            | 用途                                        |
+| ------------------------------ | ---------------------------------------- | --------------------------------------------------------------- | ------------------------------------------- |
+| `PORT`                         | 同名                                     | 未设时进程默认 `3000`；`npm run dev` / `.env.example` 为 `3100` | HTTP 端口                                   |
+| `HOST`                         | 同名                                     | `127.0.0.1`                                                     | 绑定地址；Docker 常用 `0.0.0.0`             |
+| `OMC_ORIGIN`                   | `OOMOL_CONNECT_ORIGIN`                   | `http://localhost:<PORT>`                                       | 公网 origin（OAuth redirect）               |
+| `OMC_DATA_DIR`                 | `OOMOL_CONNECT_DATA_DIR`                 | `./data`                                                        | SQLite + files + org config 根              |
+| `OMC_ENCRYPTION_KEY`           | `OOMOL_CONNECT_ENCRYPTION_KEY`           | unset                                                           | 凭据 / OAuth / 幂等响应加密                 |
+| `OMC_NEW_ENCRYPTION_KEY`       | `OOMOL_CONNECT_NEW_ENCRYPTION_KEY`       | unset                                                           | `runtime:data rotate-key` 新密钥            |
+| `OMC_ADMIN_TOKEN`              | `OOMOL_CONNECT_ADMIN_TOKEN`              | unset                                                           | **ops-admin** bearer                        |
+| `OMC_RUNTIME_TOKEN`            | `OOMOL_CONNECT_RUNTIME_TOKEN`            | unset                                                           | 可选 bootstrap runtime token（`/v1` · MCP） |
+| `OMC_JWKS_URI`                 | `OOMOL_CONNECT_JWKS_URI`                 | unset                                                           | Runtime JWT JWKS（Node）                    |
+| `OMC_JWT_ISSUER`               | `OOMOL_CONNECT_JWT_ISSUER`               | unset                                                           | JWT `iss`                                   |
+| `OMC_JWT_AUDIENCE`             | `OOMOL_CONNECT_JWT_AUDIENCE`             | unset                                                           | JWT `aud`                                   |
+| `OMC_ALLOWED_ACTIONS`          | `OOMOL_CONNECT_ALLOWED_ACTIONS`          | unset                                                           | Action allowlist（`service.*` / `*`）       |
+| `OMC_BLOCKED_ACTIONS`          | `OOMOL_CONNECT_BLOCKED_ACTIONS`          | unset                                                           | Action denylist                             |
+| `OMC_ALLOWED_PROXIES`          | `OOMOL_CONNECT_ALLOWED_PROXIES`          | unset                                                           | Proxy allowlist                             |
+| `OMC_BLOCKED_PROXIES`          | `OOMOL_CONNECT_BLOCKED_PROXIES`          | unset                                                           | Proxy denylist                              |
+| `OMC_ALLOW_PRIVATE_NETWORK`    | `OOMOL_CONNECT_ALLOW_PRIVATE_NETWORK`    | `false`                                                         | 自托管 provider 访问内网                    |
+| `OMC_LOG_LEVEL`                | `OOMOL_CONNECT_LOG_LEVEL`                | `info`                                                          | Pino 级别                                   |
+| `OMC_TRANSIT_FILE_TTL_SECONDS` | `OOMOL_CONNECT_TRANSIT_FILE_TTL_SECONDS` | `86400`                                                         | 中转文件 TTL                                |
+| `OMC_TRANSIT_FILE_MAX_BYTES`   | `OOMOL_CONNECT_TRANSIT_FILE_MAX_BYTES`   | `104857600`                                                     | 中转文件上限                                |
+| `OMC_RUN_LIMIT`                | `OOMOL_CONNECT_RUN_LIMIT`                | `5000`                                                          | runs 保留条数                               |
+| `OMC_CATALOG_PROFILE`          | `OOMOL_CONNECT_CATALOG_PROFILE`          | `office`                                                        | `office` 白名单 / `full` 全量 catalog       |
+| `OMC_ALLOWED_SERVICES`         | `OOMOL_CONNECT_ALLOWED_SERVICES`         | unset                                                           | 逗号 service id 或 `*`（覆盖 profile）      |
+
+本地手册路径：`npm run dev` 读 `.env.example` 的 `PORT=3100`。不要把进程未设 `PORT` 时的 `3000` 写成 `npm run dev` 的用法。
 
 ## 2b. 网关护栏 / fallback（G0 · G1a）
 
@@ -56,15 +58,15 @@ Connection 主备（G1a）默认启用：同 service 多连接时自动排序尝
 
 ## 3. 企业扩展（仅 OMC\_\*）
 
-| 变量                         | 状态    | 用途                                        |
-| ---------------------------- | ------- | ------------------------------------------- |
-| `OMC_BOOTSTRAP_ADMIN_EMAIL`  | ✅      | 空库首个 org-admin 邮箱                     |
-| `OMC_DEV_OTP`                | ✅      | 本地固定 OTP（默认 `000000`）               |
-| `OMC_SMTP_URL`               | ✅ 可选 | 发 OTP 邮件；未设则用 devCode               |
-| `OMC_SMTP_FROM`              | ✅ 可选 | 发件人                                      |
-| `OMC_EXPOSE_DEV_OTP`         | ✅ 可选 | SMTP 已发时仍回传 code（调试）              |
-| `OMC_FEISHU_APP_ID`          | ⏳ stub | 飞书 authorize 参数；真换票延期             |
-| （预留）`OMC_ORG_CONFIG_DIR` | 可选    | 覆盖默认 `$OMC_DATA_DIR/org/default/config` |
+| 变量                         | 状态    | 用途                                                                                            |
+| ---------------------------- | ------- | ----------------------------------------------------------------------------------------------- |
+| `OMC_BOOTSTRAP_ADMIN_EMAIL`  | ✅      | 空库首个 org-admin 邮箱                                                                         |
+| `OMC_DEV_OTP`                | ✅      | 本地固定 OTP（默认 `000000`）                                                                   |
+| `OMC_SMTP_URL`               | ✅ 可选 | 发 OTP 邮件；已设则 verify 拒绝固定 dev OTP；仅未发出或 `OMC_EXPOSE_DEV_OTP=1` 才回显 `devCode` |
+| `OMC_SMTP_FROM`              | ✅ 可选 | 发件人                                                                                          |
+| `OMC_EXPOSE_DEV_OTP`         | ✅ 可选 | SMTP 已发时仍回传 code（调试）                                                                  |
+| `OMC_FEISHU_APP_ID`          | ⏳ stub | 飞书 authorize 参数；真换票延期                                                                 |
+| （预留）`OMC_ORG_CONFIG_DIR` | 可选    | 覆盖默认 `$OMC_DATA_DIR/org/default/config`                                                     |
 
 ## 4. Catalog 表面（办公默认）
 

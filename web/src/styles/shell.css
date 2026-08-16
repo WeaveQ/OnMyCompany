@@ -58,17 +58,17 @@
   display: grid;
   align-content: start;
   min-height: 0;
-  gap: 4px;
+  gap: 2px;
   overflow-y: auto;
-  padding: 16px 12px;
+  padding: 10px 10px 14px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   gap: 9px;
-  min-height: 36px;
-  padding: 0 12px;
+  min-height: 32px;
+  padding: 0 10px;
   border-radius: var(--radius-lg);
   color: var(--sidebar-foreground);
   text-align: left;

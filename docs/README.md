@@ -2,18 +2,19 @@
 
 ## OnMyCompany product（优先）
 
-| Doc                                                                | Description                                          |
-| ------------------------------------------------------------------ | ---------------------------------------------------- |
-| [Architecture.md](Architecture.md)                                 | **系统架构** · OMA 分层 · 代码地图 · 鉴权 · 配置通道 |
-| [onmycompany/README.md](onmycompany/README.md)                     | 工程文档入口（按角色）                               |
-| [onmycompany/CONFIG-SCHEMA.md](onmycompany/CONFIG-SCHEMA.md)       | local/company **配置同构**                           |
-| [onmycompany/DESKTOP-CONTRACT.md](onmycompany/DESKTOP-CONTRACT.md) | 双端契约与联调                                       |
-| [onmycompany/ROADMAP.md](onmycompany/ROADMAP.md)                   | 试点 MVP 完成度 · 延期项                             |
-| [onmycompany/BOOTSTRAP.md](onmycompany/BOOTSTRAP.md)               | 双 Admin / 首登 / OTP                                |
-| [onmycompany/RBAC.md](onmycompany/RBAC.md)                         | 权限矩阵                                             |
-| [onmycompany/API-NOTES.md](onmycompany/API-NOTES.md)               | **企业 HTTP 路径**（对齐 `src/company/routes.ts`）   |
-| [onmycompany/UPSTREAM.md](onmycompany/UPSTREAM.md)                 | fork / merge                                         |
-| [onmycompany/INIT-CHECKLIST.md](onmycompany/INIT-CHECKLIST.md)     | 初始化检查表                                         |
+| Doc                                                                | Description                                            |
+| ------------------------------------------------------------------ | ------------------------------------------------------ |
+| [user-guide/index.md](user-guide/index.md)                         | **使用说明**正文；文档站 `npm run dev:docs`（`:5181`） |
+| [Architecture.md](Architecture.md)                                 | **系统架构** · OMA 分层 · 代码地图 · 鉴权 · 配置通道   |
+| [onmycompany/README.md](onmycompany/README.md)                     | 工程文档入口（按角色）                                 |
+| [onmycompany/CONFIG-SCHEMA.md](onmycompany/CONFIG-SCHEMA.md)       | local/company **配置同构**                             |
+| [onmycompany/DESKTOP-CONTRACT.md](onmycompany/DESKTOP-CONTRACT.md) | 双端契约与联调                                         |
+| [onmycompany/ROADMAP.md](onmycompany/ROADMAP.md)                   | 试点 MVP 完成度 · 延期项                               |
+| [onmycompany/BOOTSTRAP.md](onmycompany/BOOTSTRAP.md)               | 双 Admin / 首登 / OTP                                  |
+| [onmycompany/RBAC.md](onmycompany/RBAC.md)                         | 权限矩阵                                               |
+| [onmycompany/API-NOTES.md](onmycompany/API-NOTES.md)               | **企业 HTTP 路径**（对齐 `src/company/routes.ts`）     |
+| [onmycompany/UPSTREAM.md](onmycompany/UPSTREAM.md)                 | fork / merge                                           |
+| [onmycompany/INIT-CHECKLIST.md](onmycompany/INIT-CHECKLIST.md)     | 初始化检查表                                           |
 
 Root: [README.md](../README.md) · [README.zh-CN.md](../README.zh-CN.md) · [AGENTS.md](../AGENTS.md) · [AGENTS.zh-CN.md](../AGENTS.zh-CN.md)
 

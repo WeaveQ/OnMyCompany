@@ -5,12 +5,16 @@
   "description": "OnMyCompany — enterprise agent control plane and outbound gateway",
   "license": "SEE LICENSE IN LICENSE",
   "workspaces": [
-    "web"
+    "web",
+    "website"
   ],
   "type": "module",
   "scripts": {
     "postinstall": "node scripts/ensure-generated.ts",
     "dev": "node scripts/dev-local.ts",
+    "dev:docs": "npm run dev --workspace website",
+    "build:docs": "npm run build --workspace website",
+    "preview:docs": "npm run preview --workspace website",
     "dev:api": "node scripts/ensure-generated.ts && node src/server/index.ts",
     "dev:omniroute": "npx --yes omniroute@latest",
     "omniroute:up": "docker compose -f docker-compose.omniroute.yml up -d",

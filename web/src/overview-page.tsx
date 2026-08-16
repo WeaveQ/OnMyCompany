@@ -1,3 +1,4 @@
+import type { OnboardingStep } from "./admin-onboarding";
 import type { AppData } from "./model";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import { buildAdminOnboardingChecklist } from "./admin-onboarding";
 import { apiGet } from "./api";
 import { getActiveTeamId, getMemberToken, subscribeActiveTeamId } from "./member-session";
 import { createOverviewSummary } from "./model";
@@ -65,7 +67,13 @@ interface ModelRouterHealth {
 }
 
 /** Structural markers for tests / screenshot QA. */
-export const OVERVIEW_SECTION_IDS = ["observability", "capability", "team-usage", "personal-usage"] as const;
+export const OVERVIEW_SECTION_IDS = [
+  "onboarding",
+  "observability",
+  "capability",
+  "team-usage",
+  "personal-usage",
+] as const;
 
 export function OverviewPage(props: OverviewPageProps): ReactNode {
   const t = useTranslate();
@@ -117,6 +125,16 @@ export function OverviewPage(props: OverviewPageProps): ReactNode {
   const dashboardUrl = llmUsage?.dashboardUrl || modelRouter?.dashboardUrl || "http://127.0.0.1:20128/dashboard";
   const toolRuns = usage?.totalRuns ?? 0;
   const connPct = Math.round((connected / totalProviders) * 100);
+  const checklist = buildAdminOnboardingChecklist({
+    memberCount: company?.memberCount ?? 0,
+    teamReady: Boolean(teamId && teamId !== "__all__") || (company?.memberCount ?? 0) > 0,
+    connectionCount: connected,
+    skillCount: company?.orgSkillCount ?? 0,
+    hasPolicy: Boolean(company),
+    modelRouterOk: modelRouter?.ok ?? null,
+    modelRouterDashboardUrl: dashboardUrl,
+    runtimeTokenCount: props.data.runtimeTokens?.length ?? 0,
+  });
 
   // Empty product: connect first. Logged-in empty: run once. Else quiet.
   const primaryCta =
@@ -202,6 +220,8 @@ export function OverviewPage(props: OverviewPageProps): ReactNode {
           external
         />
       </section>
+
+      <AdminOnboardingChecklist steps={checklist} />
 
       <section className="overview-ledgers" data-overview-section="observability">
         <article className={`overview-ledger is-model${routerOk ? " is-live" : ""}`} data-obs-plane="model">
@@ -359,6 +379,58 @@ export function OverviewPage(props: OverviewPageProps): ReactNode {
         {toolRuns === 0 ? <div hidden data-overview-section="personal-usage" /> : null}
       </section>
     </div>
+  );
+}
+
+const ONBOARDING_COPY: Record<string, { title: string; hint: string }> = {
+  members: { title: "onboarding.membersTitle", hint: "onboarding.membersHint" },
+  teams: { title: "onboarding.teamsTitle", hint: "onboarding.teamsHint" },
+  connections: { title: "onboarding.connectionsTitle", hint: "onboarding.connectionsHint" },
+  skills: { title: "onboarding.skillsTitle", hint: "onboarding.skillsHint" },
+  policy: { title: "onboarding.policyTitle", hint: "onboarding.policyHint" },
+  "model-router": { title: "onboarding.modelRouterTitle", hint: "onboarding.modelRouterHint" },
+  "runtime-token": { title: "onboarding.runtimeTokenTitle", hint: "onboarding.runtimeTokenHint" },
+};
+
+export function AdminOnboardingChecklist(props: { steps: OnboardingStep[] }): ReactNode {
+  const t = useTranslate();
+  return (
+    <section className="console-card" data-overview-section="onboarding" data-testid="admin-onboarding">
+      <div className="console-card-header">
+        <div>
+          <h2 className="console-card-title">{t("onboarding.title")}</h2>
+          <p className="console-card-subtitle">{t("onboarding.subtitle")}</p>
+        </div>
+      </div>
+      <ol className="overview-onboarding-list">
+        {props.steps.map((step) => {
+          const copy = ONBOARDING_COPY[step.id];
+          return (
+            <li
+              key={step.id}
+              className={step.done ? "overview-onboarding-step is-done" : "overview-onboarding-step"}
+              data-testid={`onboarding-step-${step.id}`}
+              data-onboarding-done={step.done ? "true" : "false"}
+            >
+              <span className="overview-onboarding-mark" aria-hidden>
+                {step.done ? "✓" : "○"}
+              </span>
+              <div>
+                <strong>{copy ? t(copy.title) : step.title}</strong>
+                <div className="console-row-meta">{copy ? t(copy.hint) : step.hint}</div>
+              </div>
+              {step.external && step.href ? (
+                <a href={step.href} target="_blank" rel="noreferrer" data-testid="onboarding-model-router-link">
+                  {t("onboarding.openModelRouter")}
+                </a>
+              ) : step.to ? (
+                <Link to={step.to}>{t("onboarding.open")}</Link>
+              ) : null}
+            </li>
+          );
+        })}
+      </ol>
+    </section>
   );
 }
 

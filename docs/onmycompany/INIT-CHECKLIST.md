@@ -19,7 +19,7 @@
 ## 运行
 
 - [ ] `npm install` 成功
-- [ ] `npm run dev`：API :3000、Web :5180
+- [ ] `npm run dev`：API :3100、Web :5180
 - [ ] `curl /health` ok
 - [ ] hackernews action 冒烟 ok
 - [ ] （可选）`npm run fix-check`

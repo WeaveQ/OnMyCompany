@@ -26,11 +26,11 @@
 
 ### 登录方式
 
-| 档          | 方式                                           | 状态                                  |
-| ----------- | ---------------------------------------------- | ------------------------------------- |
-| 本地 / 内网 | Dev OTP（响应 `devCode` 或固定 `OMC_DEV_OTP`） | ✅                                    |
-| 可选        | `OMC_SMTP_URL` 真发 OTP                        | ✅ 可选                               |
-| 后置        | 真飞书 OIDC 换票                               | ⏳ stub：`/api/company/auth/feishu/*` |
+| 档          | 方式                                           | 状态                        |
+| ----------- | ---------------------------------------------- | --------------------------- |
+| 本地 / 内网 | Dev OTP（响应 `devCode` 或固定 `OMC_DEV_OTP`） | ✅                          |
+| 可选        | `OMC_SMTP_URL` 真发 OTP                        | ✅ 可选                     |
+| 后置        | 真飞书 OIDC 换票                               | `feishu/verify` 501，不发卡 |
 
 ## 本地运维
 
@@ -45,28 +45,30 @@ npm run dev
 
 ### ops-admin
 
+`npm run dev` 的 API 是 `http://127.0.0.1:3100`，管理台是 `http://127.0.0.1:5180`。未设 `PORT` 的裸进程（`npm start` / `node src/server/index.ts`）默认仍是 `3000`。
+
 ```bash
-curl -s http://localhost:3000/api/auth/session \
+curl -s http://127.0.0.1:3100/api/auth/session \
   -H "Authorization: Bearer $OMC_ADMIN_TOKEN"
 ```
 
 ### 企业登录（member）
 
 ```bash
-curl -s -X POST http://localhost:3000/api/company/auth/email/start \
+curl -s -X POST http://127.0.0.1:3100/api/company/auth/email/start \
   -H 'content-type: application/json' \
   -d '{"email":"admin@company.internal"}'
 
-curl -s -X POST http://localhost:3000/api/company/auth/email/verify \
+curl -s -X POST http://127.0.0.1:3100/api/company/auth/email/verify \
   -H 'content-type: application/json' \
   -d '{"email":"admin@company.internal","code":"000000"}'
 # → { token, member, teams, defaultTeamId }
 
-curl -s http://localhost:3000/api/me \
+curl -s http://127.0.0.1:3100/api/me \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-管理台 Web：`npm run dev` 后 Vite 控制台；企业页用 sessionStorage `omc_member_token`。  
+管理台 Web：`npm run dev` 后打开 `http://127.0.0.1:5180`；企业页用 sessionStorage `omc_member_token`。  
 控制台已解锁时，企业页可 `ensureMemberSessionForConsole` 静默 bootstrap，减少二次登录。
 
 路径全表见 [API-NOTES.md](./API-NOTES.md)。  

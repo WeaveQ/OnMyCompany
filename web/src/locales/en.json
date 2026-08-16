@@ -18,6 +18,15 @@
     "notConnected": "Not connected",
     "open": "Open",
     "refresh": "Refresh",
+    "add": "Add",
+    "cancel": "Cancel",
+    "save": "Save",
+    "remove": "Remove",
+    "details": "Details",
+    "enable": "Enable",
+    "upload": "Upload",
+    "loading": "Loading…",
+    "readOnly": "read-only",
     "required": "Required",
     "runtimeReady": "Runtime ready",
     "showMore": "Show more",
@@ -39,6 +48,8 @@
     "orgConfig": "Enterprise settings",
     "orgTeams": "Team directory",
     "skills": "Skills",
+    "experts": "Experts",
+    "tools": "Tools",
     "connections": "Connectors",
     "team": "Team",
     "members": "Accounts",
@@ -94,6 +105,14 @@
       "skills": {
         "title": "Skills",
         "subtitle": "Team skill packages — add from public or personal catalog."
+      },
+      "experts": {
+        "title": "Experts",
+        "subtitle": "Org persona packs for desktop. No company chat."
+      },
+      "tools": {
+        "title": "Tools",
+        "subtitle": "Declared MCP servers and gateway projection. This process does not start MCP."
       },
       "connections": {
         "title": "Connectors",
@@ -603,5 +622,137 @@
       "title": "OpenAPI JSON",
       "description": "Use the generated spec from scripts or tool importers."
     }
+  },
+  "accountStatus": {
+    "all": "All",
+    "pending": "Pending",
+    "active": "Active",
+    "deactivated": "Deactivated"
+  },
+  "orgRoles": {
+    "admin": "Org admin",
+    "auditor": "Auditor",
+    "member": "Member"
+  },
+  "onboarding": {
+    "title": "Admin onboarding",
+    "subtitle": "The model step only probes OmniRoute. Employees: see MEMBER-ONBOARDING in the docs.",
+    "open": "Open",
+    "openModelRouter": "Open model router",
+    "membersTitle": "Company accounts",
+    "membersHint": "Add people on the roster",
+    "teamsTitle": "Teams",
+    "teamsHint": "Create or open a team",
+    "connectionsTitle": "Connectors",
+    "connectionsHint": "Share office connections",
+    "skillsTitle": "Skills",
+    "skillsHint": "Attach org skill packages",
+    "policyTitle": "Egress policy",
+    "policyHint": "Allow or block Gateway actions",
+    "modelRouterTitle": "Model router (OmniRoute)",
+    "modelRouterHint": "Probe only — keys stay in Omni",
+    "runtimeTokenTitle": "Runtime token",
+    "runtimeTokenHint": "Mint a member-bound API key"
+  },
+  "expertsPage": {
+    "title": "Experts",
+    "lead": "Org persona packs for desktop agents.",
+    "leadWithUser": "Org persona packs · {{user}}",
+    "loginTitle": "Sign in to manage experts",
+    "loginDesc": "Org-admin can add, upload, or remove packages.",
+    "empty": "No org experts yet.",
+    "emptyAdmin": " Add from the catalog or upload a Markdown pack.",
+    "emptyMember": " Ask an org-admin to add one.",
+    "orgPill": "org",
+    "addTitle": "Add expert",
+    "addDesc": "Enable a catalog pack or upload Markdown. Desktop only — no company chat.",
+    "catalog": "Catalog",
+    "catalogEmpty": "No unused catalog packs.",
+    "uploadTitle": "Upload Markdown",
+    "uploadDesc": "Writes to the org catalog and enables it.",
+    "uploadId": "packageId, e.g. sales-brief@1.1.0",
+    "uploadName": "Display name",
+    "uploadCta": "Upload and enable",
+    "detailDesc": "Persona pack body. No company chat.",
+    "noReadme": "(no README.md)",
+    "enabled": "Expert enabled",
+    "removed": "Expert removed",
+    "loadFailed": "Failed to load experts",
+    "enableFailed": "Enable failed",
+    "removeFailed": "Remove failed",
+    "uploadFailed": "Upload failed",
+    "catalogFailed": "Failed to load catalog",
+    "detailFailed": "Failed to load expert"
+  },
+  "toolsPage": {
+    "title": "Tools",
+    "lead": "Declared MCP servers and gateway projection.",
+    "leadWithUser": "Org MCP + gateway declarations · {{user}}",
+    "loginTitle": "Sign in to view tools",
+    "loginDesc": "Declarations only. This console does not start MCP processes.",
+    "mcpTitle": "MCP declarations",
+    "mcpSubtitle": "Read from tools/mcp.json. This process does not spawn or npx servers.",
+    "mcpEmpty": "No MCP servers declared.",
+    "gatewayTitle": "Gateway projection",
+    "gatewaySubtitle": "Read from tools/gateway.json. No connection secrets.",
+    "gatewayEmpty": "No gateway services projected.",
+    "aliasesTitle": "Named config aliases",
+    "aliasesSubtitle": "Field names only. Secret values are never listed.",
+    "aliasesNone": "(none)",
+    "declared": "declared",
+    "loadFailed": "Failed to load tools"
+  },
+  "orgConfigPage": {
+    "quotaMemberDay": "Tool-run quota: member / day",
+    "quotaMemberMonth": "Tool-run quota: member / month",
+    "quotaTeamDay": "Tool-run quota: team / day",
+    "quotaTeamMonth": "Tool-run quota: team / month",
+    "quotaUnlimited": "unlimited",
+    "omniNote": "Models live in OmniRoute. Open the model router to set vendors and keys. This page is not a model admin.",
+    "omniLink": "Open model router",
+    "expertsLink": "Experts",
+    "peopleAccess": "People and access"
+  },
+  "connectionsGrants": {
+    "title": "Connection team grants",
+    "subtitle": "Empty list = all teams. A grant list requires X-Team-Id.",
+    "placeholder": "team ids, comma separated",
+    "save": "Save grants",
+    "saved": "Team grants saved",
+    "cleared": "Team grants cleared (all teams)",
+    "failed": "Save failed"
+  },
+  "skillsPage": {
+    "details": "Details",
+    "roles": "Roles",
+    "rolesTitle": "Visible roles",
+    "rolesDesc": "Empty selection means every member can see this package.",
+    "rolesUpdated": "Roles updated",
+    "rolesFailed": "Update failed",
+    "detailDesc": "Skill package body. No visual orchestrator.",
+    "noSkillMd": "(no SKILL.md)",
+    "detailFailed": "Failed to load skill",
+    "addedBy": "added by {{id}}"
+  },
+  "membersPage": {
+    "status": "Status"
+  },
+  "teamPage": {
+    "title": "Team",
+    "lead": "Manage members and roles on this team. Enable or disable accounts under Accounts.",
+    "loginTitle": "Sign in to manage team",
+    "loginDesc": "Sign in as an enterprise member to manage this team.",
+    "allTeams": "All teams",
+    "connectors": "Connectors",
+    "editTeam": "Edit team",
+    "addMember": "Add member",
+    "filterAll": "All",
+    "filterPending": "Pending",
+    "filterPendingCount": "Pending {{count}}",
+    "hint": "Team members and team roles. Create accounts under Accounts · create or switch teams in All teams",
+    "owner": "Owner",
+    "copied": "Copied",
+    "copyId": "Click to copy full ID",
+    "removeFromTeam": "Remove from team"
   }
 }

@@ -19,6 +19,12 @@ describe("shared MemberLoginCard usage", () => {
     expect(org).toContain("MemberLoginCard");
   });
 
+  it("skills and experts silent-bootstrap like members (no extra wall after console unlock)", () => {
+    const experts = readFileSync(join(import.meta.dirname, "experts-page.tsx"), "utf8");
+    expect(skills).toContain("ensureMemberSessionForConsole");
+    expect(experts).toContain("ensureMemberSessionForConsole");
+  });
+
   it("skills page uses page-hero and list classes not only inline layout dumps", () => {
     expect(skills).toContain("page-hero-title");
     expect(skills).toContain("skills-row");

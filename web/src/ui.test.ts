@@ -14,6 +14,7 @@ import {
   getPrimaryNavPaths,
   getShellHeadingKey,
   loadRuntimeData,
+  navItemIsAdminWrite,
   nextAuthLoadState,
   nextLogoutState,
   subscribeToOAuthCompletions,
@@ -36,12 +37,37 @@ describe("primary nav IA", () => {
   it("lists secondary sidebar paths flat; connections under capability with skills/access", () => {
     const more = getMoreNavPaths();
     expect(more).toEqual(
-      expect.arrayContaining(["/connections", "/skills", "/runs", "/access", "/org-config", "/metering"]),
+      expect.arrayContaining([
+        "/connections",
+        "/skills",
+        "/experts",
+        "/tools",
+        "/runs",
+        "/access",
+        "/org-config",
+        "/metering",
+      ]),
     );
     // Capability cluster: connections before skills/access in group order
     expect(more.indexOf("/connections")).toBeLessThan(more.indexOf("/skills"));
+    expect(more.indexOf("/skills")).toBeLessThan(more.indexOf("/experts"));
     expect(more).not.toContain("/actions");
     expect(more).not.toContain("/built-in-tools");
+  });
+
+  it("hides org-admin write nav from auditor; keeps Skills as a read catalog", () => {
+    expect(navItemIsAdminWrite("/members")).toBe(true);
+    expect(navItemIsAdminWrite("/org-config")).toBe(true);
+    expect(navItemIsAdminWrite("/skills")).toBe(false);
+    expect(getPrimaryNavPaths(["auditor"])).toEqual(["/overview", "/team"]);
+    expect(getPrimaryNavPaths(["auditor"])).not.toContain("/members");
+    expect(getMoreNavPaths(["auditor"])).not.toContain("/org-config");
+    expect(getMoreNavPaths(["auditor"])).toContain("/skills");
+    expect(getMoreNavPaths(["auditor"])).toContain("/audit-events");
+    expect(getPrimaryNavPaths(["admin"])).toEqual(["/overview", "/members", "/team"]);
+    expect(getMoreNavPaths(["admin"])).toContain("/org-config");
+    expect(getPrimaryNavPaths(["member"])).toEqual(["/overview", "/team"]);
+    expect(getPrimaryNavPaths(null)).toEqual(["/overview", "/members", "/team"]);
   });
 
   it("maps shell header title keys for all primary sections including audit", () => {
@@ -53,6 +79,8 @@ describe("primary nav IA", () => {
     expect(getShellHeadingKey("/team")).toBe("team");
     expect(getShellHeadingKey("/org/teams")).toBe("orgTeams");
     expect(getShellHeadingKey("/org-config")).toBe("orgConfig");
+    expect(getShellHeadingKey("/experts")).toBe("experts");
+    expect(getShellHeadingKey("/tools")).toBe("tools");
   });
 
   it("connections headings describe enterprise-shared pool, not per-team vault", () => {

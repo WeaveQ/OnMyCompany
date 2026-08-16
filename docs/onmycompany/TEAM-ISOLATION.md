@@ -55,8 +55,8 @@
 
 ## 4. 后续（未做）
 
-- [ ] 连接按团队授权（`connection_team_grants`）
-- [ ] MCP / runtime-token 默认 `teamId`
+- [x] 连接按团队授权（`connection_team_grants`；非空名单时无头 deny）
+- [x] `/v1` 与 `/mcp` 复制 `X-Team-Id` 到 run（runtime-token 默认 team 仍可选）
 - [ ] 队级 policy 叠加
 - [ ] 历史 run「未归属」桶
 - [ ] 显式 `owner` 角色字段（当前 last-admin 规则已够用）
@@ -68,7 +68,7 @@ Authorization: Bearer <runtime-token>
 X-Team-Id: <active-team-id>
 ```
 
-未传 `X-Team-Id` 时 run 无 team 归因；全公司可见，单队过滤会漏。
+未传 `X-Team-Id` 时 run 无 team 归因。连接已有非空 `connection_team_grants` 时，无头与未授权队一样 deny。
 
 ## 6. 相关文件
 

@@ -23,6 +23,7 @@
 | Task type                   | Minimum reading                            |
 | --------------------------- | ------------------------------------------ |
 | Any change                  | **Iron rules below** + Architecture §1–2   |
+| User-facing how-to          | [`docs/user-guide/`](docs/user-guide/)     |
 | Config / OrgConfig / policy | CONFIG-SCHEMA + Architecture §3            |
 | Auth / members / tokens     | BOOTSTRAP + RBAC + API-NOTES               |
 | Desktop integration / mocks | DESKTOP-CONTRACT + OMA config-consistency  |
@@ -127,6 +128,7 @@ Hard rules: [`CONFIG-SCHEMA.md`](docs/onmycompany/CONFIG-SCHEMA.md).
 npm install
 cp .env.example .env    # optional
 npm run dev             # API :3100 + web :5180 (avoid clashing with OnMyAgent 5173/8787)
+npm run dev:docs        # handbook VitePress :5181
 npm run dev:api
 npm test
 npm run test:affected   # slice company|web|server from git diff
@@ -217,11 +219,12 @@ Contract changes: update `DESKTOP-CONTRACT` + `CONFIG-SCHEMA` + API-NOTES first,
 
 ## 10. Links
 
-| Resource             | Path                                                                   |
-| -------------------- | ---------------------------------------------------------------------- |
-| README               | [README.md](README.md) · [中文](README.zh-CN.md)                       |
-| Architecture         | [docs/Architecture.md](docs/Architecture.md)                           |
-| Product engineering  | [docs/onmycompany/README.md](docs/onmycompany/README.md)               |
-| Roadmap              | [docs/onmycompany/ROADMAP.md](docs/onmycompany/ROADMAP.md)             |
-| Runtime API          | [docs/runtime-api.md](docs/runtime-api.md)                             |
-| Desktop Architecture | [../onmyagent/docs/Architecture.md](../onmyagent/docs/Architecture.md) |
+| Resource             | Path                                                                      |
+| -------------------- | ------------------------------------------------------------------------- |
+| README               | [README.md](README.md) · [中文](README.zh-CN.md)                          |
+| User guide           | [docs/user-guide/index.md](docs/user-guide/index.md) · `npm run dev:docs` |
+| Architecture         | [docs/Architecture.md](docs/Architecture.md)                              |
+| Product engineering  | [docs/onmycompany/README.md](docs/onmycompany/README.md)                  |
+| Roadmap              | [docs/onmycompany/ROADMAP.md](docs/onmycompany/ROADMAP.md)                |
+| Runtime API          | [docs/runtime-api.md](docs/runtime-api.md)                                |
+| Desktop Architecture | [../onmyagent/docs/Architecture.md](../onmyagent/docs/Architecture.md)    |

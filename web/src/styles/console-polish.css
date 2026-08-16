@@ -109,6 +109,21 @@
   padding-bottom: 24px;
 }
 
+.connection-grants-card {
+  margin-top: 12px;
+}
+
+.connection-grants-card .org-config-form-grid {
+  grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+@media (max-width: 720px) {
+  .connection-grants-card .org-config-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Card-like chrome: title row + filter row share one surface */
 .connections-chrome {
   display: flex;
@@ -523,6 +538,12 @@ button.connections-chip.console-chip,
   padding: 32px 16px;
   color: var(--muted-foreground);
   font-size: 13px;
+}
+
+.tools-page .console-empty {
+  min-height: 0;
+  padding: 14px 4px 8px;
+  place-items: start start;
 }
 
 /* ── List rows ──────────────────────────────────────────────────────── */
@@ -2404,12 +2425,35 @@ button.connections-chip.console-chip,
   gap: 12px;
   max-width: none;
 }
-/* Policy fields span full card width (aligned with connections list) */
-.org-config-form-grid .field,
-.org-config-form-grid input,
+/* Policy fields span full card width (aligned with connections list).
+   Do not stretch checkboxes — that shoved the BYOK label to the far edge. */
+.org-config-form-grid label.field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  align-items: stretch;
+  width: 100%;
+  max-width: none;
+}
+.org-config-form-grid .field input,
 .org-config-form-grid .org-config-select {
   width: 100%;
   max-width: none;
+}
+.org-config-form-grid input[type="checkbox"] {
+  width: auto;
+  height: auto;
+  flex: 0 0 auto;
+}
+.org-config-quota-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 720px) {
+  .org-config-quota-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .org-config-select {
   width: 100%;
@@ -2422,9 +2466,12 @@ button.connections-chip.console-chip,
   box-sizing: border-box;
 }
 .org-config-check {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 8px;
+  width: max-content;
+  max-width: 100%;
   font-size: 14px;
   cursor: pointer;
 }
@@ -2618,7 +2665,8 @@ button.connections-chip.console-chip,
 }
 
 /* Skills page */
-.skills-page .console-card {
+.skills-page .console-card,
+.experts-page .console-card {
   padding: 0;
   overflow: hidden;
 }
