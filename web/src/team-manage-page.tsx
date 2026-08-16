@@ -1,6 +1,7 @@
 import type { AccountLifecycle, TeamRecord } from "./team-ui";
 import type { ReactNode } from "react";
 
+import { useTranslate } from "@embra/i18n/react";
 import { Check, ChevronDown, ChevronsUpDown, Copy, Pencil, Plus, Trash2, Users } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router";
@@ -78,6 +79,7 @@ function normalizeAccountStatus(raw?: string): AccountLifecycle | string {
 }
 
 export function TeamManagePage(): ReactNode {
+  const t = useTranslate();
   const [params, setParams] = useSearchParams();
   const teamId = params.get("team") || getActiveTeamId() || "";
   const filterParam = ((): PeopleFilter => {
@@ -389,14 +391,12 @@ export function TeamManagePage(): ReactNode {
     return (
       <div className="page-stack team-manage-page">
         <header className="page-hero">
-          <h1 className="page-hero-title">Team</h1>
-          <p className="page-hero-lead">
-            Manage members and roles on this team. Enable/disable accounts under Accounts.
-          </p>
+          <h1 className="page-hero-title">{t("teamPage.title")}</h1>
+          <p className="page-hero-lead">{t("teamPage.lead")}</p>
         </header>
         <MemberLoginCard
-          title="Sign in to manage team"
-          description="Sign in as an enterprise member to manage this team."
+          title={t("teamPage.loginTitle")}
+          description={t("teamPage.loginDesc")}
           email={loginEmail}
           code={code}
           error={error}
@@ -439,33 +439,33 @@ export function TeamManagePage(): ReactNode {
                   type="button"
                   className="team-id-chip"
                   onClick={() => void copyTeamId()}
-                  title="Click to copy full ID"
+                  title={t("teamPage.copyId")}
                 >
                   {formatTeamIdSnippet(team.id)}
                 </button>
                 {idTipOpen || copied ? (
                   <span className="team-id-tooltip" role="tooltip">
                     <Copy size={12} />
-                    {copied ? "Copied" : team.id}
+                    {copied ? t("teamPage.copied") : team.id}
                   </span>
                 ) : null}
               </span>
             ) : null}
-            {team && team.id !== "personal" ? <span className="team-pill">Owner</span> : null}
+            {team && team.id !== "personal" ? <span className="team-pill">{t("teamPage.owner")}</span> : null}
           </div>
 
           <div className="team-manage-actions">
             <Button variant="ghost" size="sm" type="button" className="team-manage-secondary-link" asChild>
               <Link to="/org/teams" data-testid="team-open-directory">
-                All teams
+                {t("teamPage.allTeams")}
               </Link>
             </Button>
             <Button variant="ghost" size="sm" type="button" className="team-manage-secondary-link" asChild>
-              <Link to="/connections">Connectors</Link>
+              <Link to="/connections">{t("teamPage.connectors")}</Link>
             </Button>
             <Button variant="outline" size="sm" onClick={() => setEditOpen(true)} disabled={locked}>
               <Pencil size={14} />
-              Edit team
+              {t("teamPage.editTeam")}
             </Button>
             <Button
               size="sm"
@@ -474,7 +474,7 @@ export function TeamManagePage(): ReactNode {
               data-testid="team-add-member"
             >
               <Plus size={14} />
-              Add member
+              {t("teamPage.addMember")}
             </Button>
           </div>
         </div>
@@ -489,7 +489,7 @@ export function TeamManagePage(): ReactNode {
               data-testid="filter-all"
               onClick={() => switchFilter("all")}
             >
-              All
+              {t("teamPage.filterAll")}
             </button>
             <button
               type="button"
@@ -499,7 +499,7 @@ export function TeamManagePage(): ReactNode {
               data-testid="filter-pending"
               onClick={() => switchFilter("pending")}
             >
-              {pendingCount ? `Pending ${pendingCount}` : "Pending"}
+              {pendingCount ? t("teamPage.filterPendingCount", { count: pendingCount }) : t("teamPage.filterPending")}
             </button>
             <button
               type="button"
@@ -509,7 +509,7 @@ export function TeamManagePage(): ReactNode {
               data-testid="filter-active"
               onClick={() => switchFilter("active")}
             >
-              Active
+              {t("accountStatus.active")}
             </button>
             <button
               type="button"
@@ -519,14 +519,10 @@ export function TeamManagePage(): ReactNode {
               data-testid="filter-deactivated"
               onClick={() => switchFilter("deactivated")}
             >
-              Deactivated
+              {t("accountStatus.deactivated")}
             </button>
           </div>
-          <p className="team-people-hint">
-            Team members and team roles. Create accounts under <Link to="/members">Accounts</Link>
-            {" · create / switch teams in "}
-            <Link to="/org/teams">All teams</Link>
-          </p>
+          <p className="team-people-hint">{t("teamPage.hint")}</p>
         </div>
 
         <div className="team-manage-selection">
@@ -610,8 +606,8 @@ export function TeamManagePage(): ReactNode {
                           <button
                             type="button"
                             className="team-icon-btn is-danger"
-                            title="Remove from team"
-                            aria-label="Remove from team"
+                            title={t("teamPage.removeFromTeam")}
+                            aria-label={t("teamPage.removeFromTeam")}
                             disabled={locked}
                             data-testid={`team-remove-${row.id}`}
                             onClick={() => void removeMember(row.id)}

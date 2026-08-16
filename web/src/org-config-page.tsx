@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { useTranslate } from "@embra/i18n/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { ApiError, apiGet, apiPost, apiPut } from "./api";
@@ -116,6 +117,7 @@ function listNames(value: unknown): string[] {
  * Org config product page — human-first IA (not raw JSON console).
  */
 export function OrgConfigPage(): ReactNode {
+  const t = useTranslate();
   const [me, setMe] = useState<MeResponse | null>(null);
   const [snapshot, setSnapshot] = useState<OrgSnapshot | null>(null);
   const [policyForm, setPolicyForm] = useState<PolicyForm>(policyToForm({}));
@@ -431,39 +433,39 @@ export function OrgConfigPage(): ReactNode {
               </label>
               <div className="org-config-quota-grid" data-testid="quota-grid">
                 <Label className="field">
-                  <span>Tool-run quota: member / day</span>
+                  <span>{t("orgConfigPage.quotaMemberDay")}</span>
                   <Input
                     value={policyForm.memberDailyRuns}
                     onChange={(e) => setPolicyForm((f) => ({ ...f, memberDailyRuns: e.target.value }))}
-                    placeholder="unlimited"
+                    placeholder={t("orgConfigPage.quotaUnlimited")}
                     disabled={!isAdmin}
                     data-testid="quota-member-daily"
                   />
                 </Label>
                 <Label className="field">
-                  <span>Tool-run quota: member / month</span>
+                  <span>{t("orgConfigPage.quotaMemberMonth")}</span>
                   <Input
                     value={policyForm.memberMonthlyRuns}
                     onChange={(e) => setPolicyForm((f) => ({ ...f, memberMonthlyRuns: e.target.value }))}
-                    placeholder="unlimited"
+                    placeholder={t("orgConfigPage.quotaUnlimited")}
                     disabled={!isAdmin}
                   />
                 </Label>
                 <Label className="field">
-                  <span>Tool-run quota: team / day</span>
+                  <span>{t("orgConfigPage.quotaTeamDay")}</span>
                   <Input
                     value={policyForm.teamDailyRuns}
                     onChange={(e) => setPolicyForm((f) => ({ ...f, teamDailyRuns: e.target.value }))}
-                    placeholder="unlimited"
+                    placeholder={t("orgConfigPage.quotaUnlimited")}
                     disabled={!isAdmin}
                   />
                 </Label>
                 <Label className="field">
-                  <span>Tool-run quota: team / month</span>
+                  <span>{t("orgConfigPage.quotaTeamMonth")}</span>
                   <Input
                     value={policyForm.teamMonthlyRuns}
                     onChange={(e) => setPolicyForm((f) => ({ ...f, teamMonthlyRuns: e.target.value }))}
-                    placeholder="unlimited"
+                    placeholder={t("orgConfigPage.quotaUnlimited")}
                     disabled={!isAdmin}
                   />
                 </Label>
@@ -504,8 +506,7 @@ export function OrgConfigPage(): ReactNode {
                   <strong>不存放 API Key</strong>；推理默认仍直连模型厂商，不是聊天流量反代。
                 </p>
                 <p className="console-row-meta" data-testid="omni-models-note">
-                  Models live in OmniRoute. Open the model router to set vendors and keys. This page is not a model
-                  admin.
+                  {t("orgConfigPage.omniNote")}
                 </p>
                 <p>
                   <a
@@ -514,7 +515,7 @@ export function OrgConfigPage(): ReactNode {
                     rel="noreferrer"
                     data-testid="omni-models-link"
                   >
-                    Open model router
+                    {t("orgConfigPage.omniLink")}
                   </a>
                 </p>
               </div>
@@ -566,7 +567,7 @@ export function OrgConfigPage(): ReactNode {
                 <Link to="/skills">打开 Skills</Link>
               </Button>
               <Button asChild size="sm" variant="outline">
-                <Link to="/experts">Experts</Link>
+                <Link to="/experts">{t("orgConfigPage.expertsLink")}</Link>
               </Button>
             </div>
             <div className="org-config-lists">
@@ -599,7 +600,11 @@ export function OrgConfigPage(): ReactNode {
               </div>
             </div>
             <p className="console-row-meta" style={{ marginTop: 12 }}>
-              People & access: <Link to="/team">Team · account status (Pending / Active / Deactivated)</Link>
+              {t("orgConfigPage.peopleAccess")}：{" "}
+              <Link to="/team">
+                {t("teamPage.title")} · {t("accountStatus.pending")} / {t("accountStatus.active")} /{" "}
+                {t("accountStatus.deactivated")}
+              </Link>
               {" · "}
               外部账号：<Link to="/connections">连接器</Link>
             </p>

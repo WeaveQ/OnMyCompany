@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { useTranslate } from "@embra/i18n/react";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, apiGet, apiPost } from "./api";
 import { MemberLoginCard } from "./member-login-card";
@@ -31,6 +32,7 @@ export interface ExpertItem {
 }
 
 export function ExpertsPage(): ReactNode {
+  const t = useTranslate();
   const [me, setMe] = useState<MeResponse | null>(null);
   const [items, setItems] = useState<ExpertItem[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +83,7 @@ export function ExpertsPage(): ReactNode {
         setMe({ authenticated: false });
         setItems([]);
       } else {
-        setError(err instanceof ApiError ? err.message : "Failed to load experts");
+        setError(err instanceof ApiError ? err.message : t("expertsPage.loadFailed"));
       }
     } finally {
       setLoading(false);
@@ -112,9 +114,9 @@ export function ExpertsPage(): ReactNode {
     try {
       await apiPost("/api/org/experts/disable", { packageId }, memberAuthHeaders());
       await refresh();
-      setToast("Expert removed");
+      setToast(t("expertsPage.removed"));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Remove failed");
+      setError(err instanceof ApiError ? err.message : t("expertsPage.removeFailed"));
     }
   }
 
@@ -122,8 +124,8 @@ export function ExpertsPage(): ReactNode {
     return (
       <div className="page-stack experts-page" data-testid="experts-page">
         <header className="page-hero">
-          <h1 className="page-hero-title">Experts</h1>
-          <p className="page-hero-lead">Org persona packs for desktop agents.</p>
+          <h1 className="page-hero-title">{t("expertsPage.title")}</h1>
+          <p className="page-hero-lead">{t("expertsPage.lead")}</p>
         </header>
         <p className="console-row-meta">Loading…</p>
       </div>
@@ -134,12 +136,12 @@ export function ExpertsPage(): ReactNode {
     return (
       <div className="page-stack experts-page" data-testid="experts-page">
         <header className="page-hero">
-          <h1 className="page-hero-title">Experts</h1>
-          <p className="page-hero-lead">Org persona packs for desktop agents.</p>
+          <h1 className="page-hero-title">{t("expertsPage.title")}</h1>
+          <p className="page-hero-lead">{t("expertsPage.lead")}</p>
         </header>
         <MemberLoginCard
-          title="Sign in to manage experts"
-          description="Org-admin can add, upload, or remove packages."
+          title={t("expertsPage.loginTitle")}
+          description={t("expertsPage.loginDesc")}
           email={email}
           code={code}
           loading={loading}
@@ -156,19 +158,19 @@ export function ExpertsPage(): ReactNode {
     <div className="page-stack experts-page" data-testid="experts-page">
       <header className="page-hero page-hero-row">
         <div>
-          <h1 className="page-hero-title">Experts</h1>
+          <h1 className="page-hero-title">{t("expertsPage.title")}</h1>
           <p className="page-hero-lead">
-            Org persona packs · {me.displayName || me.email}
-            {!isAdmin ? " · read-only" : ""}
+            {t("expertsPage.leadWithUser", { user: me.displayName || me.email })}
+            {!isAdmin ? ` · ${t("common.readOnly")}` : ""}
           </p>
         </div>
         <div className="page-hero-actions">
           <Button variant="outline" size="sm" disabled={loading} onClick={() => void refresh()}>
-            Refresh
+            {t("common.refresh")}
           </Button>
           {isAdmin ? (
             <Button size="sm" onClick={() => setModalOpen(true)} data-testid="experts-add">
-              + Add
+              + {t("common.add")}
             </Button>
           ) : null}
         </div>
@@ -180,8 +182,8 @@ export function ExpertsPage(): ReactNode {
       <section className="console-card skills-list-card">
         {items.length === 0 ? (
           <div className="console-empty">
-            No org experts yet.
-            {isAdmin ? " Add from the catalog or upload a Markdown pack." : " Ask an org-admin to add one."}
+            {t("expertsPage.empty")}
+            {isAdmin ? t("expertsPage.emptyAdmin") : t("expertsPage.emptyMember")}
           </div>
         ) : (
           items.map((item) => (
@@ -196,9 +198,7 @@ export function ExpertsPage(): ReactNode {
         )}
       </section>
 
-      {modalOpen ? (
-        <AddExpertModal onClose={() => setModalOpen(false)} onChanged={() => void refresh()} />
-      ) : null}
+      {modalOpen ? <AddExpertModal onClose={() => setModalOpen(false)} onChanged={() => void refresh()} /> : null}
       {detailId ? <ExpertDetailPanel packageId={detailId} onClose={() => setDetailId(null)} /> : null}
     </div>
   );
@@ -210,6 +210,7 @@ export function ExpertRow(props: {
   onDetail(): void;
   onRemove(): void;
 }): ReactNode {
+  const t = useTranslate();
   const { item } = props;
   return (
     <div className="skills-row" data-testid={`expert-row-${item.packageId}`}>
@@ -219,7 +220,7 @@ export function ExpertRow(props: {
       <div className="skills-row-main">
         <div className="skills-row-title-line">
           <strong>{item.name}</strong>
-          <span className="skills-pill">org</span>
+          <span className="skills-pill">{t("expertsPage.orgPill")}</span>
         </div>
         <div className="console-row-meta">
           {item.packageId}
@@ -228,11 +229,11 @@ export function ExpertRow(props: {
       </div>
       <div className="skills-row-actions">
         <Button variant="outline" size="sm" data-testid="expert-detail" onClick={props.onDetail}>
-          Details
+          {t("common.details")}
         </Button>
         {props.isAdmin ? (
           <Button variant="outline" size="sm" data-testid="expert-remove" onClick={props.onRemove}>
-            Remove
+            {t("common.remove")}
           </Button>
         ) : null}
       </div>
@@ -241,6 +242,7 @@ export function ExpertRow(props: {
 }
 
 function AddExpertModal(props: { onClose(): void; onChanged(): void }): ReactNode {
+  const t = useTranslate();
   const [available, setAvailable] = useState<ExpertItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -255,7 +257,7 @@ function AddExpertModal(props: { onClose(): void; onChanged(): void }): ReactNod
       const list = await apiGet<{ items: ExpertItem[] }>("/api/catalog/experts?scope=available", memberAuthHeaders());
       setAvailable(list.items.filter((item) => !item.installed));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to load catalog");
+      setError(err instanceof ApiError ? err.message : t("expertsPage.catalogFailed"));
     } finally {
       setLoading(false);
     }
@@ -272,7 +274,7 @@ function AddExpertModal(props: { onClose(): void; onChanged(): void }): ReactNod
       await load();
       props.onChanged();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Enable failed");
+      setError(err instanceof ApiError ? err.message : t("expertsPage.enableFailed"));
     }
   }
 
@@ -287,21 +289,17 @@ function AddExpertModal(props: { onClose(): void; onChanged(): void }): ReactNod
       await load();
       props.onChanged();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Upload failed");
+      setError(err instanceof ApiError ? err.message : t("expertsPage.uploadFailed"));
     }
   }
 
   return (
-    <ConsoleModal
-      title="Add expert"
-      description="Enable a catalog pack or upload Markdown. Desktop only — no company chat."
-      onClose={props.onClose}
-    >
+    <ConsoleModal title={t("expertsPage.addTitle")} description={t("expertsPage.addDesc")} onClose={props.onClose}>
       {error ? <InlineError message={error} /> : null}
       <div className="skills-upload-block">
-        <strong className="skills-upload-title">Catalog</strong>
+        <strong className="skills-upload-title">{t("expertsPage.catalog")}</strong>
         {available.length === 0 ? (
-          <div className="console-empty">{loading ? "Loading…" : "No unused catalog packs."}</div>
+          <div className="console-empty">{loading ? t("common.loading") : t("expertsPage.catalogEmpty")}</div>
         ) : (
           available.map((item) => (
             <div key={item.packageId} className="skills-row skills-row-compact">
@@ -315,25 +313,25 @@ function AddExpertModal(props: { onClose(): void; onChanged(): void }): ReactNod
                 </div>
               </div>
               <Button size="sm" data-testid="expert-enable" onClick={() => void enable(item.packageId)}>
-                Enable
+                {t("common.enable")}
               </Button>
             </div>
           ))
         )}
       </div>
       <div className="skills-upload-block">
-        <strong className="skills-upload-title">Upload Markdown</strong>
-        <p className="console-row-meta skills-upload-desc">Writes to the org catalog and enables it.</p>
+        <strong className="skills-upload-title">{t("expertsPage.uploadTitle")}</strong>
+        <p className="console-row-meta skills-upload-desc">{t("expertsPage.uploadDesc")}</p>
         <Input
           value={uploadId}
           onChange={(e) => setUploadId(e.target.value)}
-          placeholder="packageId, e.g. sales-brief@1.1.0"
+          placeholder={t("expertsPage.uploadId")}
           data-testid="expert-upload-id"
         />
         <Input
           value={uploadName}
           onChange={(e) => setUploadName(e.target.value)}
-          placeholder="Display name"
+          placeholder={t("expertsPage.uploadName")}
           data-testid="expert-upload-name"
         />
         <textarea
@@ -344,7 +342,7 @@ function AddExpertModal(props: { onClose(): void; onChanged(): void }): ReactNod
           data-testid="expert-upload-md"
         />
         <Button size="sm" data-testid="expert-upload" onClick={() => void upload()}>
-          Upload and enable
+          {t("expertsPage.uploadCta")}
         </Button>
       </div>
     </ConsoleModal>
@@ -352,17 +350,19 @@ function AddExpertModal(props: { onClose(): void; onChanged(): void }): ReactNod
 }
 
 export function ExpertDetailView(props: { name: string; packageId: string; readme?: string }): ReactNode {
+  const t = useTranslate();
   return (
     <div data-testid="expert-detail-body">
       <div className="console-row-meta">{props.packageId}</div>
       <pre className="org-config-json" data-testid="expert-detail-md">
-        {props.readme || "(no README.md)"}
+        {props.readme || t("expertsPage.noReadme")}
       </pre>
     </div>
   );
 }
 
 function ExpertDetailPanel(props: { packageId: string; onClose(): void }): ReactNode {
+  const t = useTranslate();
   const [readme, setReadme] = useState<string | undefined>();
   const [name, setName] = useState(props.packageId);
   const [error, setError] = useState<string | null>(null);
@@ -379,7 +379,7 @@ function ExpertDetailPanel(props: { packageId: string; onClose(): void }): React
         setName(body.item.name);
         setReadme(body.readme);
       } catch (err) {
-        if (!cancelled) setError(err instanceof ApiError ? err.message : "Failed to load expert");
+        if (!cancelled) setError(err instanceof ApiError ? err.message : t("expertsPage.detailFailed"));
       }
     })();
     return () => {
@@ -388,7 +388,7 @@ function ExpertDetailPanel(props: { packageId: string; onClose(): void }): React
   }, [props.packageId]);
 
   return (
-    <ConsoleModal title={name} description="Persona pack body. No company chat." onClose={props.onClose}>
+    <ConsoleModal title={name} description={t("expertsPage.detailDesc")} onClose={props.onClose}>
       {error ? <InlineError message={error} /> : null}
       <ExpertDetailView name={name} packageId={props.packageId} readme={readme} />
     </ConsoleModal>

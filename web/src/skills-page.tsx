@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { useTranslate } from "@embra/i18n/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { ApiError, apiGet, apiPost } from "./api";
@@ -38,6 +39,7 @@ interface SkillItem {
 export const SKILL_ROLE_OPTIONS = ["admin", "member", "auditor"] as const;
 
 export function SkillsPage(): ReactNode {
+  const t = useTranslate();
   const [me, setMe] = useState<MeResponse | null>(null);
   const [orgItems, setOrgItems] = useState<SkillItem[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -148,10 +150,10 @@ export function SkillsPage(): ReactNode {
     try {
       await apiPost("/api/org/skills/visibility", { packageId, visibleToRoles }, memberAuthHeaders());
       await refresh();
-      setToast("Roles updated");
+      setToast(t("skillsPage.rolesUpdated"));
       setRoleTarget(null);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Update failed");
+      setError(err instanceof ApiError ? err.message : t("skillsPage.rolesFailed"));
     }
   }
 
@@ -245,7 +247,7 @@ export function SkillsPage(): ReactNode {
                   data-testid="skills-detail"
                   onClick={() => setDetailId(item.packageId)}
                 >
-                  Details
+                  {t("skillsPage.details")}
                 </Button>
                 {isAdmin ? (
                   <>
@@ -253,7 +255,7 @@ export function SkillsPage(): ReactNode {
                       分享
                     </Button>
                     <Button variant="outline" size="sm" data-testid="skills-roles" onClick={() => setRoleTarget(item)}>
-                      Roles
+                      {t("skillsPage.roles")}
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => void removeFromOrg(item.packageId)}>
                       移除
@@ -490,6 +492,7 @@ export function SkillRolePicker(props: {
   onClose(): void;
   onSave(roles: string[]): void;
 }): ReactNode {
+  const t = useTranslate();
   const [roles, setRoles] = useState<string[]>(props.selected);
 
   function toggle(role: string): void {
@@ -498,16 +501,16 @@ export function SkillRolePicker(props: {
 
   return (
     <ConsoleModal
-      title="Visible roles"
-      description="Empty selection means every member can see this package."
+      title={t("skillsPage.rolesTitle")}
+      description={t("skillsPage.rolesDesc")}
       onClose={props.onClose}
       footer={
         <>
           <Button variant="outline" onClick={props.onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button data-testid="skills-roles-save" onClick={() => props.onSave(roles)}>
-            Save
+            {t("common.save")}
           </Button>
         </>
       }
@@ -537,23 +540,25 @@ export interface SkillDetailBody {
 }
 
 export function SkillDetailView(props: { detail: SkillDetailBody }): ReactNode {
+  const t = useTranslate();
   const { detail } = props;
   return (
     <div data-testid="skills-detail-body">
       <div className="console-row-meta">
         {detail.meta.packageId}
         {detail.meta.version ? ` · v${detail.meta.version}` : ""}
-        {detail.meta.enabledBy ? ` · added by ${detail.meta.enabledBy}` : ""}
+        {detail.meta.enabledBy ? ` · ${t("skillsPage.addedBy", { id: detail.meta.enabledBy })}` : ""}
         {detail.meta.source ? ` · ${detail.meta.source}` : ""}
       </div>
       <pre className="org-config-json" data-testid="skills-detail-md">
-        {detail.skillMd || "(no SKILL.md)"}
+        {detail.skillMd || t("skillsPage.noSkillMd")}
       </pre>
     </div>
   );
 }
 
 function SkillDetailPanel(props: { packageId: string; onClose(): void }): ReactNode {
+  const t = useTranslate();
   const [detail, setDetail] = useState<SkillDetailBody | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -567,7 +572,7 @@ function SkillDetailPanel(props: { packageId: string; onClose(): void }): ReactN
         );
         if (!cancelled) setDetail(body);
       } catch (err) {
-        if (!cancelled) setError(err instanceof ApiError ? err.message : "Failed to load skill");
+        if (!cancelled) setError(err instanceof ApiError ? err.message : t("skillsPage.detailFailed"));
       }
     })();
     return () => {
@@ -578,11 +583,11 @@ function SkillDetailPanel(props: { packageId: string; onClose(): void }): ReactN
   return (
     <ConsoleModal
       title={detail?.meta.name || props.packageId}
-      description="Skill package body. No visual orchestrator."
+      description={t("skillsPage.detailDesc")}
       onClose={props.onClose}
     >
       {error ? <InlineError message={error} /> : null}
-      {detail ? <SkillDetailView detail={detail} /> : <p className="console-row-meta">Loading…</p>}
+      {detail ? <SkillDetailView detail={detail} /> : <p className="console-row-meta">{t("common.loading")}</p>}
     </ConsoleModal>
   );
 }

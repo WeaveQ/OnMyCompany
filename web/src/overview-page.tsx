@@ -382,41 +382,53 @@ export function OverviewPage(props: OverviewPageProps): ReactNode {
   );
 }
 
+const ONBOARDING_COPY: Record<string, { title: string; hint: string }> = {
+  members: { title: "onboarding.membersTitle", hint: "onboarding.membersHint" },
+  teams: { title: "onboarding.teamsTitle", hint: "onboarding.teamsHint" },
+  connections: { title: "onboarding.connectionsTitle", hint: "onboarding.connectionsHint" },
+  skills: { title: "onboarding.skillsTitle", hint: "onboarding.skillsHint" },
+  policy: { title: "onboarding.policyTitle", hint: "onboarding.policyHint" },
+  "model-router": { title: "onboarding.modelRouterTitle", hint: "onboarding.modelRouterHint" },
+  "runtime-token": { title: "onboarding.runtimeTokenTitle", hint: "onboarding.runtimeTokenHint" },
+};
+
 export function AdminOnboardingChecklist(props: { steps: OnboardingStep[] }): ReactNode {
+  const t = useTranslate();
   return (
     <section className="console-card" data-overview-section="onboarding" data-testid="admin-onboarding">
       <div className="console-card-header">
         <div>
-          <h2 className="console-card-title">Admin onboarding</h2>
-          <p className="console-card-subtitle">
-            Model step probes OmniRoute only. Employees: see MEMBER-ONBOARDING in docs.
-          </p>
+          <h2 className="console-card-title">{t("onboarding.title")}</h2>
+          <p className="console-card-subtitle">{t("onboarding.subtitle")}</p>
         </div>
       </div>
       <ol className="overview-onboarding-list">
-        {props.steps.map((step) => (
-          <li
-            key={step.id}
-            className={step.done ? "overview-onboarding-step is-done" : "overview-onboarding-step"}
-            data-testid={`onboarding-step-${step.id}`}
-            data-onboarding-done={step.done ? "true" : "false"}
-          >
-            <span className="overview-onboarding-mark" aria-hidden>
-              {step.done ? "✓" : "○"}
-            </span>
-            <div>
-              <strong>{step.title}</strong>
-              <div className="console-row-meta">{step.hint}</div>
-            </div>
-            {step.external && step.href ? (
-              <a href={step.href} target="_blank" rel="noreferrer" data-testid="onboarding-model-router-link">
-                Open model router
-              </a>
-            ) : step.to ? (
-              <Link to={step.to}>Open</Link>
-            ) : null}
-          </li>
-        ))}
+        {props.steps.map((step) => {
+          const copy = ONBOARDING_COPY[step.id];
+          return (
+            <li
+              key={step.id}
+              className={step.done ? "overview-onboarding-step is-done" : "overview-onboarding-step"}
+              data-testid={`onboarding-step-${step.id}`}
+              data-onboarding-done={step.done ? "true" : "false"}
+            >
+              <span className="overview-onboarding-mark" aria-hidden>
+                {step.done ? "✓" : "○"}
+              </span>
+              <div>
+                <strong>{copy ? t(copy.title) : step.title}</strong>
+                <div className="console-row-meta">{copy ? t(copy.hint) : step.hint}</div>
+              </div>
+              {step.external && step.href ? (
+                <a href={step.href} target="_blank" rel="noreferrer" data-testid="onboarding-model-router-link">
+                  {t("onboarding.openModelRouter")}
+                </a>
+              ) : step.to ? (
+                <Link to={step.to}>{t("onboarding.open")}</Link>
+              ) : null}
+            </li>
+          );
+        })}
       </ol>
     </section>
   );

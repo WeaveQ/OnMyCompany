@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { useTranslate } from "@embra/i18n/react";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, apiGet, apiPost } from "./api";
 import { MemberLoginCard } from "./member-login-card";
@@ -27,31 +28,32 @@ export interface ToolsProjection {
 }
 
 export function ToolsCatalogList(props: { data: ToolsProjection }): ReactNode {
+  const t = useTranslate();
   const servers = Array.isArray(props.data.mcp?.servers) ? props.data.mcp.servers : [];
   const services = Array.isArray(props.data.gateway?.services) ? props.data.gateway.services : [];
   return (
     <div data-testid="tools-catalog">
       <section className="console-card">
-        <h2 className="console-card-title">MCP declarations</h2>
-        <p className="console-card-subtitle">Read from tools/mcp.json. This process does not spawn or npx servers.</p>
+        <h2 className="console-card-title">{t("toolsPage.mcpTitle")}</h2>
+        <p className="console-card-subtitle">{t("toolsPage.mcpSubtitle")}</p>
         {servers.length === 0 ? (
-          <div className="console-empty">No MCP servers declared.</div>
+          <div className="console-empty">{t("toolsPage.mcpEmpty")}</div>
         ) : (
           servers.map((server, i) => (
             <div key={String(server.name ?? i)} className="skills-row" data-testid="tools-mcp-row">
               <div className="skills-row-main">
                 <strong>{String(server.name ?? `server-${i}`)}</strong>
-                <div className="console-row-meta">{summarizeServer(server)}</div>
+                <div className="console-row-meta">{summarizeServer(server, t("toolsPage.declared"))}</div>
               </div>
             </div>
           ))
         )}
       </section>
       <section className="console-card">
-        <h2 className="console-card-title">Gateway projection</h2>
-        <p className="console-card-subtitle">Read from tools/gateway.json. No connection secrets.</p>
+        <h2 className="console-card-title">{t("toolsPage.gatewayTitle")}</h2>
+        <p className="console-card-subtitle">{t("toolsPage.gatewaySubtitle")}</p>
         {services.length === 0 ? (
-          <div className="console-empty">No gateway services projected.</div>
+          <div className="console-empty">{t("toolsPage.gatewayEmpty")}</div>
         ) : (
           services.map((service, i) => (
             <div key={serviceKey(service, i)} className="skills-row" data-testid="tools-gateway-row">
@@ -64,11 +66,11 @@ export function ToolsCatalogList(props: { data: ToolsProjection }): ReactNode {
       </section>
       {props.data.aliases.length > 0 ? (
         <section className="console-card">
-          <h2 className="console-card-title">Named config aliases</h2>
-          <p className="console-card-subtitle">Field names only. Secret values are never listed.</p>
+          <h2 className="console-card-title">{t("toolsPage.aliasesTitle")}</h2>
+          <p className="console-card-subtitle">{t("toolsPage.aliasesSubtitle")}</p>
           {props.data.aliases.map((a) => (
             <div key={a.alias} className="console-row-meta">
-              {a.alias}: {a.fields.join(", ") || "(none)"}
+              {a.alias}: {a.fields.join(", ") || t("toolsPage.aliasesNone")}
             </div>
           ))}
         </section>
@@ -78,6 +80,7 @@ export function ToolsCatalogList(props: { data: ToolsProjection }): ReactNode {
 }
 
 export function ToolsPage(): ReactNode {
+  const t = useTranslate();
   const [me, setMe] = useState<MeResponse | null>(null);
   const [data, setData] = useState<ToolsProjection | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +109,7 @@ export function ToolsPage(): ReactNode {
       const tools = await apiGet<ToolsProjection>("/api/org/tools", memberAuthHeaders());
       setData(tools);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to load tools");
+      setError(err instanceof ApiError ? err.message : t("toolsPage.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -134,8 +137,8 @@ export function ToolsPage(): ReactNode {
     return (
       <div className="page-stack tools-page" data-testid="tools-page">
         <header className="page-hero">
-          <h1 className="page-hero-title">Tools</h1>
-          <p className="page-hero-lead">Declared MCP servers and gateway projection.</p>
+          <h1 className="page-hero-title">{t("toolsPage.title")}</h1>
+          <p className="page-hero-lead">{t("toolsPage.lead")}</p>
         </header>
         <p className="console-row-meta">Loading…</p>
       </div>
@@ -146,12 +149,12 @@ export function ToolsPage(): ReactNode {
     return (
       <div className="page-stack tools-page" data-testid="tools-page">
         <header className="page-hero">
-          <h1 className="page-hero-title">Tools</h1>
-          <p className="page-hero-lead">Declared MCP servers and gateway projection.</p>
+          <h1 className="page-hero-title">{t("toolsPage.title")}</h1>
+          <p className="page-hero-lead">{t("toolsPage.lead")}</p>
         </header>
         <MemberLoginCard
-          title="Sign in to view tools"
-          description="Declarations only. This console does not start MCP processes."
+          title={t("toolsPage.loginTitle")}
+          description={t("toolsPage.loginDesc")}
           email={email}
           code={code}
           loading={loading}
@@ -168,11 +171,11 @@ export function ToolsPage(): ReactNode {
     <div className="page-stack tools-page" data-testid="tools-page">
       <header className="page-hero page-hero-row">
         <div>
-          <h1 className="page-hero-title">Tools</h1>
-          <p className="page-hero-lead">Org MCP + gateway declarations · {me.displayName || me.email}</p>
+          <h1 className="page-hero-title">{t("toolsPage.title")}</h1>
+          <p className="page-hero-lead">{t("toolsPage.leadWithUser", { user: me.displayName || me.email })}</p>
         </div>
         <Button variant="outline" size="sm" disabled={loading} onClick={() => void refresh()}>
-          Refresh
+          {t("common.refresh")}
         </Button>
       </header>
       {error ? <InlineError message={error} /> : null}
@@ -181,10 +184,10 @@ export function ToolsPage(): ReactNode {
   );
 }
 
-function summarizeServer(server: Record<string, unknown>): string {
+function summarizeServer(server: Record<string, unknown>, fallback: string): string {
   const command = server.command ? String(server.command) : "";
   const url = server.url ? String(server.url) : "";
-  return [command, url].filter(Boolean).join(" · ") || "declared";
+  return [command, url].filter(Boolean).join(" · ") || fallback;
 }
 
 function serviceKey(service: Record<string, unknown> | string, i: number): string {

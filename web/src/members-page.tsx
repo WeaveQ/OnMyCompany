@@ -1,6 +1,7 @@
 import type { AccountLifecycle } from "./team-ui";
 import type { ReactNode } from "react";
 
+import { useTranslate } from "@embra/i18n/react";
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
@@ -16,14 +17,7 @@ import {
 } from "./member-session";
 import { ConsoleModal, InlineError } from "./shared-ui";
 import { TeamAvatar } from "./team-manage-page";
-import {
-  accountStatusLabel,
-  accountStatusTone,
-  formatTeamIdSnippet,
-  orgRoleHelpZh,
-  orgRoleLabelZh,
-  orgRolesLabelZh,
-} from "./team-ui";
+import { accountStatusTone, formatTeamIdSnippet, orgRoleHelpZh, orgRoleLabelZh } from "./team-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,6 +44,7 @@ function normalizeAccountStatus(raw?: string): AccountLifecycle | string {
  * 与「团队」分离：这里管企业角色与启停；队内成员在 /team。
  */
 export function MembersPage(): ReactNode {
+  const t = useTranslate();
   const [items, setItems] = useState<OrgMemberRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -291,10 +286,10 @@ export function MembersPage(): ReactNode {
       <div className="team-people-tabs" role="tablist" aria-label="成员筛选">
         {(
           [
-            ["all", "全部"],
-            ["pending", "Pending"],
-            ["active", "Active"],
-            ["deactivated", "Deactivated"],
+            ["all", t("accountStatus.all")],
+            ["pending", t("accountStatus.pending")],
+            ["active", t("accountStatus.active")],
+            ["deactivated", t("accountStatus.deactivated")],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -340,13 +335,31 @@ export function MembersPage(): ReactNode {
                     </div>
                   </td>
                   <td>
-                    <span className="team-pill">{orgRolesLabelZh(row.roles)}</span>
+                    <span className="team-pill">
+                      {(row.roles?.length ? row.roles : ["member"])
+                        .map((r) =>
+                          t(
+                            r === "admin" || r === "owner"
+                              ? "orgRoles.admin"
+                              : r === "auditor"
+                                ? "orgRoles.auditor"
+                                : "orgRoles.member",
+                          ),
+                        )
+                        .join(" · ")}
+                    </span>
                   </td>
                   <td>
                     <span
                       className={`team-status-pill is-${tone === "ok" ? "ok" : tone === "warn" ? "warn" : "muted"}`}
                     >
-                      {row.statusLabel || accountStatusLabel(String(st))}
+                      {t(
+                        st === "pending"
+                          ? "accountStatus.pending"
+                          : st === "deactivated"
+                            ? "accountStatus.deactivated"
+                            : "accountStatus.active",
+                      )}
                     </span>
                   </td>
                   <td className="team-col-actions">
@@ -500,8 +513,8 @@ export function MembersPage(): ReactNode {
               onChange={(e) => setEditStatus(e.target.value)}
               disabled={normalizeAccountStatus(editTarget.status) === "pending"}
             >
-              <option value="active">Active</option>
-              <option value="deactivated">Deactivated</option>
+              <option value="active">{t("accountStatus.active")}</option>
+              <option value="deactivated">{t("accountStatus.deactivated")}</option>
             </select>
           </Label>
         </ConsoleModal>

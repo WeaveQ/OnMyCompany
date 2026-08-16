@@ -1,13 +1,19 @@
+import { I18nProvider } from "@embra/i18n/react";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ExpertDetailView, ExpertRow } from "./experts-page";
+import { createAppI18n } from "./i18n";
+
+function renderZh(node: Parameters<typeof renderToStaticMarkup>[0]): string {
+  return renderToStaticMarkup(createElement(I18nProvider, { i18n: createAppI18n("zh-CN") }, node));
+}
 
 describe("Experts page", () => {
   it("aligns with Skills: details + remove, no chat CTA", () => {
-    const markup = renderToStaticMarkup(
+    const markup = renderZh(
       createElement(ExpertRow, {
         item: { packageId: "ops-oncall@1.0.0", name: "Ops on-call", installed: true },
         isAdmin: true,
@@ -23,7 +29,7 @@ describe("Experts page", () => {
   });
 
   it("detail view shows README body", () => {
-    const markup = renderToStaticMarkup(
+    const markup = renderZh(
       createElement(ExpertDetailView, {
         name: "Ops on-call",
         packageId: "ops-oncall@1.0.0",

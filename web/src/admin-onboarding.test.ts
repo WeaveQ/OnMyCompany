@@ -1,8 +1,10 @@
+import { I18nProvider } from "@embra/i18n/react";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 import { buildAdminOnboardingChecklist } from "./admin-onboarding";
+import { createAppI18n } from "./i18n";
 import { AdminOnboardingChecklist } from "./overview-page";
 
 describe("admin onboarding checklist", () => {
@@ -27,7 +29,11 @@ describe("admin onboarding checklist", () => {
     expect(model?.hint.toLowerCase()).toContain("omni");
 
     const markup = renderToStaticMarkup(
-      createElement(MemoryRouter, {}, createElement(AdminOnboardingChecklist, { steps })),
+      createElement(
+        I18nProvider,
+        { i18n: createAppI18n("en") },
+        createElement(MemoryRouter, {}, createElement(AdminOnboardingChecklist, { steps })),
+      ),
     );
     expect(markup).toContain('data-testid="admin-onboarding"');
     expect(markup).toContain('data-testid="onboarding-step-model-router"');

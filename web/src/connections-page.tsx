@@ -653,6 +653,7 @@ function useIntersectionLoader(enabled: boolean, onLoad: () => void): (node: HTM
 }
 
 function ConnectionTeamGrantsCard(props: { services: string[] }): ReactNode {
+  const t = useTranslate();
   const unique = [...new Set(props.services.filter(Boolean))];
   const [service, setService] = useState(unique[0] ?? "");
   const [teamIds, setTeamIds] = useState("");
@@ -676,9 +677,9 @@ function ConnectionTeamGrantsCard(props: { services: string[] }): ReactNode {
         { service, connectionName: "default", teamIds: ids },
         memberAuthHeaders(),
       );
-      setMessage(ids.length ? "Team grants saved" : "Team grants cleared (all teams)");
+      setMessage(ids.length ? t("connectionsGrants.saved") : t("connectionsGrants.cleared"));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Save failed");
+      setError(err instanceof ApiError ? err.message : t("connectionsGrants.failed"));
     }
   }
 
@@ -703,8 +704,8 @@ function ConnectionTeamGrantsCard(props: { services: string[] }): ReactNode {
 
   return (
     <section className="console-card connection-grants-card" data-testid="connection-team-grants">
-      <h2 className="console-card-title">Connection team grants</h2>
-      <p className="console-card-subtitle">Empty list = all teams. A grant list requires X-Team-Id.</p>
+      <h2 className="console-card-title">{t("connectionsGrants.title")}</h2>
+      <p className="console-card-subtitle">{t("connectionsGrants.subtitle")}</p>
       {error ? <p className="page-toast">{error}</p> : null}
       {message ? <p className="page-toast">{message}</p> : null}
       <div className="org-config-form-grid">
@@ -718,11 +719,11 @@ function ConnectionTeamGrantsCard(props: { services: string[] }): ReactNode {
         <Input
           value={teamIds}
           onChange={(e) => setTeamIds(e.target.value)}
-          placeholder="team ids, comma separated"
+          placeholder={t("connectionsGrants.placeholder")}
           data-testid="grant-team-ids"
         />
         <Button size="sm" type="button" onClick={() => void save()}>
-          Save grants
+          {t("connectionsGrants.save")}
         </Button>
       </div>
     </section>

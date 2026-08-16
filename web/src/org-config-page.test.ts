@@ -27,6 +27,6 @@ describe("OrgConfigPage human IA", () => {
     expect(src).toContain("models JSON");
     expect(src).toContain("omni-models-note");
     expect(src).toContain("omni-models-link");
-    expect(src).toContain("OmniRoute");
+    expect(src).toContain("orgConfigPage.omniNote");
   });
 });

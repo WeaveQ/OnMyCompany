@@ -1,20 +1,26 @@
+import { I18nProvider } from "@embra/i18n/react";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { createAppI18n } from "./i18n";
 import { SkillRolePicker } from "./skills-page";
 import { getMoreNavPaths, getPrimaryNavPaths } from "./ui";
 
 describe("Skills role control", () => {
   it("renders a multi-select, not window.prompt", () => {
     const markup = renderToStaticMarkup(
-      createElement(SkillRolePicker, {
-        packageId: "demo@1",
-        selected: ["admin"],
-        onClose() {},
-        onSave() {},
-      }),
+      createElement(
+        I18nProvider,
+        { i18n: createAppI18n("en") },
+        createElement(SkillRolePicker, {
+          packageId: "demo@1",
+          selected: ["admin"],
+          onClose() {},
+          onSave() {},
+        }),
+      ),
     );
     expect(markup).toContain("skills-role-picker");
     expect(markup).toContain('type="checkbox"');
